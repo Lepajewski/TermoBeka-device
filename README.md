@@ -1,0 +1,1 @@
+# TermoBeka-device
