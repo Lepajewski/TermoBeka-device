@@ -22,5 +22,5 @@
 		"--privileged"
 	],
 	"remoteUser": "vscode",
-	"postAttachCommand": "sudo service udev restart"
+	"postAttachCommand": "make setup"
 }

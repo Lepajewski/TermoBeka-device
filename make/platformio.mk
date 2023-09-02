@@ -9,6 +9,8 @@ pio-setup:
 	ln -sf ~/.platformio/penv/bin/pio ~/.local/bin/pio
 	ln -sf ~/.platformio/penv/bin/piodebuggdb ~/.local/bin/piodebuggdb
 
+	$(SUDO) chmod a+rw /dev/ttyUSB0
+
 pio-clean:
 	platformio run --target clean
 
@@ -22,6 +24,7 @@ pio-flash-erase:
 	platformio run --target erase --environment $(ENV)
 
 pio-flash:
+	$(SUDO) chmod a+rw /dev/ttyUSB0
 	platformio run --target upload --environment $(ENV)
 
 pio-monitor:

@@ -1,0 +1,8 @@
+{
+    "files.associations": {
+        "esp_system.h": "c",
+        "nvs_manager.h": "c",
+        "esp_console.h": "c",
+        "linenoise.h": "c"
+    }
+}

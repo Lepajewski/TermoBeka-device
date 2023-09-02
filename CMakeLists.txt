@@ -1,6 +1,12 @@
 cmake_minimum_required(VERSION 3.16.0)
+
 include($ENV{IDF_PATH}/tools/cmake/project.cmake)
 
-list(APPEND EXTRA_COMPONENTS_DIRS esp32-pcd8544)
+list(APPEND EXTRA_COMPONENTS_DIRS
+    lib/global_config
+    lib/logger
+    lib/nvs_manager
+    lib/system_manager
+)
 
 project(TermoBeka-device)

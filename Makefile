@@ -4,8 +4,7 @@ setup:
 	sudo apt-get update \
 	&& sudo apt-get -qqy upgrade
 
-	git submodule init
-	git submodule update
+	$(SUDO) service udev restart
 
 	make pio-setup
 
