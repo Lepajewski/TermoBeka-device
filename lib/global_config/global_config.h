@@ -3,6 +3,7 @@
 
 #include <inttypes.h>
 #include "esp_log.h"
+#include "driver/gpio.h"
 
 #ifdef DEBUG
 #define DEFAULT_LOG_LEVEL   ESP_LOG_DEBUG
@@ -10,6 +11,8 @@
 #define DEFAULT_LOG_LEVEL   ESP_LOG_ERROR
 #endif
 
+
+#define PIN_BUZZER      GPIO_NUM_1
 
 #define LCD_CLK         38  // CLK - 5
 #define LCD_DIN         39  // DIN - 4

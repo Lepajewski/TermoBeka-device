@@ -4,6 +4,8 @@
 
 #include "ui_manager_task.h"
 
+#include "buzzer.h"
+
 
 const char * const TAG = "UIMgrTask";
 
@@ -15,6 +17,7 @@ void uiManagerTask(void *pvParameters) {
     // setup display
 
     // setup BUZZER & LEDS
+    Buzzer buzzer;
 
     // setup GPIO expander
 
@@ -22,6 +25,12 @@ void uiManagerTask(void *pvParameters) {
 
     while (1) {
         TB_LOGI(TAG, "hello");
+
+        buzzer.on();
+
+        vTaskDelay(pdMS_TO_TICKS(1000));
+
+        buzzer.off();
 
         vTaskDelay(pdMS_TO_TICKS(1000));
     }
