@@ -12,6 +12,8 @@
 #include "system_manager.h"
 #include "system_manager_task.h"
 
+#include "ui_manager_task.h"
+
 
 const char *TAG = "MAIN";
 
@@ -37,6 +39,7 @@ void app_main(void)
     xTaskCreatePinnedToCore(systemManagerTask, "SysMgr", 4096, NULL, 1, NULL, 1);
 
     // start UI Task
+    xTaskCreatePinnedToCore(uiManagerTask, "UIMgr", 4096, NULL, 1, NULL, 1);
 
     // load configuration from NVS
     nvs_device_config_t config = {};

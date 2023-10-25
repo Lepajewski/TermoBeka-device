@@ -7,6 +7,7 @@ list(APPEND EXTRA_COMPONENTS_DIRS
     lib/logger
     lib/nvs_manager
     lib/system_manager
+    lib/ui_manager
 )
 
 project(TermoBeka-device)
