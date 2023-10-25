@@ -19,9 +19,10 @@
 
 
 typedef struct {
-    // const char *wifi_ssid;
-    // const char *wifi_pass;
+    char wifi_ssid[32];
+    char wifi_pass[64];
     esp_log_level_t log_level;
-} nvs_device_config_t;
+} __attribute__ ((packed)) nvs_device_config_t;
+
 
 #endif  // SRC_CONFIG_H_

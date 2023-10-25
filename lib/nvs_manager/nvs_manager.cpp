@@ -8,6 +8,7 @@
 
 const char * const TAG = "NVS";
 
+
 esp_err_t nvs_check() {
     esp_err_t err = nvs_flash_init();
     if (err == ESP_ERR_NVS_NO_FREE_PAGES || err == ESP_ERR_NVS_NEW_VERSION_FOUND) {
@@ -19,7 +20,7 @@ esp_err_t nvs_check() {
     return err;
 }
 
-esp_err_t read_nvs_config(nvs_device_config_t *config, uint8_t *config_found) {
+esp_err_t nvs_read_config(nvs_device_config_t *config, uint8_t *config_found) {
     nvs_handle_t nvs_handle;
     esp_err_t err;
     *config_found = 0;

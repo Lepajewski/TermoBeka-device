@@ -41,7 +41,10 @@ void app_main(void)
     // load configuration from NVS
     nvs_device_config_t config = {};
     uint8_t config_found = 0;
-    ESP_ERROR_CHECK(read_nvs_config(&config, &config_found));
+    ESP_ERROR_CHECK(nvs_read_config(&config, &config_found));
+
+    // config log level
+    esp_log_level_set("*", config.log_level);
 
     if (config_found) {
         TB_LOGI(TAG, "NVS config found");

@@ -13,6 +13,7 @@
 
 
 class SystemManager {
+ private:
     QueueHandle_t event_queue_handle;
     size_t uart_buffered_size;
     uint8_t uart_rx_data[UART_BUF_SIZE];
