@@ -26,12 +26,13 @@ void uiManagerTask(void *pvParameters) {
     while (1) {
         TB_LOGI(TAG, "hello");
 
+        // Test Buzzer
         buzzer.on();
 
-        vTaskDelay(pdMS_TO_TICKS(1000));
+        vTaskDelay(pdMS_TO_TICKS(200));
 
         buzzer.off();
 
-        vTaskDelay(pdMS_TO_TICKS(1000));
+        vTaskDelay(pdMS_TO_TICKS(2000));
     }
 }

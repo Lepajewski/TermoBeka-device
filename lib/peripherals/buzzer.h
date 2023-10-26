@@ -1,5 +1,5 @@
-#ifndef LIB_UI_MANAGER_BUZZER_H_
-#define LIB_UI_MANAGER_BUZZER_H_
+#ifndef LIB_PERIPHERALS_BUZZER_H_
+#define LIB_PERIPHERALS_BUZZER_H_
 
 #include "hal/gpio_types.h"
 #include "drivers/buzzer_driver.h"
@@ -22,4 +22,4 @@ class Buzzer {
 
 };
 
-#endif  // LIB_UI_MANAGER_BUZZER_WRAPPER_H_
+#endif  // LIB_PERIPHERALS_BUZZER_WRAPPER_H_

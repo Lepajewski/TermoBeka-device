@@ -1,5 +1,5 @@
-#ifndef LIB_UI_MANAGER_DRIVERS_BUZZER_DRIVER_H_
-#define LIB_UI_MANAGER_DRIVERS_BUZZER_DRIVER_H_
+#ifndef LIB_PERIPHERALS_DRIVERS_BUZZER_DRIVER_H_
+#define LIB_PERIPHERALS_DRIVERS_BUZZER_DRIVER_H_
 
 
 #include "driver/gpio.h"
@@ -19,4 +19,4 @@ esp_err_t buzzer_off(gpio_num_t pin);
 }
 #endif
 
-#endif  // LIB_UI_MANAGER_DRIVERS_BUZZER_DRIVER_H_
+#endif  // LIB_PERIPHERALS_DRIVERS_BUZZER_DRIVER_H_

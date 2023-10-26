@@ -315,7 +315,7 @@ const esp_console_cmd_t SystemManager::system_commands[] = {
             fputs("\n", stdout);
             vTaskList(task_list_buffer);
             fputs(task_list_buffer, stdout);
-            delete task_list_buffer;
+            delete [] task_list_buffer;
         return ESP_OK;
         },
         NULL
