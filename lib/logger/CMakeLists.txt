@@ -1,3 +1,4 @@
 idf_component_register(
-    SRCS "logger.c"
+    SRCS
+        "logger.c"
 )
