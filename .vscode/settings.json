@@ -3,6 +3,10 @@
         "esp_system.h": "c",
         "nvs_manager.h": "c",
         "esp_console.h": "c",
-        "linenoise.h": "c"
+        "linenoise.h": "c",
+        "array": "c",
+        "string": "c",
+        "string_view": "c",
+        "i2c_wrapper.h": "c"
     }
 }

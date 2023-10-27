@@ -2,6 +2,10 @@ idf_component_register(
     SRCS
         "drivers/buzzer_driver.c"
         "buzzer.cpp"
+        "drivers/i2c_wrapper.c"
+        "drivers/pca9539_driver.c"
+        "gpio_expander.cpp"
     PRIV_REQUIRES
         "driver/gpio"
+        "driver/i2c"
 )
