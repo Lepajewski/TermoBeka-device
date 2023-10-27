@@ -7,19 +7,30 @@
 
 class GPIOExpander {
  private:
-    pca9539_cfg_t pca9539_cfg;
+   pca9539_cfg_t pca9539_cfg;
 
-    void init();
-    void deinit();
+   void init();
+   void deinit();
 
  public:
-    GPIOExpander();
-    GPIOExpander(pca9539_cfg_t *pca9539_cfg);
-    ~GPIOExpander();
+   GPIOExpander();
+   GPIOExpander(pca9539_cfg_t *pca9539_cfg);
+   ~GPIOExpander();
 
-    pca9539_pin_mode get_pin_mode(pca9539_pin_num pin);
-    void set_pin_mode(pca9539_pin_num pin, pca9539_pin_mode mode);
+   void begin();
+   void end();
 
+   void set_polarity();
+   void setup_buttons();
+
+   pca9539_pin_mode get_pin_mode(pca9539_pin_num pin);
+   void set_pin_mode(pca9539_pin_num pin, pca9539_pin_mode mode);
+
+   pca9539_pin_state get_input_pin_state(pca9539_pin_num pin);
+   pca9539_pin_state set_input_pin_state(pca9539_pin_num pin);
+   pca9539_pin_state get_output_pin_state(pca9539_pin_num pin);
+   pca9539_pin_state set_output_pin_state(pca9539_pin_num pin);
+   
 };
 
 #endif  // LIB_PERIPHERALS_GPIO_EXPANDER_H_

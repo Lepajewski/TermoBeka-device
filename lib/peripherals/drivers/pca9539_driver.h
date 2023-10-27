@@ -11,22 +11,15 @@
 #define PCA9539_I2C_ADDRESS_HL          0x76
 #define PCA9539_I2C_ADDRESS_HH          0x77
 
-#define PCA9539_REG_IP_0                0x00  // input port register
+#define PCA9539_REG_IP                  0x00  // input port register
 #define PCA9539_REG_OP                  0x02  // output port register
 #define PCA9539_REG_PIP                 0x04  // polarity inversion register
 #define PCA9539_REG_CP                  0x06  // configuration register
 
-#define PCA9539_PORT_0                  0x00
-#define PCA9539_PORT_1                  0x01
-
-// #define PCA9539_IO_NUM_0                0x00
-// #define PCA9539_IO_NUM_1                0x01
-// #define PCA9539_IO_NUM_2                0x02
-// #define PCA9539_IO_NUM_3                0x03
-// #define PCA9539_IO_NUM_4                0x04
-// #define PCA9539_IO_NUM_5                0x05
-// #define PCA9539_IO_NUM_6                0x06
-// #define PCA9539_IO_NUM_7                0x07
+typedef enum {
+    PORT_0,
+    PORT_1
+} pca9539_port_num;
 
 typedef enum {
     P0_0, P0_1, P0_2, P0_3, P0_4, P0_5, P0_6, P0_7,
@@ -34,9 +27,19 @@ typedef enum {
 } pca9539_pin_num;
 
 typedef enum {
+    PIN_POLARITY_NORMAL,
+    PIN_POLARITY_INVERSE
+} pca9539_polarity;
+
+typedef enum {
     PIN_MODE_OUTPUT,
     PIN_MODE_INPUT
 } pca9539_pin_mode;
+
+typedef enum {
+    PIN_STATE_LOW,
+    PIN_STATE_HIGH
+} pca9539_pin_state;
 
 
 typedef struct {
@@ -56,11 +59,23 @@ const char *pca9539_pin_num_to_s(pca9539_pin_num pin);
 esp_err_t pca9539_init(pca9539_cfg_t *cfg);
 esp_err_t pca9539_deinit(i2c_port_t i2c_port);
 
-esp_err_t pca9539_get_pin_port_cfg(pca9539_cfg_t *cfg, pca9539_pin_num pin, uint8_t *port_cfg);
-// esp_err_t pca9539_set_pin_port_cfg(pca9539_cfg_t *cfg, pca9539_pin_num pin);
+esp_err_t pca9539_get_port_cfg(pca9539_cfg_t *cfg, pca9539_port_num port, uint8_t *port_cfg);
+esp_err_t pca9539_set_port_cfg(pca9539_cfg_t *cfg, pca9539_port_num port, uint8_t port_cfg);
+
+esp_err_t pca9539_get_port_polarity(pca9539_cfg_t *cfg, pca9539_port_num port, uint8_t *port_polarity);
+esp_err_t pca9539_set_port_polarity(pca9539_cfg_t *cfg, pca9539_port_num port, uint8_t port_polarity);
+
+esp_err_t pca9539_get_pin_polarity(pca9539_cfg_t *cfg, pca9539_pin_num pin, pca9539_polarity *polarity);
+esp_err_t pca9539_set_pin_polarity(pca9539_cfg_t *cfg, pca9539_pin_num pin, pca9539_polarity polarity);
 
 esp_err_t pca9539_get_pin_mode(pca9539_cfg_t *cfg, pca9539_pin_num pin, pca9539_pin_mode *pin_mode);
 esp_err_t pca9539_set_pin_mode(pca9539_cfg_t *cfg, pca9539_pin_num pin, pca9539_pin_mode pin_mode);
+
+esp_err_t pca9539_get_input_port_state(pca9539_cfg_t *cfg, pca9539_port_num port, uint8_t *state);
+esp_err_t pca9539_get_output_port_state(pca9539_cfg_t *cfg, pca9539_port_num port, uint8_t *state);
+
+esp_err_t pca9539_get_input_pin_state(pca9539_cfg_t *cfg, pca9539_pin_num pin, pca9539_pin_state *state);
+esp_err_t pca9539_get_output_pin_state(pca9539_cfg_t *cfg, pca9539_pin_num pin, pca9539_pin_state *state);
 
 
 #ifdef __cplusplus
