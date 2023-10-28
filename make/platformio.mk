@@ -28,6 +28,7 @@ pio-flash:
 	platformio run --target upload --environment $(ENV)
 
 pio-monitor:
+	$(SUDO) chmod a+rw /dev/ttyUSB0
 	platformio device monitor --environment $(ENV)
 
 pio-menuconfig:

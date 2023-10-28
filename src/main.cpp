@@ -15,7 +15,7 @@
 #include "ui_manager_task.h"
 
 
-const char *TAG = "MAIN";
+static const char * const TAG = "MAIN";
 
 SystemManager sysMgr;
 

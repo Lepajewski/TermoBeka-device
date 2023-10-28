@@ -4,6 +4,7 @@ idf_component_register(
         "buzzer.cpp"
         "drivers/i2c_wrapper.c"
         "drivers/pca9539_driver.c"
+        "drivers/pca9539_intr_driver.c"
         "gpio_expander.cpp"
     PRIV_REQUIRES
         "driver/gpio"

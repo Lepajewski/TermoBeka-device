@@ -46,13 +46,14 @@ typedef struct {
     i2c_port_t i2c_port;
     i2c_config_t i2c_config;
     uint8_t addr;
-    gpio_num_t pin_interrupt;
+    gpio_num_t intr_gpio_num;
 } pca9539_cfg_t;
 
 
 #ifdef __cplusplus
 extern "C" {
 #endif
+
 
 const char *pca9539_pin_num_to_s(pca9539_pin_num pin);
 

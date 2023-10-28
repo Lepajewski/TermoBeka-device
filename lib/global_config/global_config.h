@@ -17,7 +17,7 @@
 // GPIO Expander configuration
 #define PIN_GPIO_EXPANDER_SDA               GPIO_NUM_9
 #define PIN_GPIO_EXPANDER_SCL               GPIO_NUM_10
-#define PIN_GPIO_EXPANDER_INT               GPIO_NUM_46
+#define PIN_GPIO_EXPANDER_INTR              GPIO_NUM_3  // GPIO_NUM_46
 #define GPIO_EXPANDER_FREQ_HZ               400000
 
 #define LCD_CLK                             38  // CLK - 5

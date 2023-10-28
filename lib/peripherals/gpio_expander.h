@@ -3,14 +3,23 @@
 
 
 #include "drivers/pca9539_driver.h"
+#include "drivers/pca9539_intr_driver.h"
+
+
+#define EXPANDER_EVT_INTR_QUEUE_SIZE      10
 
 
 class GPIOExpander {
  private:
    pca9539_cfg_t pca9539_cfg;
+   TaskHandle_t pca9539_intr_task_handle;
+   QueueHandle_t pca9539_intr_evt_queue;
 
    void init();
    void deinit();
+   esp_err_t init_evt_intr_queue();
+   void deinit_evt_intr_queue();
+   void start_evt_intr_task();
 
  public:
    GPIOExpander();

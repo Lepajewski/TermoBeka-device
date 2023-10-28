@@ -2,6 +2,7 @@
 
 #include "pca9539_driver.h"
 
+
 static pca9539_port_num pca9539_get_port(pca9539_pin_num pin) {
     if (!(pin & 8)) {
         return PORT_0;
