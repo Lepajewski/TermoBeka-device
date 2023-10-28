@@ -32,9 +32,9 @@ void uiManagerTask(void *pvParameters) {
     expander.set_pin_mode(P0_4, PIN_MODE_INPUT);
     expander.set_pin_mode(P0_5, PIN_MODE_INPUT);
 
-    // expander.set_pin_mode(P1_0, PIN_MODE_OUTPUT);
-    // expander.set_pin_mode(P1_1, PIN_MODE_OUTPUT);
-    // expander.set_pin_mode(P1_2, PIN_MODE_OUTPUT);
+    expander.set_pin_mode(P1_0, PIN_MODE_OUTPUT);
+    expander.set_pin_mode(P1_1, PIN_MODE_OUTPUT);
+    expander.set_pin_mode(P1_2, PIN_MODE_OUTPUT);
 
     // setup buttons
 

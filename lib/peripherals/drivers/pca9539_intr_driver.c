@@ -24,7 +24,7 @@ static esp_err_t pca9539_setup_intr(pca9539_cfg_t *cfg) {
     esp_err_t err = ESP_OK;
     gpio_config_t io_conf = {};
 
-    io_conf.intr_type = GPIO_INTR_ANYEDGE;
+    io_conf.intr_type = GPIO_INTR_NEGEDGE;
     io_conf.pin_bit_mask = (1ULL << cfg->intr_gpio_num);
     io_conf.mode = GPIO_MODE_INPUT;
     io_conf.pull_up_en = GPIO_PULLUP_DISABLE;

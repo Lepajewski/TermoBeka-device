@@ -4,19 +4,16 @@
 
 
 static pca9539_port_num pca9539_get_port(pca9539_pin_num pin) {
-    if (!(pin & 8)) {
-        return PORT_0;
-    }
-    return PORT_1;
+    return ((pin & 0b1000) >> 3);
 }
 
 static uint8_t pca9539_get_pin(pca9539_pin_num pin) {
-    return pin & 0b111;
+    return (pin & 0b111);
 }
 
 static uint8_t pca9539_get_pin_value_from_port_mask(uint8_t port_mask, pca9539_pin_num pin) {
     uint8_t pin_bit = pca9539_get_pin(pin);
-    return (port_mask & (1 << pin_bit)) >> pin_bit;
+    return ((port_mask & (1 << pin_bit)) >> pin_bit);
 }
 
 const char *pca9539_pin_num_to_s(pca9539_pin_num pin) {
@@ -78,8 +75,6 @@ esp_err_t pca9539_set_port_cfg(pca9539_cfg_t *cfg, pca9539_port_num port, uint8_
         return err;
     }
 
-    printf("Port cfg: %u -> %u\n", current_port_cfg, port_cfg);
-
     return i2c_master_write_reg_8(cfg->i2c_port, cfg->addr, PCA9539_REG_CP | port, port_cfg);
 }
 
@@ -132,7 +127,6 @@ esp_err_t pca9539_set_pin_polarity(pca9539_cfg_t *cfg, pca9539_pin_num pin, pca9
         return ESP_OK;
     }
 
-    printf("Port polarity %u -> %u\n", current_port_polarity, port_polarity);
     return i2c_master_write_reg_8(cfg->i2c_port, cfg->addr, PCA9539_REG_CP | pca9539_get_port(chosen_pin), port_polarity);
 }
 
@@ -165,7 +159,7 @@ esp_err_t pca9539_set_pin_mode(pca9539_cfg_t *cfg, pca9539_pin_num pin, pca9539_
         return err;
     }
 
-    return i2c_master_write_reg_8(cfg->i2c_port, cfg->addr, PCA9539_REG_CP | pca9539_get_port(chosen_pin), port_cfg);
+    return i2c_master_write_reg_8(cfg->i2c_port, cfg->addr, PCA9539_REG_CP | pca9539_get_port(pin), port_cfg);
 }
 
 esp_err_t pca9539_get_input_port_state(pca9539_cfg_t *cfg, pca9539_port_num port, uint8_t *state) {
@@ -184,8 +178,6 @@ esp_err_t pca9539_get_input_pin_state(pca9539_cfg_t *cfg, pca9539_pin_num pin, p
     if ((err = pca9539_get_input_port_state(cfg, port, &port_state)) != ESP_OK) {
         return err;
     }
-
-    printf("Port state: %u\n", port_state);
 
     *state = pca9539_get_pin_value_from_port_mask(port_state, pin) == 0 ? PIN_MODE_OUTPUT : PIN_MODE_INPUT;
 
