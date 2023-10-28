@@ -1,5 +1,7 @@
-#include "pca9539_intr_driver.h"
+#include "esp_timer.h"
 #include "logger.h"
+
+#include "pca9539_intr_driver.h"
 
 
 static TaskHandle_t *pca9539_intr_task_handle = NULL;
@@ -45,6 +47,34 @@ static esp_err_t pca9539_setup_intr(pca9539_cfg_t *cfg) {
     return err;
 }
 
+static pca9539_pin_num pca9539_get_pin_from_port_change(pca9539_port_num port_num, uint8_t old_port_state, uint8_t new_port_state) {
+    uint8_t pin_binary = old_port_state ^ new_port_state;
+    uint8_t pos = 0;
+
+    while (!(pin_binary & 1) && (pos < 8)) {
+        pin_binary >>= 1;
+        pos++;
+    }
+
+    return (port_num << 3) | pos;
+}
+
+static pin_change_type pca9539_get_pin_state_from_pin_change(pca9539_pin_num pin_num, uint8_t old_port_state, uint8_t new_port_state) {
+    uint8_t pin = PCA9539_GET_PIN(pin_num);
+    uint8_t pin_mask = 1 << pin;
+
+    uint8_t old_pin_value = (old_port_state & pin_mask) >> pin;
+    uint8_t new_pin_value = (new_port_state & pin_mask) >> pin;
+
+    if (old_pin_value == 0 && new_pin_value == 1) {
+        return PIN_CHANGE_0_TO_1;
+    } else if (old_pin_value == 1 && new_pin_value == 0) {
+        return PIN_CHANGE_1_TO_0;
+    } else {
+        return PIN_NO_CHANGE;
+    }
+}
+
 esp_err_t pca9539_set_intr_task_handle(TaskHandle_t *task_handle) {
     if (task_handle == NULL) {
         return ESP_FAIL;
@@ -68,7 +98,7 @@ esp_err_t pca9539_set_intr_evt_queue(QueueHandle_t *evt_queue) {
 void PCA9539IntrTask(void *pvParameters) {
     pca9539_cfg_t *pca9539_cfg = (pca9539_cfg_t *) pvParameters;
     uint8_t port_state = 0;
-    uint32_t counter = 0;
+    pca9539_intr_evt_t intr_evt;
 
     ESP_ERROR_CHECK(pca9539_setup_intr(pca9539_cfg));
 
@@ -81,7 +111,6 @@ void PCA9539IntrTask(void *pvParameters) {
     TB_LOGI(TAG, "START, cfgpin %u", pca9539_cfg->intr_gpio_num);
 
     ESP_ERROR_CHECK(pca9539_get_input_port_state(pca9539_cfg, PORT_0, &port_state));
-    ESP_ERROR_CHECK(pca9539_get_input_port_state(pca9539_cfg, PORT_1, &port_state));
 
     while (1) {
         uint8_t new_port_state = 0;
@@ -91,9 +120,13 @@ void PCA9539IntrTask(void *pvParameters) {
         // it resets interrupt
         ESP_ERROR_CHECK(pca9539_get_input_port_state(pca9539_cfg, PORT_0, &new_port_state));
 
-        TB_LOGI(TAG, "INTERRUPT %" PRIu32 ", PORT_0 %u -> %u\n", counter, port_state, new_port_state);
+        intr_evt.port_num = PORT_0;
+        intr_evt.pin_num = pca9539_get_pin_from_port_change(PORT_0, port_state, new_port_state);
+        intr_evt.change_type = pca9539_get_pin_state_from_pin_change(intr_evt.pin_num, port_state, new_port_state);
+        intr_evt.timestamp = esp_timer_get_time();
+
+        TB_LOGI(TAG, "INTERRUPT, PORT: %u, PIN: %u, change_type: %u, timestamp: %" PRIu64 "\n", intr_evt.port_num, intr_evt.pin_num, intr_evt.change_type, intr_evt.timestamp);
 
         port_state = new_port_state;
-        counter++;
     }
 }

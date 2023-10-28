@@ -20,6 +20,10 @@
 #define PCA9539_REG_PIP_DEFAULT         0x00
 #define PCA9539_REG_CP_DEFAULT          0xFF
 
+#define PCA9539_GET_PORT(pin) ((pca9539_port_num)(((pin) & 0b1000) >> 3))
+#define PCA9539_GET_PIN(pin) ((uint8_t)((pin) & 0b111))
+#define PCA9539_GET_PIN_VALUE_FROM_PORT_MASK(port_mask, pin) ((uint8_t)(((port_mask) & (1 << PCA9539_GET_PIN(pin))) >> PCA9539_GET_PIN(pin)))
+
 
 typedef enum {
     PORT_0,
@@ -28,7 +32,7 @@ typedef enum {
 
 typedef enum {
     P0_0, P0_1, P0_2, P0_3, P0_4, P0_5, P0_6, P0_7,
-    P1_0, P1_1, P1_2, P1_3, P1_4, P1_5, P1_6, P1_7
+    P1_0, P1_1, P1_2, P1_3, P1_4, P1_5, P1_6, P1_7,
 } pca9539_pin_num;
 
 typedef enum {
