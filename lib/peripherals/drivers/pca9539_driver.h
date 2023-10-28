@@ -16,6 +16,11 @@
 #define PCA9539_REG_PIP                 0x04  // polarity inversion register
 #define PCA9539_REG_CP                  0x06  // configuration register
 
+#define PCA9539_REG_OP_DEFAULT          0xFF
+#define PCA9539_REG_PIP_DEFAULT         0x00
+#define PCA9539_REG_CP_DEFAULT          0xFF
+
+
 typedef enum {
     PORT_0,
     PORT_1
@@ -60,6 +65,8 @@ const char *pca9539_pin_num_to_s(pca9539_pin_num pin);
 esp_err_t pca9539_init(pca9539_cfg_t *cfg);
 esp_err_t pca9539_deinit(i2c_port_t i2c_port);
 
+esp_err_t pca9539_set_default_config(pca9539_cfg_t *cfg);
+
 esp_err_t pca9539_get_port_cfg(pca9539_cfg_t *cfg, pca9539_port_num port, uint8_t *port_cfg);
 esp_err_t pca9539_set_port_cfg(pca9539_cfg_t *cfg, pca9539_port_num port, uint8_t port_cfg);
 
@@ -74,9 +81,11 @@ esp_err_t pca9539_set_pin_mode(pca9539_cfg_t *cfg, pca9539_pin_num pin, pca9539_
 
 esp_err_t pca9539_get_input_port_state(pca9539_cfg_t *cfg, pca9539_port_num port, uint8_t *state);
 esp_err_t pca9539_get_output_port_state(pca9539_cfg_t *cfg, pca9539_port_num port, uint8_t *state);
+esp_err_t pca9539_set_output_port_state(pca9539_cfg_t *cfg, pca9539_port_num port, uint8_t state);
 
 esp_err_t pca9539_get_input_pin_state(pca9539_cfg_t *cfg, pca9539_pin_num pin, pca9539_pin_state *state);
 esp_err_t pca9539_get_output_pin_state(pca9539_cfg_t *cfg, pca9539_pin_num pin, pca9539_pin_state *state);
+esp_err_t pca9539_set_output_pin_state(pca9539_cfg_t *cfg, pca9539_pin_num pin, pca9539_pin_state state);
 
 
 #ifdef __cplusplus

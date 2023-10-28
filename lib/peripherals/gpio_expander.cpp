@@ -53,6 +53,9 @@ void GPIOExpander::init() {
     // notify intr task that i2c is configured
     xTaskNotifyGive(this->pca9539_intr_task_handle);
 
+    // set expander registers to default value since there is not RST option
+    ESP_ERROR_CHECK(pca9539_set_default_config(&this->pca9539_cfg));
+
     // set pin polarity
     set_polarity();
 }

@@ -58,6 +58,36 @@ esp_err_t pca9539_deinit(i2c_port_t i2c_port) {
     return err;
 }
 
+esp_err_t pca9539_set_default_config(pca9539_cfg_t *cfg) {
+    esp_err_t err = ESP_OK;
+
+    if ((err = pca9539_set_output_port_state(cfg, PORT_0, PCA9539_REG_OP_DEFAULT)) != ESP_OK) {
+        return err;
+    }
+
+    if ((err = pca9539_set_output_port_state(cfg, PORT_1, PCA9539_REG_OP_DEFAULT)) != ESP_OK) {
+        return err;
+    }
+
+    if ((err = pca9539_set_port_polarity(cfg, PORT_0, PCA9539_REG_PIP_DEFAULT)) != ESP_OK) {
+        return err;
+    }
+
+    if ((err = pca9539_set_port_polarity(cfg, PORT_1, PCA9539_REG_PIP_DEFAULT)) != ESP_OK) {
+        return err;
+    }
+
+    if ((err = pca9539_set_port_cfg(cfg, PORT_0, PCA9539_REG_CP_DEFAULT)) != ESP_OK) {
+        return err;
+    }
+
+    if ((err = pca9539_set_port_cfg(cfg, PORT_1, PCA9539_REG_CP_DEFAULT)) != ESP_OK) {
+        return err;
+    }
+
+    return err;
+}
+
 esp_err_t pca9539_get_port_cfg(pca9539_cfg_t *cfg, pca9539_port_num port, uint8_t *port_cfg) {
     return i2c_master_read_reg_8(cfg->i2c_port, cfg->addr, PCA9539_REG_CP | port, port_cfg);
 }
@@ -170,6 +200,22 @@ esp_err_t pca9539_get_output_port_state(pca9539_cfg_t *cfg, pca9539_port_num por
     return i2c_master_read_reg_8(cfg->i2c_port, cfg->addr, PCA9539_REG_OP | port, state);
 }
 
+esp_err_t pca9539_set_output_port_state(pca9539_cfg_t *cfg, pca9539_port_num port, uint8_t state) {
+    esp_err_t err = ESP_OK;
+    uint8_t current_state = 0;
+
+    if ((err = pca9539_get_output_port_state(cfg, port, &current_state)) != ESP_OK) {
+        return err;
+    }
+
+    // no change
+    if (current_state == state) {
+        return err;
+    }
+
+    return i2c_master_write_reg_8(cfg->i2c_port, cfg->addr, PCA9539_REG_OP | port, state);
+}
+
 esp_err_t pca9539_get_input_pin_state(pca9539_cfg_t *cfg, pca9539_pin_num pin, pca9539_pin_state *state) {
     esp_err_t err = ESP_OK;
     pca9539_port_num port = pca9539_get_port(pin);
@@ -194,4 +240,23 @@ esp_err_t pca9539_get_output_pin_state(pca9539_cfg_t *cfg, pca9539_pin_num pin, 
     }
 
     return pca9539_get_pin_value_from_port_mask(port_state, pin);
+}
+
+esp_err_t pca9539_set_output_pin_state(pca9539_cfg_t *cfg, pca9539_pin_num pin, pca9539_pin_state state) {
+    esp_err_t err = ESP_OK;
+    uint8_t current_port_cfg = 0;
+    uint8_t chosen_pin = pca9539_get_pin(pin);
+
+    if ((err = pca9539_get_output_port_state(cfg, chosen_pin, &current_port_cfg)) != ESP_OK) {
+        return err;
+    }
+
+    uint8_t port_cfg = (current_port_cfg & ~(1 << chosen_pin)) | (state << chosen_pin);
+
+    // no change
+    if (current_port_cfg == port_cfg) {
+        return err;
+    }
+
+    return i2c_master_write_reg_8(cfg->i2c_port, cfg->addr, PCA9539_REG_OP | pca9539_get_port(pin), port_cfg);
 }
