@@ -37,17 +37,20 @@ typedef enum {
 
 typedef enum {
     PIN_POLARITY_NORMAL,
-    PIN_POLARITY_INVERSE
+    PIN_POLARITY_INVERSE,
+    PIN_POLARITY_UNKNOWN
 } pca9539_polarity;
 
 typedef enum {
     PIN_MODE_OUTPUT,
-    PIN_MODE_INPUT
+    PIN_MODE_INPUT,
+    PIN_MODE_UNKNOWN
 } pca9539_pin_mode;
 
 typedef enum {
     PIN_STATE_LOW,
-    PIN_STATE_HIGH
+    PIN_STATE_HIGH,
+    PIN_STATE_UNKNOWN
 } pca9539_pin_state;
 
 

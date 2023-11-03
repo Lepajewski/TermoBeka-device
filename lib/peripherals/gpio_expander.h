@@ -4,42 +4,50 @@
 
 #include "drivers/pca9539_driver.h"
 #include "drivers/pca9539_intr_driver.h"
+#include "expander_controller.h"
+#include "button.h"
 
 
 #define EXPANDER_EVT_INTR_QUEUE_SIZE      10
+#define USED_BUTTONS                      6
+#define USED_LEDS                         3
 
 
 class GPIOExpander {
  private:
-   pca9539_cfg_t pca9539_cfg;
-   TaskHandle_t pca9539_intr_task_handle;
-   QueueHandle_t pca9539_intr_evt_queue;
+    friend class Button;
 
-   void init();
-   void deinit();
-   esp_err_t init_evt_intr_queue();
-   void deinit_evt_intr_queue();
-   void start_evt_intr_task();
+    pca9539_cfg_t config;
+    TaskHandle_t intr_task_handle;
+    QueueHandle_t intr_evt_queue;
+
+    ExpanderController controller;
+    Button buttons[USED_BUTTONS] = {
+        Button(controller, PIN_POLARITY_INVERSE, P0_0),
+        Button(controller, PIN_POLARITY_INVERSE, P0_1),
+        Button(controller, PIN_POLARITY_INVERSE, P0_2),
+        Button(controller, PIN_POLARITY_INVERSE, P0_3),
+        Button(controller, PIN_POLARITY_INVERSE, P0_4),
+        Button(controller, PIN_POLARITY_INVERSE, P0_5),
+   };
+
+    esp_err_t init_evt_intr_queue();
+    void deinit_evt_intr_queue();
+    void start_evt_intr_task();
+    void process_intr_event(pca9539_intr_evt_t *intr_evt);
+    void setup_buttons();
 
  public:
-   GPIOExpander();
-   GPIOExpander(pca9539_cfg_t *pca9539_cfg);
-   ~GPIOExpander();
+    GPIOExpander();
+    GPIOExpander(pca9539_cfg_t *pca9539_cfg);
+    ~GPIOExpander();
 
-   void begin();
-   void end();
+    void begin();
+    void end();
 
-   void set_polarity();
-   void setup_buttons();
-
-   pca9539_pin_mode get_pin_mode(pca9539_pin_num pin);
-   void set_pin_mode(pca9539_pin_num pin, pca9539_pin_mode mode);
-
-   pca9539_pin_state get_input_pin_state(pca9539_pin_num pin);
-   pca9539_pin_state set_input_pin_state(pca9539_pin_num pin);
-   pca9539_pin_state get_output_pin_state(pca9539_pin_num pin);
-   pca9539_pin_state set_output_pin_state(pca9539_pin_num pin);
+    
    
+    void poll_intr_events();
 };
 
 #endif  // LIB_PERIPHERALS_GPIO_EXPANDER_H_

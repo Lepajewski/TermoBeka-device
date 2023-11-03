@@ -104,11 +104,7 @@ void PCA9539IntrTask(void *pvParameters) {
 
     ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
 
-    // while (pca9539_intr_evt_queue == NULL) {
-    //     vTaskDelay(pdMS_TO_TICKS(1));
-    // }
-
-    TB_LOGI(TAG, "START, cfgpin %u", pca9539_cfg->intr_gpio_num);
+    TB_LOGI(TAG, "START, intrpin %u", pca9539_cfg->intr_gpio_num);
 
     ESP_ERROR_CHECK(pca9539_get_input_port_state(pca9539_cfg, PORT_0, &port_state));
 
@@ -125,7 +121,12 @@ void PCA9539IntrTask(void *pvParameters) {
         intr_evt.change_type = pca9539_get_pin_state_from_pin_change(intr_evt.pin_num, port_state, new_port_state);
         intr_evt.timestamp = esp_timer_get_time();
 
-        TB_LOGI(TAG, "INTERRUPT, PORT: %u, PIN: %u, change_type: %u, timestamp: %" PRIu64 "\n", intr_evt.port_num, intr_evt.pin_num, intr_evt.change_type, intr_evt.timestamp);
+        // TB_LOGI(TAG, "INTERRUPT, PORT: %u, PIN: %u, change_type: %u, timestamp: %" PRIu64 "\n", intr_evt.port_num, intr_evt.pin_num, intr_evt.change_type, intr_evt.timestamp);
+
+        // send event to intr queue
+        if (pca9539_intr_evt_queue != NULL) {
+            xQueueSend(*pca9539_intr_evt_queue, (void *) &intr_evt, pdMS_TO_TICKS(10));
+        }
 
         port_state = new_port_state;
     }

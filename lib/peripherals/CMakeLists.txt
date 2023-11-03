@@ -5,6 +5,9 @@ idf_component_register(
         "drivers/i2c_wrapper.c"
         "drivers/pca9539_driver.c"
         "drivers/pca9539_intr_driver.c"
+        "pin.cpp"
+        "pin_input.cpp"
+        "expander_controller.cpp"
         "gpio_expander.cpp"
     PRIV_REQUIRES
         "driver/gpio"

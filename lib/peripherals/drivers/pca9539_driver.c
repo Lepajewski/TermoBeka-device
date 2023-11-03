@@ -144,7 +144,7 @@ esp_err_t pca9539_set_pin_polarity(pca9539_cfg_t *cfg, pca9539_pin_num pin, pca9
         return ESP_OK;
     }
 
-    return i2c_master_write_reg_8(cfg->i2c_port, cfg->addr, PCA9539_REG_CP | PCA9539_GET_PORT(chosen_pin), port_polarity);
+    return i2c_master_write_reg_8(cfg->i2c_port, cfg->addr, PCA9539_REG_PIP | PCA9539_GET_PORT(chosen_pin), port_polarity);
 }
 
 esp_err_t pca9539_get_pin_mode(pca9539_cfg_t *cfg, pca9539_pin_num pin, pca9539_pin_mode *pin_mode) {
