@@ -84,9 +84,18 @@ void GPIOExpander::process_intr_event(pca9539_intr_evt_t *intr_evt) {
 }
 
 void GPIOExpander::setup_buttons() {
-    for (auto b : buttons) {
+    for (auto b : this->buttons) {
         ESP_ERROR_CHECK(b.setup());
     }
+}
+
+Button *GPIOExpander::lookup_button(pca9539_pin_num num){
+    for (auto &b : this->buttons) {
+        if (num == b.get_pin_num()) {
+            return &b;
+        }
+    }
+    return nullptr;
 }
 
 void GPIOExpander::poll_intr_events() {
@@ -95,6 +104,10 @@ void GPIOExpander::poll_intr_events() {
     while (uxQueueMessagesWaiting(this->intr_evt_queue)) {
         if (xQueueReceive(this->intr_evt_queue, &intr_evt, pdMS_TO_TICKS(10) == pdPASS)) {
             TB_LOGI(TAG, "INTR EVENT, PORT: %u, PIN: %u, change_type: %u, timestamp: %" PRIu64, intr_evt.port_num, intr_evt.pin_num, intr_evt.change_type, intr_evt.timestamp);
+            Button *b = lookup_button(intr_evt.pin_num);
+            if (b != nullptr) {
+                b->process_event(intr_evt.change_type, intr_evt.timestamp);
+            }
         } else {
             TB_LOGE(TAG, "FAIL to receive from intr queue");
         }

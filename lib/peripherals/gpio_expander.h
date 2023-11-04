@@ -36,10 +36,11 @@ class GPIOExpander {
     void start_evt_intr_task();
     void process_intr_event(pca9539_intr_evt_t *intr_evt);
     void setup_buttons();
+    Button *lookup_button(pca9539_pin_num num);
 
  public:
     GPIOExpander();
-    GPIOExpander(pca9539_cfg_t *pca9539_cfg);
+    GPIOExpander(pca9539_cfg_t *config);
     ~GPIOExpander();
 
     void begin();
