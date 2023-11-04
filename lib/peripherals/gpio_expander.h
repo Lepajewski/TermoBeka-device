@@ -4,6 +4,7 @@
 
 #include "drivers/pca9539_driver.h"
 #include "drivers/pca9539_intr_driver.h"
+#include "ui_manager.h"
 #include "expander_controller.h"
 #include "button.h"
 
@@ -14,9 +15,7 @@
 
 
 class GPIOExpander {
- private:
-    friend class Button;
-
+ private:   
     pca9539_cfg_t config;
     TaskHandle_t intr_task_handle;
     QueueHandle_t intr_evt_queue;
@@ -38,6 +37,7 @@ class GPIOExpander {
     void setup_buttons();
     Button *lookup_button(pca9539_pin_num num);
 
+   std::function<void(Button*, PressType)> button_callback;
  public:
     GPIOExpander();
     GPIOExpander(pca9539_cfg_t *config);
@@ -46,9 +46,8 @@ class GPIOExpander {
     void begin();
     void end();
 
-    
-   
     void poll_intr_events();
+    void set_callback(std::function<void(Button*, PressType)> cb);
 };
 
 #endif  // LIB_PERIPHERALS_GPIO_EXPANDER_H_

@@ -139,8 +139,6 @@ esp_err_t pca9539_set_pin_polarity(pca9539_cfg_t *cfg, pca9539_pin_num pin, pca9
 
     uint8_t port_polarity = (current_port_polarity & ~(1 << chosen_pin)) | (polarity << chosen_pin);
 
-    printf("PORT POLARITY: %u %u\n", current_port_polarity, port_polarity);
-
     // no change
     if (current_port_polarity == port_polarity) {
         return ESP_OK;

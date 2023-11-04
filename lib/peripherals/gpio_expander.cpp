@@ -84,8 +84,9 @@ void GPIOExpander::process_intr_event(pca9539_intr_evt_t *intr_evt) {
 }
 
 void GPIOExpander::setup_buttons() {
-    for (auto b : this->buttons) {
+    for (auto &b : this->buttons) {
         ESP_ERROR_CHECK(b.setup());
+        b.set_callback(this->button_callback);
     }
 }
 
@@ -114,4 +115,7 @@ void GPIOExpander::poll_intr_events() {
     }
 }
 
+void GPIOExpander::set_callback(std::function<void(Button*, PressType)> cb) {
+    this->button_callback = cb;
+}
 

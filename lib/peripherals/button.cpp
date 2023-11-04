@@ -36,12 +36,16 @@ void Button::release(uint64_t timestamp) {
     
     if (hold_time <= BUTTON_MIN_VALID_PRESS_TIME_MS) {
         printf("PRESS TOO SHORT\n");
+        this->callback(this, PressType::INVALID_PRESS);
     } else if (hold_time <= BUTTON_MAX_SHORT_PRESS_TIME_MS) {
         printf("SHORT PRESS DETECTED\n");
+        this->callback(this, PressType::SHORT_PRESS);
     } else if (hold_time <= BUTTON_MAX_LONG_PRESS_TIME_MS) {
         printf("LONG PRESS DETECTED\n");
+        this->callback(this, PressType::LONG_PRESS);
     } else {
         printf("PRESS TOO LONG\n");
+        this->callback(this, PressType::INVALID_PRESS);
     }
 }
 
@@ -57,4 +61,8 @@ void Button::process_event(pin_change_type change, uint64_t timestamp) {
         default:
             break;
     }
+}
+
+void Button::set_callback(std::function<void(Button*, PressType)> cb) {
+    this->callback = cb;
 }
