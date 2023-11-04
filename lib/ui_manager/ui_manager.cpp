@@ -17,6 +17,8 @@ UIManager::~UIManager() {
 void UIManager::button_callback(Button *button, PressType type) {
     TB_LOGI(TAG, "BUTTON %u, %u", button->get_pin_num(), type);
 
+    this->buzzer.beep(50);
+
     // process event
 }
 

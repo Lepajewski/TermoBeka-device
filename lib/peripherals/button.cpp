@@ -35,16 +35,12 @@ void Button::release(uint64_t timestamp) {
     uint64_t hold_time = (uint64_t) ((timestamp - this->last_press_timestamp) / 1000);
     
     if (hold_time <= BUTTON_MIN_VALID_PRESS_TIME_MS) {
-        printf("PRESS TOO SHORT\n");
         this->callback(this, PressType::INVALID_PRESS);
     } else if (hold_time <= BUTTON_MAX_SHORT_PRESS_TIME_MS) {
-        printf("SHORT PRESS DETECTED\n");
         this->callback(this, PressType::SHORT_PRESS);
     } else if (hold_time <= BUTTON_MAX_LONG_PRESS_TIME_MS) {
-        printf("LONG PRESS DETECTED\n");
         this->callback(this, PressType::LONG_PRESS);
     } else {
-        printf("PRESS TOO LONG\n");
         this->callback(this, PressType::INVALID_PRESS);
     }
 }
