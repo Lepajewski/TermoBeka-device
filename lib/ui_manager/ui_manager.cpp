@@ -85,9 +85,8 @@ void UIManager::setup() {
     // setup GPIO expander
     this->expander->set_callback(std::bind(&UIManager::button_callback, this, std::placeholders::_1, std::placeholders::_2));
 
+    // setup BUTTONS & LEDS
     this->expander->begin();
-
-    // setup BUZZER & LEDS
 
     // setup LCD
     this->lcd.begin();
