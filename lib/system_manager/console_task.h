@@ -10,4 +10,5 @@ extern SystemManager sysMgr;
 
 void consoleTask(void *pvParameters);
 
+
 #endif  // LIB_SYSTEM_MANAGER_CONSOLE_TASK_H_

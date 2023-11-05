@@ -11,11 +11,8 @@ const char * const TAG = "SysMgrTask";
 void systemManagerTask(void *pvParameters) {
     TB_LOGI(TAG, "start");
 
-    // TB_LOGI(TAG, "configure UART");
-    // sysMgr.configure_uart();
-
-    TB_LOGI(TAG, "init console");
     sysMgr.init_console();
+    TB_LOGI(TAG, "init console");
 
 
     while (1) {

@@ -4,7 +4,6 @@
 
 #include "drivers/pca9539_driver.h"
 #include "drivers/pca9539_intr_driver.h"
-#include "ui_manager.h"
 #include "expander_controller.h"
 #include "button.h"
 #include "led.h"

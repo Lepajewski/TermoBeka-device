@@ -2,6 +2,7 @@
 #define LIB_UI_MANAGER_UI_MANAGER_H_
 
 
+#include "tb_event.h"
 #include "gpio_expander.h"
 #include "button.h"
 #include "buzzer.h"
@@ -13,12 +14,16 @@ class GPIOExpander;
 
 class UIManager {
  private:
+    QueueHandle_t *event_queue_handle;
+    QueueHandle_t *ui_queue_handle;
     GPIOExpander *expander;
     Buzzer buzzer;
     LCDController lcd;
 
 
     void button_callback(Button* button, PressType type);
+    void process_ui_event(UIEvent *evt);
+    void poll_ui_events();
  public:
     UIManager();
     ~UIManager();

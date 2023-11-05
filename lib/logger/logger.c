@@ -1,7 +1,6 @@
 #include "logger.h"
 
 
-
 const char* log_level_to_s(esp_log_level_t level) {
     switch (level) {
         case ESP_LOG_NONE: return "NONE";

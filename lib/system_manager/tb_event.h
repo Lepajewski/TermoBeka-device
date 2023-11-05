@@ -3,71 +3,89 @@
 
 #include <inttypes.h>
 
-#define MAX_EVENT_PAYLOAD       100  // bytes
-#define EVENT_QUEUE_LENGTH      20
+#define EVENT_QUEUE_MAX_PAYLOAD         100  // bytes
+#define EVENT_QUEUE_SIZE                20
+
+#define UI_QUEUE_SIZE                   EVENT_QUEUE_SIZE
+#define UI_QUEUE_MAX_PAYLOAD            EVENT_QUEUE_MAX_PAYLOAD
 
 
-typedef enum {
-    ORIGIN_MAIN,
-    ORIGIN_SYSTEM_MANAGER,
-    ORIGIN_CONSOLE,
-    ORIGIN_UI,
-    ORIGIN_SERVER,
-    ORIGIN_SD,
-    ORIGIN_PROFILE_CONTROLLER,
-    ORIGIN_UNKNOWN,
-    ORIGIN_NONE,
-} tb_event_origin;
+enum class EventOrigin {
+    MAIN,
+    SYSTEM_MANAGER,
+    CONSOLE,
+    UI,
+    SERVER,
+    SD,
+    PROFILE_CONTROLLER,
+    UNKNOWN,
+    NONE,
+};
 
-typedef enum {
-    TYPE_WIFI_SCAN,
-    TYPE_WIFI_CONNECTED,
-    TYPE_WIFI_DISCONNECTED,
-    TYPE_WIFI_GOT_IP,
-    TYPE_WIFI_GOT_TIME,
+enum class EventType {
+    WIFI_SCAN,
+    WIFI_CONNECTED,
+    WIFI_DISCONNECTED,
+    WIFI_GOT_IP,
+    WIFI_GOT_TIME,
 
-    TYPE_MQTT_CONNECTED,
-    TYPE_MQTT_DISCONNECTED,
-    TYPE_MQTT_DATA_SEND,
+    MQTT_CONNECTED,
+    MQTT_DISCONNECTED,
+    MQTT_DATA_SEND,
 
-    TYPE_ERROR_INIT_CONFIG,
-    TYPE_ERROR_INIT_WIFI,
-    TYPE_ERROR_INIT_TASK,
-    TYPE_ERROR_INIT_QUEUE,
-    TYPE_ERROR_INIT_PERIPHERAL,
-    TYPE_ERROR_OTHER,
+    ERROR_INIT_CONFIG,
+    ERROR_INIT_WIFI,
+    ERROR_INIT_TASK,
+    ERROR_INIT_QUEUE,
+    ERROR_INIT_PERIPHERAL,
+    ERROR_OTHER,
 
-    TYPE_UI_PROFILES_LOAD,
-    TYPE_UI_PROFILE_CHOSEN,
-    TYPE_UI_PROFILE_PREVIEW,
-    TYPE_UI_PROFILE_START,
-    TYPE_UI_PROFILE_STOP,
+    UI_BUTTON_PRESS,
+    UI_PROFILES_LOAD,
+    UI_PROFILE_CHOSEN,
+    UI_PROFILE_PREVIEW,
+    UI_PROFILE_START,
+    UI_PROFILE_STOP,
 
-    TYPE_SD_CONFIG_LOAD,
-    TYPE_SD_PROFILE_LIST,
-    TYPE_SD_PROFILE_LOAD,
-    TYPE_SD_PROFILE_DELETE,
-    TYPE_SD_LOG,
+    SD_CONFIG_LOAD,
+    SD_PROFILE_LIST,
+    SD_PROFILE_LOAD,
+    SD_PROFILE_DELETE,
+    SD_LOG,
 
-    TYPE_PROFILE_CONTROLLER_STATUS_UPDATE,
+    PROFILE_CONTROLLER_STATUS_UPDATE,
 
-    TYPE_SERVER_CONNECTED,
-    TYPE_SERVER_DISCONNECTED,
-    TYPE_SERVER_PROFILE_DOWNLOAD,
+    SERVER_CONNECTED,
+    SERVER_DISCONNECTED,
+    SERVER_PROFILE_DOWNLOAD,
 
-    TYPE_CONSOLE_COMMAND,
+    CONSOLE_COMMAND,
 
-    TYPE_UNKNOWN,
-    TYPE_NONE,
-} tb_event_type;
+    UNKNOWN,
+    NONE,
+};
 
 typedef struct {
-    tb_event_origin origin;
-    tb_event_type type;
-    uint8_t payload[MAX_EVENT_PAYLOAD];
-} tb_event_t;
+    EventOrigin origin;
+    EventType type;
+    uint8_t payload[EVENT_QUEUE_MAX_PAYLOAD];
+} Event;
 
-const char *event_origin_to_s(tb_event_origin origin);
-const char *event_type_to_s(tb_event_type type);
+const char *event_origin_to_s(EventOrigin origin);
+const char *event_type_to_s(EventType type);
+
+
+enum class UIEventType {
+    BUZZER_BEEP,
+    ERROR_SHOW,
+    NONE
+};
+
+typedef struct {
+    EventOrigin origin;
+    UIEventType type;
+    uint8_t payload[UI_QUEUE_MAX_PAYLOAD];
+} UIEvent;
+
 
 #endif  // LIB_SYSTEM_MANAGER_TB_EVENT_H_

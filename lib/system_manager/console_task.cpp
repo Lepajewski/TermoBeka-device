@@ -28,18 +28,18 @@ void consoleTask(void *pvParameters) {
             continue;
         }
 
-        tb_event_t evt;
-        evt.origin = ORIGIN_CONSOLE;
-        evt.type = TYPE_CONSOLE_COMMAND;
+        Event evt;
+        evt.origin = EventOrigin::CONSOLE;
+        evt.type = EventType::CONSOLE_COMMAND;
 
-        if (strlen(line) + 1 < MAX_EVENT_PAYLOAD) {
+        if (strlen(line) + 1 < EVENT_QUEUE_MAX_PAYLOAD) {
             memcpy(evt.payload, line, strlen(line) + 1);
         }
 
         TB_LOGI(TAG, "send command");
 
         if (xQueueSend(*event_queue_handle, &evt, portMAX_DELAY) != pdTRUE) {
-            TB_LOGI(TAG, "cmd event send fail");
+            TB_LOGE(TAG, "cmd event send fail");
         }
 
         /* linenoise allocates line buffer on the heap, so need to free it */

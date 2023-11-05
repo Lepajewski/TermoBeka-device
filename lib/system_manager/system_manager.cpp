@@ -39,7 +39,7 @@ SystemManager::SystemManager() {
         .hint_bold = 0,
     };
 
-    init_event_queue();
+    init_queues();
 }
 
 SystemManager::SystemManager(uart_port_t uart_num, const char *prompt_str) {
@@ -55,7 +55,7 @@ SystemManager::SystemManager(uart_port_t uart_num, const char *prompt_str) {
         .hint_bold = 0,
     };
 
-    init_event_queue();
+    init_queues();
 }
 
 SystemManager::SystemManager(uart_port_t uart_num, const char *prompt_str, esp_console_config_t config) {
@@ -63,54 +63,24 @@ SystemManager::SystemManager(uart_port_t uart_num, const char *prompt_str, esp_c
     this->prompt_str = prompt_str;
     this->esp_console_config = config;
 
-    init_event_queue();
+    init_queues();
 }
 
 SystemManager::~SystemManager() {
     deinit_console();
 }
 
-void SystemManager::init_event_queue() {
-    this->event_queue_handle = xQueueCreate(EVENT_QUEUE_LENGTH, sizeof(tb_event_t));
+void SystemManager::init_queues() {
+    this->event_queue_handle = xQueueCreate(EVENT_QUEUE_SIZE, sizeof(Event));
+    this->ui_queue_handle = xQueueCreate(UI_QUEUE_SIZE, sizeof(Event));
 
-    if (this->event_queue_handle == NULL) {
-        TB_LOGE(TAG, "event queue init fail. Restarting...");
+    if (this->event_queue_handle == NULL ||
+        this->ui_queue_handle == NULL) {
+        TB_LOGE(TAG, "queues init fail. Restarting...");
         vTaskDelay(pdMS_TO_TICKS(2000));
         fflush(stdout);
         esp_restart();
     }
-}
-
-void SystemManager::configure_uart() {
-    fflush(stdout);
-    fsync(fileno(stdout));
-
-    setvbuf(stdin, NULL, _IONBF, 0);
-
-    esp_vfs_dev_uart_port_set_rx_line_endings(this->uart_num, ESP_LINE_ENDINGS_CR);
-    esp_vfs_dev_uart_port_set_tx_line_endings(this->uart_num, ESP_LINE_ENDINGS_CRLF);
-
-    /* Configure UART. Note that REF_TICK is used so that the baud rate remains
-     * correct while APB frequency is changing in light sleep mode.
-     */
-    const uart_config_t uart_config = {
-        .baud_rate = CONFIG_ESP_CONSOLE_UART_BAUDRATE,
-        .data_bits = UART_DATA_8_BITS,
-        .parity = UART_PARITY_DISABLE,
-        .stop_bits = UART_STOP_BITS_1,
-        .flow_ctrl = UART_HW_FLOWCTRL_DISABLE,
-        .rx_flow_ctrl_thresh = 0,
-#if SOC_UART_SUPPORT_REF_TICK
-        .source_clk = UART_SCLK_REF_TICK,
-#elif SOC_UART_SUPPORT_XTAL_CLK
-        .source_clk = UART_SCLK_XTAL,
-#endif
-    };
-
-    ESP_ERROR_CHECK(uart_driver_install(this->uart_num, UART_BUF_SIZE, 0, 0, NULL, 0));
-    ESP_ERROR_CHECK(uart_param_config(this->uart_num, &uart_config));
-
-    esp_vfs_dev_uart_use_driver(this->uart_num);
 }
 
 void SystemManager::init_console() {
@@ -182,21 +152,26 @@ void SystemManager::deinit_console() {
 }
 
 void SystemManager::poll_event() {
-    tb_event_t evt;
+    Event evt;
 
     if (xQueueReceive(this->event_queue_handle, &evt, portMAX_DELAY) == pdPASS) {
         TB_LOGI(TAG, "new event: %s, type: %s", event_origin_to_s(evt.origin), event_type_to_s(evt.type));
         TB_LOGI(TAG, "new event: %d, type: %d", evt.origin, evt.type);
 
         switch (evt.type) {
-            case TYPE_CONSOLE_COMMAND:
+            case EventType::CONSOLE_COMMAND:
             {
                 TB_LOGI(TAG, "command: %s", reinterpret_cast<char *>(evt.payload));
 
                 process_command(reinterpret_cast<char *>(evt.payload));
                 break;
             }
-            case TYPE_UNKNOWN:
+            case EventType::UI_BUTTON_PRESS:
+            {
+                TB_LOGI(TAG, "button: %u", evt.payload[0]);
+                break;
+            }
+            case EventType::UNKNOWN:
             default:
             {
                 TB_LOGI(TAG, "unknown event");
@@ -229,11 +204,14 @@ void SystemManager::process_command(char *cmd) {
     }
 
     /* linenoise allocates line buffer on the heap, so need to free it */
-    // linenoiseFree(cmd);
 }
 
 QueueHandle_t *SystemManager::get_event_queue() {
     return &this->event_queue_handle;
+}
+
+QueueHandle_t *SystemManager::get_ui_queue() {
+    return &this->ui_queue_handle;
 }
 
 const esp_console_cmd_t SystemManager::system_commands[] = {
@@ -336,6 +314,26 @@ const esp_console_cmd_t SystemManager::system_commands[] = {
         NULL,
         [](int argc, char **argv) -> int {
             TB_ACK(TAG, "set log level");
+            return ESP_OK;
+        },
+        NULL
+    },
+    {
+        "beep",
+        "Beep the buzzer for 500 ms",
+        NULL,
+        [](int argc, char **argv) -> int {
+            TB_ACK(TAG, "beep");
+
+            QueueHandle_t *queue = sysMgr.get_ui_queue();
+            UIEvent evt;
+            evt.type = UIEventType::BUZZER_BEEP;
+            evt.payload[0] = 123;
+
+            if (xQueueSend(*queue, &evt, portMAX_DELAY) != pdTRUE) {
+                TB_LOGE(TAG, "cmd ui event send fail");
+            }
+
             return ESP_OK;
         },
         NULL

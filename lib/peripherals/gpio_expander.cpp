@@ -142,5 +142,5 @@ void GPIOExpander::set_callback(std::function<void(Button*, PressType)> cb) {
 
 void GPIOExpander::set_backlight_color(Color color) {
     this->leds->set_color(color);
-    TB_LOGI(TAG, "BL Color set to: %u", color);
+    // TB_LOGI(TAG, "BL Color set to: %u", color);
 }

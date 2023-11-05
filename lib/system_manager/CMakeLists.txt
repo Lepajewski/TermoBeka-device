@@ -4,5 +4,12 @@ idf_component_register(
         "console_task.cpp"
         "system_manager.cpp"
         "system_manager_task.cpp"
-        "system_command.cpp"
+    INCLUDE_DIRS
+        "."
+    REQUIRES
+        driver/uart
+        esp_console
+        esp_flash
+        linenoise
+        logger
 )
