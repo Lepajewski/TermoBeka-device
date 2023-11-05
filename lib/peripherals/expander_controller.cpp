@@ -29,7 +29,9 @@ initialized(false)
     this->config = config;
 }
 
-ExpanderController::~ExpanderController() {}
+ExpanderController::~ExpanderController() {
+    end();
+}
 
 void ExpanderController::begin() {
     if (!this->initialized) {
@@ -44,7 +46,7 @@ void ExpanderController::begin() {
 }
 
 void ExpanderController::end() {
-    if (initialized) {
+    if (this->initialized) {
         ESP_ERROR_CHECK(pca9539_deinit(this->config.i2c_port));
         this->initialized = false;
     }

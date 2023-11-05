@@ -4,6 +4,7 @@
 
 #include "ui_manager.h"
 #include "ui_manager_task.h"
+#include "lcd_controller.h"
 
 
 const char * const TAG = "UIMgrTask";
