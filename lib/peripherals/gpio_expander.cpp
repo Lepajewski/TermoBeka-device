@@ -28,6 +28,13 @@ GPIOExpander::GPIOExpander() {
     this->intr_evt_queue = NULL;
 
     this->controller = ExpanderController(this->config);
+
+    led_pins_t led_pins = {
+        .red = P1_0,
+        .green = P1_1,
+        .blue = P1_2
+    };
+    this->leds = new LED(this->controller, PIN_POLARITY_NORMAL, led_pins);
 }
 
 GPIOExpander::GPIOExpander(pca9539_cfg_t *config) {
@@ -35,6 +42,12 @@ GPIOExpander::GPIOExpander(pca9539_cfg_t *config) {
     this->intr_task_handle = NULL;
     this->intr_evt_queue = NULL;
     this->controller = ExpanderController(this->config);
+    led_pins_t led_pins = {
+        .red = P1_0,
+        .green = P1_1,
+        .blue = P1_2
+    };
+    this->leds = new LED(this->controller, PIN_POLARITY_NORMAL, led_pins);
 }
 
 GPIOExpander::~GPIOExpander() {
@@ -55,11 +68,15 @@ void GPIOExpander::begin() {
     // setup buttons
     setup_buttons();
 
+    // setup leds
+    setup_leds();
+
     // notify intr task that i2c is configured
     xTaskNotifyGive(this->intr_task_handle);
 }
 
 void GPIOExpander::end() {
+    delete leds;
     controller.end();
     deinit_evt_intr_queue();
 }
@@ -88,6 +105,10 @@ void GPIOExpander::setup_buttons() {
         ESP_ERROR_CHECK(b.setup());
         b.set_callback(this->button_callback);
     }
+}
+
+void GPIOExpander::setup_leds() {
+    ESP_ERROR_CHECK(this->leds->setup());
 }
 
 Button *GPIOExpander::lookup_button(pca9539_pin_num num){
@@ -119,3 +140,7 @@ void GPIOExpander::set_callback(std::function<void(Button*, PressType)> cb) {
     this->button_callback = cb;
 }
 
+void GPIOExpander::set_backlight_color(Color color) {
+    this->leds->set_color(color);
+    TB_LOGI(TAG, "BL Color set to: %u", color);
+}

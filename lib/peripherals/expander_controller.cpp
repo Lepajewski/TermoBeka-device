@@ -24,7 +24,7 @@ ExpanderController::ExpanderController() :
 }
 
 ExpanderController::ExpanderController(pca9539_cfg_t config) :
-initialized(false)
+    initialized(false)
 {
     this->config = config;
 }
@@ -72,4 +72,8 @@ esp_err_t ExpanderController::setup_pin(pca9539_polarity polarity, pca9539_pin_n
     }
 
     return err;
+}
+
+esp_err_t ExpanderController::set_output_pin_state(pca9539_pin_num pin, pca9539_pin_state state) {
+    return pca9539_set_output_pin_state(&this->config, pin, state);
 }

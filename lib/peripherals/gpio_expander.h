@@ -7,11 +7,15 @@
 #include "ui_manager.h"
 #include "expander_controller.h"
 #include "button.h"
+#include "led.h"
 
 
 #define EXPANDER_EVT_INTR_QUEUE_SIZE      10
 #define USED_BUTTONS                      6
 #define USED_LEDS                         3
+
+
+class LED;
 
 
 class GPIOExpander {
@@ -28,13 +32,15 @@ class GPIOExpander {
         Button(controller, PIN_POLARITY_INVERSE, P0_3),
         Button(controller, PIN_POLARITY_INVERSE, P0_4),
         Button(controller, PIN_POLARITY_INVERSE, P0_5),
-   };
+    };
+    LED *leds;
 
     esp_err_t init_evt_intr_queue();
     void deinit_evt_intr_queue();
     void start_evt_intr_task();
     void process_intr_event(pca9539_intr_evt_t *intr_evt);
     void setup_buttons();
+    void setup_leds();
     Button *lookup_button(pca9539_pin_num num);
 
    std::function<void(Button*, PressType)> button_callback;
@@ -48,6 +54,7 @@ class GPIOExpander {
 
     void poll_intr_events();
     void set_callback(std::function<void(Button*, PressType)> cb);
+    void set_backlight_color(Color color);
 };
 
 #endif  // LIB_PERIPHERALS_GPIO_EXPANDER_H_

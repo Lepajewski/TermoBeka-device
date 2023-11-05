@@ -20,6 +20,7 @@ class ExpanderController {
 
     pca9539_pin_state get_input_pin_state(pca9539_pin_num pin);
     esp_err_t setup_pin(pca9539_polarity polarity, pca9539_pin_num pin, pca9539_pin_mode mode);
+    esp_err_t set_output_pin_state(pca9539_pin_num pin, pca9539_pin_state state);
 };
 
 

@@ -34,6 +34,7 @@ void UIManager::button_callback(Button *button, PressType type) {
                 {
                     this->lcd.clear();
                     this->lcd.print_formatted("B%d, SHORT", (int) pin_num);
+                    this->expander->set_backlight_color(Color::NONE);
                     break;
                 }
                 default:
@@ -52,6 +53,22 @@ void UIManager::button_callback(Button *button, PressType type) {
                 case P0_1:
                 {
                     this->lcd.clear();
+                    this->expander->set_backlight_color(Color::R);
+                    break;
+                }
+                case P0_2:
+                {
+                    this->expander->set_backlight_color(Color::G);
+                    break;
+                }
+                case P0_3:
+                {
+                    this->expander->set_backlight_color(Color::B);
+                    break;
+                }
+                case P0_4:
+                {
+                    this->expander->set_backlight_color(Color::RGB);
                     break;
                 }
                 default:
