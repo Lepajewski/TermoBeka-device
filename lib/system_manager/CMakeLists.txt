@@ -1,6 +1,10 @@
 idf_component_register(
     SRCS
         "tb_event.cpp"
+        "commands/utility_commands.cpp"
+        "commands/ui_commands.cpp"
+        "commands/sd_commands.cpp"
+        "commands/commands.cpp"
         "console_task.cpp"
         "system_manager.cpp"
         "system_manager_task.cpp"

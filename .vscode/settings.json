@@ -52,6 +52,7 @@
         "stdexcept": "cpp",
         "streambuf": "cpp",
         "typeinfo": "cpp",
-        "ets_sys.h": "c"
+        "ets_sys.h": "c",
+        "dirent.h": "c"
     }
 }

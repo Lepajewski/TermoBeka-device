@@ -39,7 +39,8 @@ void ExpanderController::begin() {
         ESP_ERROR_CHECK(pca9539_init(&this->config));
 
         // set expander registers to default value since there is not RST option
-        ESP_ERROR_CHECK(pca9539_set_default_config(&this->config));
+        // ESP_ERROR_CHECK(pca9539_set_default_config(&this->config));
+        pca9539_set_default_config(&this->config);
 
         this->initialized = true;
     }
@@ -55,7 +56,7 @@ void ExpanderController::end() {
 pca9539_pin_state ExpanderController::get_input_pin_state(pca9539_pin_num pin) {
     pca9539_pin_state state;
     
-    ESP_ERROR_CHECK(pca9539_get_input_pin_state(&this->config, pin, &state));
+    pca9539_get_input_pin_state(&this->config, pin, &state);
 
     return state;
 }

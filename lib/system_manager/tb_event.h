@@ -9,6 +9,9 @@
 #define UI_QUEUE_SIZE                   EVENT_QUEUE_SIZE
 #define UI_QUEUE_MAX_PAYLOAD            EVENT_QUEUE_MAX_PAYLOAD
 
+#define SD_QUEUE_SIZE                   EVENT_QUEUE_SIZE
+#define SD_QUEUE_MAX_PAYLOAD            EVENT_QUEUE_MAX_PAYLOAD
+
 
 enum class EventOrigin {
     MAIN,
@@ -86,6 +89,25 @@ typedef struct {
     UIEventType type;
     uint8_t payload[UI_QUEUE_MAX_PAYLOAD];
 } UIEvent;
+
+
+enum class SDEventType {
+    MOUNT_CARD,
+    UNMOUNT_CARD,
+    LIST_FILES,
+    CAT_FILE,
+    MKDIR,
+    TOUCH,
+    RM_FILE,
+    SAVE_TO_FILE,
+    NONE
+};
+
+typedef struct {
+    EventOrigin origin;
+    SDEventType type;
+    uint8_t payload[SD_QUEUE_MAX_PAYLOAD];
+} SDEvent;
 
 
 #endif  // LIB_SYSTEM_MANAGER_TB_EVENT_H_

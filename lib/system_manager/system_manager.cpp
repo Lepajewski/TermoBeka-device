@@ -1,22 +1,15 @@
 #include <unistd.h>
-#include "esp_system.h"
-#include "esp_log.h"
-#include "esp_console.h"
 #include "esp_vfs_dev.h"
 #include "driver/uart.h"
 #include "linenoise/linenoise.h"
 #include "argtable3/argtable3.h"
 #include "esp_intr_alloc.h"
 
-// commands required
-#include "esp_flash.h"
-#include "esp_chip_info.h"
-#include "sdkconfig.h"
-
-#include "system_manager.h"
 #include "logger.h"
 #include "tb_event.h"
 #include "console_task.h"
+#include "commands/commands.h"
+#include "system_manager.h"
 
 
 const char * const TAG = "SysMgr";
@@ -72,10 +65,12 @@ SystemManager::~SystemManager() {
 
 void SystemManager::init_queues() {
     this->event_queue_handle = xQueueCreate(EVENT_QUEUE_SIZE, sizeof(Event));
-    this->ui_queue_handle = xQueueCreate(UI_QUEUE_SIZE, sizeof(Event));
+    this->ui_queue_handle = xQueueCreate(UI_QUEUE_SIZE, sizeof(UIEvent));
+    this->sd_queue_handle = xQueueCreate(SD_QUEUE_SIZE, sizeof(SDEvent));
 
     if (this->event_queue_handle == NULL ||
-        this->ui_queue_handle == NULL) {
+        this->ui_queue_handle == NULL ||
+        this->sd_queue_handle == NULL) {
         TB_LOGE(TAG, "queues init fail. Restarting...");
         vTaskDelay(pdMS_TO_TICKS(2000));
         fflush(stdout);
@@ -214,136 +209,12 @@ QueueHandle_t *SystemManager::get_ui_queue() {
     return &this->ui_queue_handle;
 }
 
-const esp_console_cmd_t SystemManager::system_commands[] = {
-    {
-        "get_free",  // command
-        "Get the current size of free heap memory",  // info
-        NULL,  // hint
-        [](int argc, char **argv) -> int {  // function callback
-            TB_ACK(TAG, "free heap memory: %" PRIu32, esp_get_free_heap_size());
-            return ESP_OK;
-        },
-        NULL  // argument table
-    },
-    {
-        "soft_reset",
-        "Software reset of the chip",
-        NULL,
-        [](int argc, char **argv) -> int {
-            TB_ACK(TAG, "soft_reset");
-            fflush(stdout);
-            esp_restart();
-            // no need to return as chip restarts
-        },
-        NULL
-    },
-    {
-        "get_heap",
-        "Get minimum size of free heap memory that was available during program execution",
-        NULL,
-        [](int argc, char **argv) -> int {
-            TB_ACK(TAG, "min heap size: %" PRIu32, heap_caps_get_minimum_free_size(MALLOC_CAP_DEFAULT));
-            return ESP_OK;
-        },
-        NULL
-    },
-    {
-        "get_chip_info",
-        "Get information about chip and SDK",
-        NULL,
-        [](int argc, char **argv) -> int {
-            esp_chip_info_t chip_info;
-            uint32_t flash_size;
-            esp_chip_info(&chip_info);
-
-            if(esp_flash_get_size(NULL, &flash_size) != ESP_OK) {
-                TB_NAK(TAG, "Get flash size failed");
-                return ESP_FAIL;
-            }
-            TB_ACK(TAG, "IDF Version:%s ", esp_get_idf_version());
-            TB_ACK(TAG, "Chip %s: cores: %d", CONFIG_IDF_TARGET, chip_info.cores);
-            TB_ACK(TAG, "Features: %s%s%s%s%" PRIu32 "%s",
-                chip_info.features & CHIP_FEATURE_WIFI_BGN ? "/802.11bgn" : "",
-                chip_info.features & CHIP_FEATURE_BLE ? "/BLE" : "",
-                chip_info.features & CHIP_FEATURE_BT ? "/BT" : "",
-                chip_info.features & CHIP_FEATURE_EMB_FLASH ? "/Embedded-Flash: " : "/External-Flash: ",
-                flash_size / (1024 * 1024), " MB");
-            TB_ACK(TAG, "Silicon revision: v%d.%d", chip_info.revision / 100, chip_info.revision % 100);
-
-            return ESP_OK;
-        },
-        NULL
-    },
-    {
-        "get_tasks_info",
-        "Get information about running tasks",
-        NULL,
-        [](int argc, char **argv) -> int {
-            TB_ACK(TAG, "get_tasks_info");
-            const size_t bytes_per_task = 40;  // see vTaskList description
-            char *task_list_buffer = new char [uxTaskGetNumberOfTasks() * bytes_per_task];
-            if (task_list_buffer == NULL) {
-                TB_LOGE(TAG, "failed to allocate buffer for vTaskList output");
-                return ESP_FAIL;
-            }
-            fputs("Task Name\tStatus\tPrio\tHWM\tTask#", stdout);
-        #ifdef CONFIG_FREERTOS_VTASKLIST_INCLUDE_COREID
-            fputs("\tAffinity", stdout);
-        #endif
-            fputs("\n", stdout);
-            vTaskList(task_list_buffer);
-            fputs(task_list_buffer, stdout);
-            delete [] task_list_buffer;
-        return ESP_OK;
-        },
-        NULL
-    },
-    {
-        "get_log_level",
-        "Get current log level",
-        NULL,
-        [](int argc, char **argv) -> int {
-            TB_ACK(TAG, "log level: %s", log_level_to_s(esp_log_level_get("*")));
-            return ESP_OK;
-        },
-        NULL
-    },
-    {
-        "set_log_level",
-        "Set current log level",
-        NULL,
-        [](int argc, char **argv) -> int {
-            TB_ACK(TAG, "set log level");
-            return ESP_OK;
-        },
-        NULL
-    },
-    {
-        "beep",
-        "Beep the buzzer for 500 ms",
-        NULL,
-        [](int argc, char **argv) -> int {
-            TB_ACK(TAG, "beep");
-
-            QueueHandle_t *queue = sysMgr.get_ui_queue();
-            UIEvent evt;
-            evt.type = UIEventType::BUZZER_BEEP;
-            evt.payload[0] = 123;
-
-            if (xQueueSend(*queue, &evt, portMAX_DELAY) != pdTRUE) {
-                TB_LOGE(TAG, "cmd ui event send fail");
-            }
-
-            return ESP_OK;
-        },
-        NULL
-    }
-};
+QueueHandle_t *SystemManager::get_sd_queue() {
+    return &this->sd_queue_handle;
+}
 
 void SystemManager::register_commands() {
     esp_console_register_help_command();
 
-    for (auto i : this->system_commands) {
-        ESP_ERROR_CHECK(esp_console_cmd_register(&i));
-    }
+    register_system_commands();
 }

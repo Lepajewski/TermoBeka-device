@@ -27,6 +27,12 @@
 #define PIN_LCD_RST                         GPIO_NUM_42  // RST - RESET
 
 
+#define PIN_SD_SCLK                         GPIO_NUM_12
+#define PIN_SD_MOSI                         GPIO_NUM_13
+#define PIN_SD_MISO                         GPIO_NUM_11
+#define PIN_SD_CS                           GPIO_NUM_14
+
+
 typedef struct {
     char wifi_ssid[32];
     char wifi_pass[64];

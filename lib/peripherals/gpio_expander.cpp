@@ -102,13 +102,15 @@ void GPIOExpander::process_intr_event(pca9539_intr_evt_t *intr_evt) {
 
 void GPIOExpander::setup_buttons() {
     for (auto &b : this->buttons) {
-        ESP_ERROR_CHECK(b.setup());
+        // ESP_ERROR_CHECK(b.setup());
+        b.setup();
         b.set_callback(this->button_callback);
     }
 }
 
 void GPIOExpander::setup_leds() {
-    ESP_ERROR_CHECK(this->leds->setup());
+    // ESP_ERROR_CHECK(this->leds->setup());
+    this->leds->setup();
 }
 
 Button *GPIOExpander::lookup_button(pca9539_pin_num num){

@@ -106,7 +106,8 @@ void PCA9539IntrTask(void *pvParameters) {
 
     TB_LOGI(TAG, "START, intrpin %u", pca9539_cfg->intr_gpio_num);
 
-    ESP_ERROR_CHECK(pca9539_get_input_port_state(pca9539_cfg, PORT_0, &port_state));
+    // ESP_ERROR_CHECK(pca9539_get_input_port_state(pca9539_cfg, PORT_0, &port_state));
+    pca9539_get_input_port_state(pca9539_cfg, PORT_0, &port_state);
 
     while (1) {
         uint8_t new_port_state = 0;
@@ -114,7 +115,8 @@ void PCA9539IntrTask(void *pvParameters) {
         ulTaskNotifyTakeIndexed(0, pdTRUE, portMAX_DELAY);
 
         // it resets interrupt
-        ESP_ERROR_CHECK(pca9539_get_input_port_state(pca9539_cfg, PORT_0, &new_port_state));
+        // ESP_ERROR_CHECK(pca9539_get_input_port_state(pca9539_cfg, PORT_0, &new_port_state));
+        pca9539_get_input_port_state(pca9539_cfg, PORT_0, &new_port_state);
 
         intr_evt.port_num = PORT_0;
         intr_evt.pin_num = pca9539_get_pin_from_port_change(PORT_0, port_state, new_port_state);

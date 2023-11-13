@@ -60,7 +60,7 @@ LCDController::LCDController() :
     };
 
     this->config = {
-        .spi_host = SPI2_HOST,
+        .spi_host = SPI3_HOST,
         .dma_chan = SPI_DMA_CH_AUTO,
         .spi_pin = spi_config,
         .control_pin = control_config

@@ -13,6 +13,7 @@
 #include "system_manager_task.h"
 
 #include "ui_manager_task.h"
+#include "sd_manager_task.h"
 
 
 static const char * const TAG = "MAIN";
@@ -38,8 +39,11 @@ void app_main(void)
     // start System Manager Task
     xTaskCreatePinnedToCore(systemManagerTask, "SysMgr", 4096, NULL, 1, NULL, 1);
 
-    // start UI Task
+    // start UI Manager Task
     xTaskCreatePinnedToCore(uiManagerTask, "UIMgr", 4096, NULL, 1, NULL, 1);
+
+    // start SD Manager Task
+    xTaskCreatePinnedToCore(sdManagerTask, "SDMgr", 6144, NULL, 1, NULL, 0);
 
     // load configuration from NVS
     nvs_device_config_t config = {};

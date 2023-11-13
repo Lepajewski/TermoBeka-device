@@ -1,4 +1,4 @@
-#include "string.h"
+#include <cstring>
 
 #include "logger.h"
 #include "system_manager.h"
@@ -118,7 +118,11 @@ void UIManager::process_ui_event(UIEvent *evt) {
     switch (evt->type) {
         case UIEventType::BUZZER_BEEP:
         {
-            this->buzzer.beep(500);
+            uint32_t duration = 0;
+            memcpy(&duration, evt->payload, sizeof(duration));
+
+            TB_LOGI(TAG, "Duration: %u", duration);
+            this->buzzer.beep(duration);
             break;
         }
         case UIEventType::ERROR_SHOW:
