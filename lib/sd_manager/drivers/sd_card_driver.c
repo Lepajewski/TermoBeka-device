@@ -7,6 +7,11 @@
 #include "sd_card_driver.h"
 
 
+#define PRINT_DIRENT(type) ((type == DT_DIR) ? "D\t" : ((type == DT_REG) ? "F\t" : "U\t"))
+#define PRINT_DIRENT_LEN    3
+
+
+
 esp_err_t card_mount(sd_card_config_t *config) {
     esp_err_t err = ESP_OK;
 
@@ -43,14 +48,16 @@ esp_err_t card_ls(const char* path, char *buf) {
             err = ESP_FAIL;
         } else {
             buf[0] = '\0';
-            uint32_t buf_len = 1;
+            uint16_t buf_len = 1;
 
             while ((entry = readdir(dir)) != NULL) {
-                uint32_t entry_len = strlen(entry->d_name);
-                if (buf_len + entry_len + 2 <= SD_OPERATIONS_BUFFER_SIZE) {
-                    strcat(buf, entry->d_name);
-                    strcat(buf, "\n");
-                    buf_len += entry_len + 2;
+                uint8_t entry_len = strlen(entry->d_name) + 1;
+                buf_len += entry_len + PRINT_DIRENT_LEN;
+                
+                if (buf_len <= SD_OPERATIONS_BUFFER_SIZE) {
+                    strncat(buf, PRINT_DIRENT(entry->d_type), PRINT_DIRENT_LEN);
+                    strncat(buf, entry->d_name, entry_len);
+                    strncat(buf, "\n", 2);
                 } else {
                     err = ESP_ERR_NO_MEM;
                     break;
@@ -80,3 +87,40 @@ esp_err_t card_cat(const char *path, char *buf) {
     fclose(file);
     return err;
 }
+
+esp_err_t card_mkdir(const char *path) {
+    esp_err_t err = ESP_OK;
+    struct stat st = {0};
+
+    if (stat(path, &st) == -1) {
+        if (mkdir(path, 0777) != 0) {
+            err = ESP_FAIL;
+        }
+    } else {
+        err = ESP_FAIL;
+    }
+    return err;
+}
+
+esp_err_t card_touch(const char *path) {
+    esp_err_t err = ESP_OK;
+
+    FILE *file = fopen(path, "w");
+    if (file == NULL) {
+        err = ESP_FAIL;
+    }
+    fclose(file);
+
+    return err;
+}
+
+esp_err_t card_rm_file(const char *path) {
+    esp_err_t err = ESP_OK;
+
+    if (remove(path) != 0) {
+        err = ESP_FAIL;
+    }
+
+    return err;
+}
+

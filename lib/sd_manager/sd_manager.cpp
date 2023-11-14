@@ -34,6 +34,15 @@ void SDManager::end() {
     TB_LOGI(TAG, "SD Card unmounted");
 }
 
+char *SDManager::get_path(SDEvent *evt) {
+    uint8_t mount_point_len = strlen(this->card.get_mount_point()) + 1;
+    uint16_t payload_len = strlen(reinterpret_cast<char *>(evt->payload)) + 1;
+    char *path = new char[payload_len + mount_point_len];
+    strncpy(path, this->card.get_mount_point(), mount_point_len);
+    strncat(path, reinterpret_cast<char *>(evt->payload), payload_len);
+    return path;
+}
+
 void SDManager::process_sd_event(SDEvent *evt) {
     switch (evt->type) {
         case SDEventType::MOUNT_CARD:
@@ -44,14 +53,50 @@ void SDManager::process_sd_event(SDEvent *evt) {
         }
         case SDEventType::LIST_FILES:
         {
-            char *path = new char[strlen(reinterpret_cast<char *>(evt->payload)) + strlen(this->card.get_mount_point()) + 1];
-            strcpy(path, this->card.get_mount_point());
-            strcat(path, reinterpret_cast<char *>(evt->payload));
-
+            char *path = get_path(evt);
             TB_LOGI(TAG, "list files, path: %s", path);
             this->card.list_files(path);
 
             delete [] path;
+            break;
+        }
+        case SDEventType::CAT_FILE:
+        {
+            break;
+        }
+        case SDEventType::MKDIR:
+        {
+            char *path = get_path(evt);
+            TB_LOGI(TAG, "mkdir %s", path);
+            this->card.mkdir(path);
+
+            delete [] path;
+            break;
+        }
+        case SDEventType::TOUCH:
+        {
+            char *path = get_path(evt);
+            TB_LOGI(TAG, "touch %s", path);
+            this->card.touch(path);
+
+            delete [] path;
+            break;
+        }
+        case SDEventType::RM_FILE:
+        {
+            char *path = get_path(evt);
+            TB_LOGI(TAG, "rm_file %s", path);
+            this->card.rm_file(path);
+
+            delete [] path;
+            break;
+        }
+        case SDEventType::RM_DIR:
+        {
+            break;
+        }
+        case SDEventType::SAVE_TO_FILE:
+        {
             break;
         }
         case SDEventType::NONE:

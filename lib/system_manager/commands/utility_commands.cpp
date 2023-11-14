@@ -93,62 +93,14 @@ static int cmd_set_log_level(int argc, char **argv) {
 
 
 static const esp_console_cmd_t commands[] = {
-    {
-        "get_free",
-        "Get the current size of free heap memory",
-        NULL,
-        &cmd_get_free,
-        NULL
-    },
-    {
-        "soft_reset",
-        "Software reset of the chip",
-        NULL,
-        &cmd_soft_reset,
-        NULL
-    },
-    {
-        "get_heap",
-        "Get minimum size of free heap memory that was available during program execution",
-        NULL,
-        &cmd_get_heap,
-        NULL
-    },
-    {
-        "get_chip_info",
-        "Get information about chip and SDK",
-        NULL,
-        &cmd_get_chip_info,
-        NULL
-    },
-    {
-        "get_tasks_info",
-        "Get information about running tasks",
-        NULL,
-        &cmd_get_tasks_info,
-        NULL
-    },
-    {
-        "get_tasks_stats",
-        "Get tasks run time statistics",
-        NULL,
-        &cmd_get_tasks_stats,
-        NULL
-    },
-    {
-        "get_log_level",
-        "Get current log level",
-        NULL,
-        &cmd_get_log_level,
-        NULL
-    },
-    {
-        "set_log_level",
-        "Set current log level",
-        NULL,
-        &cmd_set_log_level,
-        NULL
-    },
+    { "get_free",           "Get the current size of free heap memory",             NULL,       &cmd_get_free,          NULL    },
+    { "soft_reset",         "Software reset of the chip",                           NULL,       &cmd_soft_reset,        NULL    },
+    { "get_heap",           "min free heap memory size during program execution",   NULL,       &cmd_get_heap,          NULL    },
+    { "get_chip_info",      "Get information about chip and SDK",                   NULL,       &cmd_get_chip_info,     NULL    },
+    { "get_tasks_info",     "Get information about running tasks",                  NULL,       &cmd_get_tasks_info,    NULL    },
+    { "get_tasks_stats",    "Get tasks run time statistics",                        NULL,       &cmd_get_tasks_stats,   NULL    },
+    { "get_log_level",      "Get current log level",                                NULL,       &cmd_get_log_level,     NULL    },
+    { "set_log_level",      "Set current log level",                                NULL,       &cmd_set_log_level,     NULL    }
 };
 
 void register_system_utility() {

@@ -56,13 +56,7 @@ static int cmd_beep(int argc, char **argv) {
 
 
 static const esp_console_cmd_t commands[] = {
-    {
-        "beep",
-        "buzzer beep",
-        NULL,
-        &cmd_beep,
-        &cmd_beep_args
-    }
+    { "beep",           "buzzer beep",                  NULL,       &cmd_beep,          &cmd_beep_args  }
 };
 
 void register_user_interface() {

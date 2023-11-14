@@ -25,6 +25,10 @@ class SDCard {
     const char *get_mount_point();
     const char* list_files(const char *path);
     const char* cat_file(const char *path);
+    void mkdir(const char *path);
+    void touch(const char *path);
+    void rm_file(const char *path);
+
 };
 
 

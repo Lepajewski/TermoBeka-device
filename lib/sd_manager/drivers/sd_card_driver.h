@@ -28,9 +28,10 @@ esp_err_t card_mount(sd_card_config_t *config);
 esp_err_t card_unmount(sd_card_config_t *config);
 esp_err_t card_ls(const char* path, char *buf);
 esp_err_t card_cat(const char *path, char *buf);
-esp_err_t card_mkdir(const char *path, char* name);
-esp_err_t card_touch(const char *path, char *name);
-esp_err_t card_rm(const char *path, char *name);
+esp_err_t card_mkdir(const char *path);
+esp_err_t card_touch(const char *path);
+esp_err_t card_rm_file(const char *path);
+esp_err_t card_rm_dir(const char *path, char *name);
 esp_err_t card_save_to_file(const char *path, char *buf);
 
 #ifdef __cplusplus

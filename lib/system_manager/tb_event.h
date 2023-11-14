@@ -99,6 +99,7 @@ enum class SDEventType {
     MKDIR,
     TOUCH,
     RM_FILE,
+    RM_DIR,
     SAVE_TO_FILE,
     NONE
 };

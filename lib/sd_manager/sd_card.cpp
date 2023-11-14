@@ -96,3 +96,27 @@ const char* SDCard::list_files(const char *path) {
 
     return "NO SD CARD";
 }
+
+void SDCard::mkdir(const char *path) {
+    if (card_mkdir(path) == ESP_OK) {
+        printf("mkdir %s\n", path);
+    } else {
+        printf("mkdir %s fail\n", path);
+    }
+}
+
+void SDCard::touch(const char *path) {
+    if (card_touch(path) == ESP_OK) {
+        printf("touch %s\n", path);
+    } else {
+        printf("touch %s fail\n", path);
+    }
+}
+
+void SDCard::rm_file(const char *path) {
+    if (card_rm_file(path) == ESP_OK) {
+        printf("rm file: %s\n", path);
+    } else {
+        printf("rm file: %s fail\n", path);
+    }
+}
