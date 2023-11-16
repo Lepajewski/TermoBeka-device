@@ -49,17 +49,26 @@ SDCard::~SDCard() {}
 
 void SDCard::begin() {
     if (!this->running) {
-        ESP_ERROR_CHECK(card_mount(&this->config));
-
-        sdmmc_card_print_info(stdout, this->config.card);
-        this->running = true;
+        if (card_mount(&this->config) == ESP_OK) {
+            printf("SD card mounted\n");
+            sdmmc_card_print_info(stdout, this->config.card);
+            this->running = true;
+        } else {
+            printf("SD card fail to mount\n");
+        }
     }
 }
 
 void SDCard::end() {
     if (this->running) {
-        ESP_ERROR_CHECK(card_unmount(&this->config));
-        this->running = false;
+        if (card_unmount(&this->config) == ESP_OK) {
+            printf("SD card unmounted\n");
+            this->running = false;
+        } else {
+            printf("SD card fail to unmount\n");
+        }
+    } else {
+        printf("No SD card present\n");
     }
 }
 
@@ -71,13 +80,14 @@ const char *SDCard::get_mount_point() {
     return this->mount_point;
 }
 
-const char* SDCard::list_files(const char *path) {
+const char* SDCard::ls(const char *path) {
     if (this->running) {
+        memset(this->sd_buf, 0, sizeof(this->sd_buf));
         esp_err_t err = card_ls(path, this->sd_buf);
         switch (err) {
             case ESP_OK:
             {
-                printf("%s\n", sd_buf);
+                printf("%s\n", this->sd_buf);
                 break;
             }
             case ESP_ERR_NO_MEM:
@@ -97,8 +107,34 @@ const char* SDCard::list_files(const char *path) {
     return "NO SD CARD";
 }
 
+const char* SDCard::cat(const char *path) {
+    if (this->running) {
+        size_t bytes_read_total = 0;
+        uint16_t block_no = 0;
+
+        do {
+            memset(this->sd_buf, 0, sizeof(this->sd_buf));
+            esp_err_t err = card_cat(path, this->sd_buf, &bytes_read_total);
+
+            if (err == ESP_OK) {
+                printf("\t\t\tcat %s, read %d bytes, block: %" PRIu16 "\n", path, bytes_read_total, block_no);
+                printf("%s\n", this->sd_buf);
+                block_no++;
+                // handle here the file block, parse/extract data, etc...
+            } else {
+                printf("cat %s fail\n", path);
+                break;
+            }
+            vTaskDelay(pdMS_TO_TICKS(1));
+        } while (((bytes_read_total % SD_OPERATIONS_BUFFER_SIZE) == 0) && (bytes_read_total != 0));
+    } else {
+        printf("card not mounted\n");
+    }
+    return "NO SD CARD";
+}
+
 void SDCard::mkdir(const char *path) {
-    if (card_mkdir(path) == ESP_OK) {
+    if (this->running && card_mkdir(path) == ESP_OK) {
         printf("mkdir %s\n", path);
     } else {
         printf("mkdir %s fail\n", path);
@@ -106,17 +142,29 @@ void SDCard::mkdir(const char *path) {
 }
 
 void SDCard::touch(const char *path) {
-    if (card_touch(path) == ESP_OK) {
+    if (this->running && card_touch(path) == ESP_OK) {
         printf("touch %s\n", path);
     } else {
         printf("touch %s fail\n", path);
     }
 }
 
-void SDCard::rm_file(const char *path) {
-    if (card_rm_file(path) == ESP_OK) {
+void SDCard::rm(const char *path) {
+    if (this->running && card_rm(path) == ESP_OK) {
         printf("rm file: %s\n", path);
     } else {
         printf("rm file: %s fail\n", path);
     }
+}
+
+void SDCard::rmdir(const char *path) {
+    if (this->running && card_rmdir(path) == ESP_OK) {
+        printf("rmdir: %s\n", path);
+    } else {
+        printf("rmdir: %s fail\n", path);
+    }
+}
+
+char *SDCard::get_sd_buf() {
+    return this->sd_buf;
 }

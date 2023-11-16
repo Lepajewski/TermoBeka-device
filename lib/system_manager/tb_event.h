@@ -94,8 +94,8 @@ typedef struct {
 enum class SDEventType {
     MOUNT_CARD,
     UNMOUNT_CARD,
-    LIST_FILES,
-    CAT_FILE,
+    LS,
+    CAT,
     MKDIR,
     TOUCH,
     RM_FILE,

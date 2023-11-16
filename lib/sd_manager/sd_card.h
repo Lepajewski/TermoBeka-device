@@ -17,17 +17,18 @@ class SDCard {
     SDCard(sd_card_config_t config);
     ~SDCard();
 
-    
-
     void begin();
     void end();
     bool is_mounted();
     const char *get_mount_point();
-    const char* list_files(const char *path);
-    const char* cat_file(const char *path);
+    const char* ls(const char *path);
+    const char* cat(const char *path);
     void mkdir(const char *path);
     void touch(const char *path);
-    void rm_file(const char *path);
+    void rm(const char *path);
+    void rmdir(const char *path);
+
+    char *get_sd_buf();
 
 };
 

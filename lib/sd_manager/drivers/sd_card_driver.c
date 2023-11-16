@@ -1,5 +1,6 @@
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <unistd.h>
 
 #include <dirent.h>
 #include "string.h"
@@ -72,17 +73,24 @@ esp_err_t card_ls(const char* path, char *buf) {
     return err;
 }
 
-esp_err_t card_cat(const char *path, char *buf) {
+esp_err_t card_cat(const char *path, char *buf, size_t *bytes_read_last) {
     esp_err_t err = ESP_OK;
     FILE *file = fopen(path, "r");
     
     if (file == NULL) {
+        printf("fail to open %s\n", path);
         err = ESP_FAIL;
     } else {
-        size_t bytes_read;
-        while ((bytes_read = fread(buf, 1, sizeof(buf), file)) > 0) {
-            fwrite(buf, 1, bytes_read, stdout);
+        if (fsetpos(file, (fpos_t*) bytes_read_last) == 0) {
+            size_t bytes_read;
+            if ((bytes_read = fread(buf, sizeof(*buf), SD_OPERATIONS_BUFFER_SIZE, file)) > 0) {
+                *bytes_read_last += bytes_read;
+                // printf("---BEGIN BLOCK (file ptr pos: %d)---\n", *bytes_read_last);
+            }
+        } else {
+            err = ESP_FAIL;
         }
+
     }
     fclose(file);
     return err;
@@ -114,7 +122,7 @@ esp_err_t card_touch(const char *path) {
     return err;
 }
 
-esp_err_t card_rm_file(const char *path) {
+esp_err_t card_rm(const char *path) {
     esp_err_t err = ESP_OK;
 
     if (remove(path) != 0) {
@@ -124,3 +132,6 @@ esp_err_t card_rm_file(const char *path) {
     return err;
 }
 
+esp_err_t card_rmdir(const char *path) {
+    return rmdir(path) == 0 ? ESP_OK : ESP_FAIL;
+}

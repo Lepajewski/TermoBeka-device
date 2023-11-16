@@ -56,6 +56,7 @@ static int cmd_beep(int argc, char **argv) {
 
 
 static const esp_console_cmd_t commands[] = {
+//    command           help print                      hint        callback            arguments
     { "beep",           "buzzer beep",                  NULL,       &cmd_beep,          &cmd_beep_args  }
 };
 

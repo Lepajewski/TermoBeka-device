@@ -6,7 +6,7 @@
 #include "sdmmc_cmd.h"
 
 
-#define SD_OPERATIONS_BUFFER_SIZE      2048
+#define SD_OPERATIONS_BUFFER_SIZE      4096
 
 
 typedef struct {
@@ -27,11 +27,11 @@ extern "C" {
 esp_err_t card_mount(sd_card_config_t *config);
 esp_err_t card_unmount(sd_card_config_t *config);
 esp_err_t card_ls(const char* path, char *buf);
-esp_err_t card_cat(const char *path, char *buf);
+esp_err_t card_cat(const char *path, char *buf, size_t *bytes_read_last);
 esp_err_t card_mkdir(const char *path);
 esp_err_t card_touch(const char *path);
-esp_err_t card_rm_file(const char *path);
-esp_err_t card_rm_dir(const char *path, char *name);
+esp_err_t card_rm(const char *path);
+esp_err_t card_rmdir(const char *path);
 esp_err_t card_save_to_file(const char *path, char *buf);
 
 #ifdef __cplusplus

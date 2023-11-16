@@ -43,7 +43,7 @@ void app_main(void)
     xTaskCreatePinnedToCore(uiManagerTask, "UIMgr", 4096, NULL, 1, NULL, 1);
 
     // start SD Manager Task
-    xTaskCreatePinnedToCore(sdManagerTask, "SDMgr", 6144, NULL, 1, NULL, 0);
+    xTaskCreatePinnedToCore(sdManagerTask, "SDMgr", 8192, NULL, 1, NULL, 0);
 
     // load configuration from NVS
     nvs_device_config_t config = {};

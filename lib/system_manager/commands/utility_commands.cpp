@@ -93,6 +93,7 @@ static int cmd_set_log_level(int argc, char **argv) {
 
 
 static const esp_console_cmd_t commands[] = {
+//    command               help print                                              hint        callback                arguments
     { "get_free",           "Get the current size of free heap memory",             NULL,       &cmd_get_free,          NULL    },
     { "soft_reset",         "Software reset of the chip",                           NULL,       &cmd_soft_reset,        NULL    },
     { "get_heap",           "min free heap memory size during program execution",   NULL,       &cmd_get_heap,          NULL    },
