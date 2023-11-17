@@ -16,6 +16,12 @@
 esp_err_t card_mount(sd_card_config_t *config) {
     esp_err_t err = ESP_OK;
 
+    if ((err = spi_bus_free(config->host.slot)) != ESP_ERR_INVALID_STATE) {
+        return err;
+    }
+
+    vTaskDelay(pdMS_TO_TICKS(1));
+
     err = spi_bus_initialize(config->host.slot, &config->bus_cfg, config->dma_chan);
     
     if (err == ESP_OK) {

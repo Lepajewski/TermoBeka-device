@@ -68,7 +68,7 @@ void SDCard::end() {
             printf("SD card fail to unmount\n");
         }
     } else {
-        printf("No SD card present\n");
+        printf("No SD card mounted\n");
     }
 }
 
@@ -102,6 +102,8 @@ const char* SDCard::ls(const char *path) {
             }
         }
         
+    } else {
+        printf("No SD card mounted\n");
     }
 
     return "NO SD CARD";
@@ -128,40 +130,56 @@ const char* SDCard::cat(const char *path) {
             vTaskDelay(pdMS_TO_TICKS(1));
         } while (((bytes_read_total % SD_OPERATIONS_BUFFER_SIZE) == 0) && (bytes_read_total != 0));
     } else {
-        printf("card not mounted\n");
+        printf("No SD card mounted\n");
     }
     return "NO SD CARD";
 }
 
 void SDCard::mkdir(const char *path) {
-    if (this->running && card_mkdir(path) == ESP_OK) {
-        printf("mkdir %s\n", path);
+    if (this->running) {
+        if (card_mkdir(path) == ESP_OK) {
+            printf("mkdir %s\n", path);
+        } else {
+            printf("mkdir %s fail\n", path);
+        }
     } else {
-        printf("mkdir %s fail\n", path);
+        printf("No SD card mounted\n");
     }
 }
 
 void SDCard::touch(const char *path) {
-    if (this->running && card_touch(path) == ESP_OK) {
-        printf("touch %s\n", path);
+    if (this->running) {
+        if (card_touch(path) == ESP_OK) {
+            printf("touch %s\n", path);
+        } else {
+            printf("touch %s fail\n", path);
+        }
     } else {
-        printf("touch %s fail\n", path);
+        printf("No SD card mounted\n");
     }
 }
 
 void SDCard::rm(const char *path) {
-    if (this->running && card_rm(path) == ESP_OK) {
-        printf("rm file: %s\n", path);
+    if (this->running) {
+        if (card_rm(path) == ESP_OK) {
+            printf("rm file: %s\n", path);
+        } else {
+            printf("rm file: %s fail\n", path);
+        }
     } else {
-        printf("rm file: %s fail\n", path);
+        printf("No SD card mounted\n");
     }
 }
 
 void SDCard::rmdir(const char *path) {
-    if (this->running && card_rmdir(path) == ESP_OK) {
-        printf("rmdir: %s\n", path);
+    if (this->running) {
+        if (card_rmdir(path) == ESP_OK) {
+            printf("rmdir: %s\n", path);
+        } else {
+            printf("rmdir: %s fail\n", path);
+        }
     } else {
-        printf("rmdir: %s fail\n", path);
+        printf("No SD card mounted\n");
     }
 }
 
