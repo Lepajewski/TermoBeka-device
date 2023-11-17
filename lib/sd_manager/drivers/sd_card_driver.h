@@ -32,7 +32,7 @@ esp_err_t card_mkdir(const char *path);
 esp_err_t card_touch(const char *path);
 esp_err_t card_rm(const char *path);
 esp_err_t card_rmdir(const char *path);
-esp_err_t card_save_to_file(const char *path, char *buf);
+esp_err_t card_save_buf(const char *path, char *buf);
 
 #ifdef __cplusplus
 }

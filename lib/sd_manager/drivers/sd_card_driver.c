@@ -96,7 +96,6 @@ esp_err_t card_cat(const char *path, char *buf, size_t *bytes_read_last) {
         } else {
             err = ESP_FAIL;
         }
-
     }
     fclose(file);
     return err;
@@ -140,4 +139,21 @@ esp_err_t card_rm(const char *path) {
 
 esp_err_t card_rmdir(const char *path) {
     return rmdir(path) == 0 ? ESP_OK : ESP_FAIL;
+}
+
+esp_err_t card_save_buf(const char *path, char *buf) {
+    esp_err_t err = ESP_OK;
+
+    FILE *file = fopen(path, "a");
+    if (file == NULL) {
+        printf("fail to open %s\r\n", path);
+        err = ESP_FAIL;
+    } else {
+        printf("writing %s to %s\r\n", buf, path);
+        fwrite("\n", 1, strlen("\n"), file);
+        fwrite(buf, 1, strlen(buf), file);
+    }
+    fclose(file);
+
+    return err;
 }

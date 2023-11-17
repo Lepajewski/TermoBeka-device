@@ -27,6 +27,7 @@ class SDCard {
     void touch(const char *path);
     void rm(const char *path);
     void rmdir(const char *path);
+    void save_buf(const char *path, char *buf);
 
     char *get_sd_buf();
 

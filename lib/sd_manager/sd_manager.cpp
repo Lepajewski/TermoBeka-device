@@ -34,7 +34,7 @@ void SDManager::end() {
     TB_LOGI(TAG, "SD Card unmounted");
 }
 
-char *SDManager::get_path(SDEvent *evt) {
+char *SDManager::get_args(SDEvent *evt) {
     uint8_t mount_point_len = strlen(this->card.get_mount_point()) + 1;
     uint16_t payload_len = strlen(reinterpret_cast<char *>(evt->payload)) + 1;
     const char *root_char = "/";
@@ -61,7 +61,7 @@ void SDManager::process_sd_event(SDEvent *evt) {
         }
         case SDEventType::LS:
         {
-            char *path = get_path(evt);
+            char *path = get_args(evt);
             TB_LOGI(TAG, "list files, path: %s", path);
             this->card.ls(path);
 
@@ -70,7 +70,7 @@ void SDManager::process_sd_event(SDEvent *evt) {
         }
         case SDEventType::CAT:
         {
-            char *path = get_path(evt);
+            char *path = get_args(evt);
             TB_LOGI(TAG, "cat, path: %s", path);
             this->card.cat(path);
 
@@ -79,7 +79,7 @@ void SDManager::process_sd_event(SDEvent *evt) {
         }
         case SDEventType::MKDIR:
         {
-            char *path = get_path(evt);
+            char *path = get_args(evt);
             TB_LOGI(TAG, "mkdir %s", path);
             this->card.mkdir(path);
 
@@ -88,7 +88,7 @@ void SDManager::process_sd_event(SDEvent *evt) {
         }
         case SDEventType::TOUCH:
         {
-            char *path = get_path(evt);
+            char *path = get_args(evt);
             TB_LOGI(TAG, "touch %s", path);
             this->card.touch(path);
 
@@ -97,7 +97,7 @@ void SDManager::process_sd_event(SDEvent *evt) {
         }
         case SDEventType::RM_FILE:
         {
-            char *path = get_path(evt);
+            char *path = get_args(evt);
             TB_LOGI(TAG, "rm_file %s", path);
             this->card.rm(path);
 
@@ -106,7 +106,7 @@ void SDManager::process_sd_event(SDEvent *evt) {
         }
         case SDEventType::RM_DIR:
         {
-            char *path = get_path(evt);
+            char *path = get_args(evt);
             TB_LOGI(TAG, "rm_dir %s", path);
             this->card.rmdir(path);
 
@@ -115,6 +115,14 @@ void SDManager::process_sd_event(SDEvent *evt) {
         }
         case SDEventType::SAVE_TO_FILE:
         {
+            char *path_line = get_args(evt);
+            char *line;
+            strtok_r(path_line, " ", &line);
+            TB_LOGI(TAG, "save_to_file: %s buf: %s", path_line, line);
+            
+            this->card.save_buf(path_line, line);
+
+            delete [] path_line;
             break;
         }
         case SDEventType::NONE:

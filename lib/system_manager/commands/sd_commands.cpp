@@ -44,6 +44,22 @@ static esp_err_t process_path_cmd(SDEventType e_type, const char *path) {
     return err;
 }
 
+static esp_err_t process_path_buffer(SDEventType e_type, const char *path, const char *buf) {
+    esp_err_t err = ESP_OK;
+    SDEvent evt;
+    evt.type = e_type;
+    uint16_t path_len = strlen(path) + 1;
+
+    if (path_len < SD_QUEUE_MAX_PAYLOAD) {
+        snprintf(reinterpret_cast<char *>(evt.payload), SD_QUEUE_MAX_PAYLOAD, "%s %s", path, buf);
+        err = send_to_sd_queue(&evt);
+    } else {
+        err = ESP_FAIL;
+    }
+
+    return err;
+}
+
 
 static int cmd_mount_card(int argc, char **argv) {
     TB_ACK(TAG, "mount card");
@@ -164,11 +180,16 @@ static void init_cmd_path_buffer_args() {
 }
 
 static int cmd_save_to_file(int argc, char **argv) {
-    TB_ACK(TAG, "save_to_file");
-    SDEvent evt;
-    evt.type = SDEventType::SAVE_TO_FILE;
+    int nerrors = arg_parse(argc, argv, (void **) &cmd_path_buffer);
+    if (nerrors != 0) {
+        arg_print_errors(stderr, cmd_path_buffer.end, argv[0]);
+        TB_NAK(TAG, "invalid arg");
+        return ESP_FAIL;
+    }
 
-    return send_to_sd_queue(&evt);
+    TB_ACK(TAG, "save_to_file %s \'%s\'", cmd_path_buffer.path->sval[0], cmd_path_buffer.buffer->sval[0]);
+
+    return process_path_buffer(SDEventType::SAVE_TO_FILE, cmd_path_buffer.path->sval[0], cmd_path_buffer.buffer->sval[0]);
 }
 
 

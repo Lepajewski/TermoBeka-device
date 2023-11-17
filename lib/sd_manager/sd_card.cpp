@@ -101,7 +101,6 @@ const char* SDCard::ls(const char *path) {
                 break;
             }
         }
-        
     } else {
         printf("No SD card mounted\n");
     }
@@ -177,6 +176,18 @@ void SDCard::rmdir(const char *path) {
             printf("rmdir: %s\n", path);
         } else {
             printf("rmdir: %s fail\n", path);
+        }
+    } else {
+        printf("No SD card mounted\n");
+    }
+}
+
+void SDCard::save_buf(const char *path, char *buf) {
+    if (this->running) {
+        if (card_save_buf(path, buf) == ESP_OK) {
+            printf("save buf: %s to: %s\n", buf, path);
+        } else {
+            printf("save buf: %s to: %s fail\n", buf, path);
         }
     } else {
         printf("No SD card mounted\n");
