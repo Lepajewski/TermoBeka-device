@@ -1,7 +1,10 @@
 idf_component_register{
     SRCS
+        "ntp_stack.c"
         "wifi_stack.c"
     REQUIRES
         esp_wifi
+        esp_sntp
+        global_config
         logger
 }
