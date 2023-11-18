@@ -5,9 +5,6 @@
 #include "system_manager.h"
 
 
-extern SystemManager sysMgr;
-
-
 void systemManagerTask(void *pvParameters);
 
 

@@ -7,6 +7,7 @@
 #include "button.h"
 #include "buzzer.h"
 #include "lcd_controller.h"
+#include "system_manager.h"
 
 
 class GPIOExpander;
@@ -14,6 +15,7 @@ class GPIOExpander;
 
 class UIManager {
  private:
+    SystemManager *sysMgr;
     QueueHandle_t *event_queue_handle;
     QueueHandle_t *ui_queue_handle;
     GPIOExpander *expander;

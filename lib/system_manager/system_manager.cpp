@@ -15,6 +15,13 @@
 const char * const TAG = "SysMgr";
 
 
+static SystemManager sysMgr;
+
+SystemManager *get_system_manager() {
+   return &sysMgr;
+}
+
+
 SystemManager::SystemManager() {
 #ifdef CONFIG_ESP_CONSOLE_UART_NUM
     this->uart_num = CONFIG_ESP_CONSOLE_UART_NUM;

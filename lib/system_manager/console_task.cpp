@@ -1,11 +1,12 @@
-#include "console_task.h"
-
-
+#include "freertos/FreeRTOS.h"
 #include "freertos/queue.h"
 #include "linenoise/linenoise.h"
 #include "string.h"
 #include "tb_event.h"
 #include "logger.h"
+#include "system_manager.h"
+
+#include "console_task.h"
 
 
 const char * const TAG = "CLI";
@@ -13,8 +14,9 @@ const char * const TAG = "CLI";
 
 void consoleTask(void *pvParameters) {
     const char *prompt_str = (const char *) pvParameters;
+    SystemManager *sysMgr = get_system_manager();
 
-    QueueHandle_t *event_queue_handle = sysMgr.get_event_queue();
+    QueueHandle_t *event_queue_handle = sysMgr->get_event_queue();
 
     while (1) {
         /* Get a line using linenoise.

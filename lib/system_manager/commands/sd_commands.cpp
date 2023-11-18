@@ -11,14 +11,12 @@
 #include "sd_commands.h"
 
 
-extern SystemManager sysMgr;
-
-
 const char * const TAG = "CMDsd";
 
 
 static esp_err_t send_to_sd_queue(SDEvent *evt) {
-    QueueHandle_t *queue = sysMgr.get_sd_queue();
+    SystemManager *sysMgr = get_system_manager();
+    QueueHandle_t *queue = sysMgr->get_sd_queue();
     evt->origin = EventOrigin::SYSTEM_MANAGER;
 
     if (xQueueSend(*queue, &*evt, portMAX_DELAY) != pdTRUE) {

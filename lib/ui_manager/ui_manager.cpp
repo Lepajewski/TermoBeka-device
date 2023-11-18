@@ -1,12 +1,8 @@
 #include <cstring>
 
 #include "logger.h"
-#include "system_manager.h"
 
 #include "ui_manager.h"
-
-
-extern SystemManager sysMgr;
 
 
 const char * const TAG = "UIMgr";
@@ -101,8 +97,9 @@ void UIManager::button_callback(Button *button, PressType type) {
 }
 
 void UIManager::setup() {
-    this->event_queue_handle = sysMgr.get_event_queue();
-    this->ui_queue_handle = sysMgr.get_ui_queue();
+    this->sysMgr = get_system_manager();
+    this->event_queue_handle = sysMgr->get_event_queue();
+    this->ui_queue_handle = sysMgr->get_ui_queue();
 
     // setup GPIO expander
     this->expander->set_callback(std::bind(&UIManager::button_callback, this, std::placeholders::_1, std::placeholders::_2));

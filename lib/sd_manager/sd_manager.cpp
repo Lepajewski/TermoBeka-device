@@ -1,19 +1,14 @@
 #include <cstring>
 
 #include "logger.h"
-#include "system_manager.h"
 
 #include "sd_manager.h"
-
-
-extern SystemManager sysMgr;
 
 
 const char * const TAG = "SDMgr";
 
 
 SDManager::SDManager() {
-
 }
 
 SDManager::~SDManager() {
@@ -21,8 +16,9 @@ SDManager::~SDManager() {
 }
 
 void SDManager::begin() {
-    this->event_queue_handle = sysMgr.get_event_queue();
-    this->sd_queue_handle = sysMgr.get_sd_queue();
+    this->sysMgr = get_system_manager();
+    this->event_queue_handle = this->sysMgr->get_event_queue();
+    this->sd_queue_handle = this->sysMgr->get_sd_queue();
 
     this->card.begin();
 

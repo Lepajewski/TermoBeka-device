@@ -10,14 +10,12 @@
 #include "ui_commands.h"
 
 
-extern SystemManager sysMgr;
-
-
 const char * const TAG = "CMDui";
 
 
 static esp_err_t send_to_ui_queue(UIEvent *evt) {
-    QueueHandle_t *queue = sysMgr.get_ui_queue();
+    SystemManager *sysMgr = get_system_manager();
+    QueueHandle_t *queue = sysMgr->get_ui_queue();
     evt->origin = EventOrigin::SYSTEM_MANAGER;
 
     if (xQueueSend(*queue, &*evt, portMAX_DELAY) != pdTRUE) {

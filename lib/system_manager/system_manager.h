@@ -5,10 +5,15 @@
 #include "inttypes.h"
 #include "driver/uart.h"
 #include "esp_console.h"
+#include "freertos/FreeRTOS.h"
 #include "freertos/queue.h"
 
 
 #define UART_BUF_SIZE       256
+
+class SystemManager;
+
+SystemManager *get_system_manager();
 
 
 class SystemManager {

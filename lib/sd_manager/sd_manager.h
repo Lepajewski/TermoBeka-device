@@ -7,10 +7,12 @@
 
 #include "tb_event.h"
 #include "sd_card.h"
+#include "system_manager.h"
 
 
 class SDManager {
  private:
+    SystemManager *sysMgr;
     QueueHandle_t *event_queue_handle;
     QueueHandle_t *sd_queue_handle;
     SDCard card;
