@@ -4,6 +4,7 @@ idf_component_register(
         "commands/utility_commands.cpp"
         "commands/ui_commands.cpp"
         "commands/sd_commands.cpp"
+        "commands/wifi_commands.cpp"
         "commands/commands.cpp"
         "console_task.cpp"
         "system_manager.cpp"

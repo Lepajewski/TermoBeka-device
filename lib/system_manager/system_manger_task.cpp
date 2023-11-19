@@ -1,7 +1,5 @@
-#include "freertos/FreeRTOS.h"
-#include "freertos/task.h"
 #include "logger.h"
-
+#include "system_manager.h"
 #include "system_manager_task.h"
 
 
@@ -19,8 +17,6 @@ void systemManagerTask(void *pvParameters) {
     while (1) {
         TB_LOGI(TAG, "hello");
         sysMgr->poll_event();
-
-        // sysMgr.process_command();
 
         vTaskDelay(pdMS_TO_TICKS(1000));
     }

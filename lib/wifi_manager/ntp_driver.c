@@ -6,7 +6,7 @@
 
 #include "logger.h"
 #include "global_config.h"
-#include "ntp_stack.h"
+#include "ntp_driver.h"
 
 
 #define BIT_NTP_GOT_TIME        BIT0
@@ -61,6 +61,11 @@ esp_err_t ntp_start() {
     }
 
     return err;
+}
+
+void ntp_stop() {
+    TB_LOGI(TAG, "stop");
+   esp_sntp_stop();
 }
 
 void get_timestamp(char *timestamp) {

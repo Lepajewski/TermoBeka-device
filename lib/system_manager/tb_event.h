@@ -12,14 +12,17 @@
 #define SD_QUEUE_SIZE                   EVENT_QUEUE_SIZE
 #define SD_QUEUE_MAX_PAYLOAD            EVENT_QUEUE_MAX_PAYLOAD
 
+#define WIFI_QUEUE_SIZE                 EVENT_QUEUE_SIZE
+#define WIFI_QUEUE_MAX_PAYLOAD          EVENT_QUEUE_MAX_PAYLOAD
+
 
 enum class EventOrigin {
-    MAIN,
     SYSTEM_MANAGER,
     CONSOLE,
     UI,
-    SERVER,
     SD,
+    WIFI,
+    SERVER,
     PROFILE_CONTROLLER,
     UNKNOWN,
     NONE,
@@ -74,9 +77,6 @@ typedef struct {
     uint8_t payload[EVENT_QUEUE_MAX_PAYLOAD];
 } Event;
 
-const char *event_origin_to_s(EventOrigin origin);
-const char *event_type_to_s(EventType type);
-
 
 enum class UIEventType {
     BUZZER_BEEP,
@@ -110,5 +110,27 @@ typedef struct {
     uint8_t payload[SD_QUEUE_MAX_PAYLOAD];
 } SDEvent;
 
+
+enum class WiFiEventType {
+    CONNECT,            // <ssid> <pass>
+    DISCONNECT,
+    IS_CONNECTED,
+    GET_TIME,
+    SCAN,
+    NONE
+};
+
+typedef struct {
+    EventOrigin origin;
+    WiFiEventType type;
+    uint8_t payload[WIFI_QUEUE_MAX_PAYLOAD];
+} WiFiEvent;
+
+
+const char *event_origin_to_s(EventOrigin origin);
+const char *event_type_to_s(EventType type);
+const char *ui_event_type_to_s(UIEventType type);
+const char *sd_event_type_to_s(SDEventType type);
+const char *wifi_event_type_to_s(WiFiEventType type);
 
 #endif  // LIB_SYSTEM_MANAGER_TB_EVENT_H_

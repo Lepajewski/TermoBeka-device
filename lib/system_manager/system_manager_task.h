@@ -2,9 +2,6 @@
 #define LIB_SYSTEM_MANAGER_SYSTEM_MANAGER_TASK_H_
 
 
-#include "system_manager.h"
-
-
 void systemManagerTask(void *pvParameters);
 
 

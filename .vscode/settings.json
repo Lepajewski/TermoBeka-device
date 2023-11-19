@@ -53,6 +53,7 @@
         "streambuf": "cpp",
         "typeinfo": "cpp",
         "ets_sys.h": "c",
-        "dirent.h": "c"
+        "dirent.h": "c",
+        "cstring": "c"
     }
 }

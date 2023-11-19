@@ -9,21 +9,22 @@
 #include "global_config.h"
 #include "nvs_manager.h"
 #include "logger.h"
-#include "wifi_stack.h"
-#include "system_manager.h"
-#include "system_manager_task.h"
 
+#include "system_manager_task.h"
 #include "ui_manager_task.h"
 #include "sd_manager_task.h"
+#include "wifi_manager_task.h"
 
 
 static const char * const TAG = "MAIN";
 
 
 // main must be C function
+#ifdef __cplusplus
 extern "C" {
     void app_main(void);
 }
+#endif
 
 
 
@@ -60,6 +61,6 @@ void app_main(void)
 
     TB_LOGI(TAG, "log level: %" PRIu8, config.log_level);
 
-    // initialize WiFi driver
-    wifi_init();
+    // start WiFi Manager Task
+    xTaskCreatePinnedToCore(wifiManagerTask, "WiFiMgr", 4096, NULL, 1, NULL, 0);
 }
