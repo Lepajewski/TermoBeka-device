@@ -141,6 +141,37 @@ esp_err_t wifi_end() {
     return esp_wifi_stop();
 }
 
+esp_err_t wifi_scan() {
+    esp_err_t err = ESP_OK;
+
+    uint16_t number = SCAN_LIST_SIZE;
+    wifi_ap_record_t ap_info[SCAN_LIST_SIZE];
+    uint16_t ap_count = 0;
+    memset(ap_info, 0, sizeof(ap_info));
+
+    if ((err = esp_wifi_scan_start(NULL, true)) != ESP_OK) {
+        return err;
+    }
+
+    if ((err = esp_wifi_scan_get_ap_records(&number, ap_info)) != ESP_OK) {
+        return err;
+    }
+
+    if ((err = esp_wifi_scan_get_ap_num(&ap_count)) != ESP_OK) {
+        return err;
+    }
+
+    for (int i = 0; i < number; i++) {
+        printf("SSID:\t%-32s RSSI:\t%-3d Authmode:\t%d Channel:\t%d\n", 
+            ap_info[i].ssid, 
+            ap_info[i].rssi,
+            ap_info[i].authmode,
+            ap_info[i].primary);
+    }
+
+    return err;
+}
+
 void wifi_ntp_connect() {
     esp_err_t err = ntp_start();
     if (err == ESP_ERR_TIMEOUT) {

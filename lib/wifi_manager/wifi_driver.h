@@ -23,6 +23,9 @@
     BIT_WIFI_SCAN_DONE)
 
 
+#define SCAN_LIST_SIZE              10
+
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -35,9 +38,10 @@ typedef struct {
 } wifi_driver_config_t;
 
 
+void wifi_set_event_group(EventGroupHandle_t *event_group);
 esp_err_t wifi_begin(wifi_driver_config_t *cfg);
 esp_err_t wifi_end();
-void wifi_set_event_group(EventGroupHandle_t *event_group);
+esp_err_t wifi_scan();
 void wifi_ntp_connect();
 
 

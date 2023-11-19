@@ -100,12 +100,21 @@ static int cmd_get_time(int argc, char **argv) {
     return send_to_wifi_queue(&evt);
 }
 
+static int cmd_wifi_scan(int argc, char **argv) {
+    TB_ACK(TAG, "wifi_scan");
+    WiFiEvent evt;
+    evt.type = WiFiEventType::SCAN;
+
+    return send_to_wifi_queue(&evt);
+}
+
 static const esp_console_cmd_t commands[] = {
 //    command           help print                      hint        callback            arguments
     { "connect",        "connect to WiFi",              NULL,       &cmd_connect,       &cmd_wifi_credencials   },
     { "disconnect",     "disconnect from WiFi",         NULL,       &cmd_disconnect,    NULL                    },
     { "is_connected",   "query WiFi status",            NULL,       &cmd_is_connected,  NULL                    },
     { "get_time",       "get current time",             NULL,       &cmd_get_time,      NULL                    },
+    { "wifi_scan",      "scan for WiFi APs",            NULL,       &cmd_wifi_scan,     NULL                    },
 };
 
 void register_wifi() {

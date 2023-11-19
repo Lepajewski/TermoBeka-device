@@ -38,8 +38,6 @@ void consoleTask(void *pvParameters) {
             memcpy(evt.payload, line, strlen(line) + 1);
         }
 
-        TB_LOGI(TAG, "send command");
-
         if (xQueueSend(*event_queue_handle, &evt, portMAX_DELAY) != pdTRUE) {
             TB_LOGE(TAG, "cmd event send fail");
         }

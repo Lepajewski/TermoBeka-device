@@ -147,6 +147,16 @@ void WiFiManager::process_wifi_event(WiFiEvent *evt) {
         }
         case WiFiEventType::SCAN:
         {
+            if (this->running) {
+                esp_err_t err = wifi_scan();
+                if (err == ESP_OK) {
+                    TB_LOGI(TAG, "scan done");
+                } else {
+                    TB_LOGW(TAG, "scan failed: %d", err);
+                }
+            } else {
+                TB_LOGW(TAG, "wifi not running");
+            }
             break;
         }
         case WiFiEventType::NONE:
