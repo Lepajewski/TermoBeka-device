@@ -3,6 +3,9 @@
 
 
 #include "drivers/pcd8544.h"
+#include <cstdarg>
+#include "logo.h"
+#include "global_config.h"
 
 
 class LCDController {

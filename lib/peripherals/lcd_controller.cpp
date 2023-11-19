@@ -1,8 +1,4 @@
-#include <cstdarg>
-
-#include "global_config.h"
 #include "lcd_controller.h"
-
 
 uint8_t example_bitmap[] = {
     0b11100000,
@@ -82,14 +78,7 @@ void LCDController::begin() {
         ESP_ERROR_CHECK(pcd8544_init(&this->config));
         this->initialized = true;
 
-        clear();
-        draw_line(0, 0, 83, 47);
-        draw_line(0, 47, 83, 0);
-        draw_line(0, 0, 83, 0);
-        draw_line(83, 0, 83, 47);
-        draw_line(0, 0, 0, 47);
-        draw_line(0, 47, 83, 47);
-        finish_frame();
+        draw_logo();
     }
 }
 
@@ -113,19 +102,9 @@ void LCDController::finish_frame() {
 void LCDController::draw_logo() {
     if (this->initialized) {
         clear();
-        draw_bitmap(example_bitmap, 18, 2, false);
 
-        /* transparent on */
-        set_cursor(30, 3);
-        draw_bitmap(example_bitmap, 18, 2, false);
-        set_cursor(35, 4);
-        draw_bitmap(example_bitmap, 18, 2, true);
-
-        /* transparent off */
-        set_cursor(50, 0);
-        draw_bitmap(example_bitmap, 18, 2, false);
-        set_cursor(55, 1);
-        draw_bitmap(example_bitmap, 18, 2, false);
+        set_cursor(0, 0);
+        draw_bitmap(logo_bitmap, logo_rows, logo_cols, false);
 
         finish_frame();
     }
