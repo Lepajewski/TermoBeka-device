@@ -1,6 +1,5 @@
 #include <cstring>
 
-#include "esp_err.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/queue.h"
 #include "argtable3/argtable3.h"
@@ -8,14 +7,13 @@
 #include "global_config.h"
 #include "system_manager.h"
 #include "logger.h"
-#include "tb_event.h"
 #include "wifi_commands.h"
 
 
 const char * const TAG = "CMDwifi";
 
 
-static esp_err_t send_to_wifi_queue(WiFiEvent *evt) {
+esp_err_t send_to_wifi_queue(WiFiEvent *evt) {
     SystemManager *sysMgr = get_system_manager();
     QueueHandle_t *queue = sysMgr->get_wifi_queue();
     evt->origin = EventOrigin::SYSTEM_MANAGER;
@@ -27,7 +25,7 @@ static esp_err_t send_to_wifi_queue(WiFiEvent *evt) {
     return ESP_OK;
 }
 
-static esp_err_t process_wifi_credentials(WiFiEventType e_type, const char *ssid, const char *pass) {
+esp_err_t process_wifi_credentials(WiFiEventType e_type, const char *ssid, const char *pass) {
     esp_err_t err = ESP_OK;
     WiFiEvent evt;
     evt.type = e_type;

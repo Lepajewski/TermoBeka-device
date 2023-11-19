@@ -24,7 +24,7 @@ static void time_sync_notification_cb(struct timeval *tv) {
 
 static void ntp_init() {
     esp_sntp_setoperatingmode(SNTP_OPMODE_POLL);
-    esp_sntp_setservername(0, NTP_SERVER_ADDR);
+    esp_sntp_setservername(0, NTP_DEFAULT_SERVER_ADDR);
     sntp_set_time_sync_notification_cb(time_sync_notification_cb);
     esp_sntp_init();
 }

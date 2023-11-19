@@ -17,4 +17,5 @@ idf_component_register(
         esp_flash
         linenoise
         logger
+        nvs_manager
 )

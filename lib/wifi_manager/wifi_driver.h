@@ -32,8 +32,8 @@ extern "C" {
 
 
 typedef struct {
-    char ssid[32];
-    char pass[64];
+    char ssid[WIFI_MAX_SSID_LEN];
+    char pass[WIFI_MAX_PASS_LEN];
     ntp_driver_config_t ntp_config;
 } wifi_driver_config_t;
 

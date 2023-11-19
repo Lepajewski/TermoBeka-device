@@ -12,25 +12,7 @@ const char * const TAG = "WiFiMgr";
 WiFiManager::WiFiManager() :
     running(false),
     connected(false)
-{
-    strlcpy(this->config.ssid, WIFI_DEFAULT_SSID, WIFI_MAX_SSID_LEN);
-    strlcpy(this->config.pass, WIFI_DEFAULT_PASS, WIFI_MAX_PASS_LEN);
-
-    this->config.ntp_config = {
-        NTP_SERVER_ADDR,
-        NTP_TIME_ZONE,
-        NTP_CONNECT_TIMEOUT_MS,
-        NTP_RECONNECT_INTERVAL_MS
-    };
-    
-    this->setup();
-}
-
-WiFiManager::WiFiManager(wifi_driver_config_t *config) :
-    running(false),
-    connected(false),
-    config(*config)
-{
+{    
     this->setup();
 }
 
@@ -45,6 +27,13 @@ void WiFiManager::setup() {
     this->sysMgr = get_system_manager();
     this->event_queue_handle = this->sysMgr->get_event_queue();
     this->wifi_queue_handle = this->sysMgr->get_wifi_queue();
+
+    this->config.ntp_config = {
+        NTP_DEFAULT_SERVER_ADDR,
+        NTP_TIME_ZONE,
+        NTP_CONNECT_TIMEOUT_MS,
+        NTP_RECONNECT_INTERVAL_MS
+    };
 }
 
 void WiFiManager::begin() {

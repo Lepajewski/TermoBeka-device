@@ -27,7 +27,6 @@ class WiFiManager {
     void poll_wifi_events();
  public:
     WiFiManager();
-    WiFiManager(wifi_driver_config_t *config);
     ~WiFiManager();
 
     void begin();

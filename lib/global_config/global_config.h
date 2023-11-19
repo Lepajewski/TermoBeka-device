@@ -38,17 +38,10 @@
 #define WIFI_DEFAULT_SSID                   "Orange_Swiatlowod_3760"
 #define WIFI_MAX_PASS_LEN                   64
 #define WIFI_DEFAULT_PASS                   "2FT752946HF7"
-#define NTP_SERVER_ADDR                     "pool.ntp.org"
+#define NTP_DEFAULT_SERVER_ADDR             "pool.ntp.org"
 #define NTP_TIME_ZONE                       "CET-1CEST,M3.5.0/2,M10.5.0/3"
 #define NTP_CONNECT_TIMEOUT_MS              5000
 #define NTP_RECONNECT_INTERVAL_MS           15000
-
-
-typedef struct {
-    char wifi_ssid[32];
-    char wifi_pass[64];
-    esp_log_level_t log_level;
-} __attribute__ ((packed)) nvs_device_config_t;
 
 
 #define MIN(a,b) ((a) < (b) ? (a) : (b))

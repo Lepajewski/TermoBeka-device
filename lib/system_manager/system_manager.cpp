@@ -8,6 +8,7 @@
 #include "logger.h"
 #include "tb_event.h"
 #include "console_task.h"
+#include "commands/wifi_commands.h"
 #include "commands/commands.h"
 #include "system_manager.h"
 
@@ -68,6 +69,28 @@ SystemManager::SystemManager(uart_port_t uart_num, const char *prompt_str, esp_c
 
 SystemManager::~SystemManager() {
     deinit_console();
+}
+
+void SystemManager::begin() {
+    this->nvs_manager.begin();
+
+    this->nvs_manager.read_default_config();
+
+    nvs_device_config_t *default_config = this->nvs_manager.get_default_config();
+    nvs_device_config_t *config = this->nvs_manager.get_config();
+
+    TB_LOGI(TAG, "DEFAULT CONFIG: | %s %s %d |", default_config->wifi_ssid, default_config->wifi_pass, default_config->log_level);
+    TB_LOGI(TAG, "CONFIG: | %s %s %d |", config->wifi_ssid, config->wifi_pass, config->log_level);
+
+    this->setup_logger();
+    this->init_console();
+    if (this->send_connect_wifi() != ESP_OK) {
+        TB_LOGE(TAG, "fail to send wifi connect evt");
+    }
+}
+
+void SystemManager::setup_logger() {
+    esp_log_level_set("*", this->nvs_manager.get_config()->log_level);
 }
 
 void SystemManager::init_queues() {
@@ -147,6 +170,7 @@ void SystemManager::init_console() {
 
     register_commands();
 
+    TB_LOGI(TAG, "init console");
     xTaskCreate(consoleTask, "ConsoleTask", 4096, (void *) this->prompt_str, 1, NULL);
 }
 
@@ -182,18 +206,14 @@ void SystemManager::poll_event() {
                 break;
             }
         }
-
     }
 }
 
 void SystemManager::process_command(char *cmd) {
-    /* Add the command to the history if not empty*/
-
     if (strlen(cmd) > 0) {
         linenoiseHistoryAdd(cmd);
     }
 
-    /* Try to run the command */
     int ret;
     esp_err_t err = esp_console_run(cmd, &ret);
 
@@ -206,8 +226,21 @@ void SystemManager::process_command(char *cmd) {
     } else if (err != ESP_OK) {
         TB_LOGI(TAG, "Internal error: %s\n", esp_err_to_name(err));
     }
+}
 
-    /* linenoise allocates line buffer on the heap, so need to free it */
+esp_err_t SystemManager::send_connect_wifi() {
+    this->send_diconnect_wifi();
+    const char *ssid = this->nvs_manager.get_config()->wifi_ssid;
+    const char *pass = this->nvs_manager.get_config()->wifi_pass;
+
+    return process_wifi_credentials(WiFiEventType::CONNECT, ssid, pass);
+}
+
+esp_err_t SystemManager::send_diconnect_wifi() {
+    WiFiEvent evt;
+    evt.type = WiFiEventType::DISCONNECT;
+
+    return send_to_wifi_queue(&evt);
 }
 
 QueueHandle_t *SystemManager::get_event_queue() {
@@ -224,6 +257,14 @@ QueueHandle_t *SystemManager::get_sd_queue() {
 
 QueueHandle_t *SystemManager::get_wifi_queue() {
     return &this->wifi_queue_handle;
+}
+
+const char *SystemManager::get_wifi_ssid() {
+    return this->nvs_manager.get_config()->wifi_ssid;
+}
+
+const char *SystemManager::get_wifi_pass() {
+    return this->nvs_manager.get_config()->wifi_pass;
 }
 
 void SystemManager::register_commands() {
