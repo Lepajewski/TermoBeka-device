@@ -4,6 +4,7 @@ idf_component_register(
         "ui_manager_task.cpp"
         "scenes/scene.cpp"
         "scenes/startup_scene.cpp"
+        "scenes/menu_scene.cpp"
     REQUIRES
         logger
         peripherals
