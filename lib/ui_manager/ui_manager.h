@@ -8,30 +8,35 @@
 #include "buzzer.h"
 #include "lcd_controller.h"
 #include "system_manager.h"
+#include "scenes/scene.h"
 
+#include <memory>
 
 class GPIOExpander;
 
-
 class UIManager {
  private:
-    SystemManager *sysMgr;
-    QueueHandle_t *event_queue_handle;
-    QueueHandle_t *ui_queue_handle;
-    GPIOExpander *expander;
-    Buzzer buzzer;
-    LCDController lcd;
+   SystemManager *sysMgr;
+   QueueHandle_t *event_queue_handle;
+   QueueHandle_t *ui_queue_handle;
+   GPIOExpander *expander;
+   Buzzer buzzer;
+   LCDController lcd;
 
+   std::unique_ptr<Scene> current_scene;
 
-    void button_callback(Button* button, PressType type);
-    void process_ui_event(UIEvent *evt);
-    void poll_ui_events();
+   void button_callback(Button* button, PressType type);
+   void process_ui_event(UIEvent *evt);
+   void poll_ui_events();
+
+   void switch_scene(SceneEnum target);
  public:
-    UIManager();
-    ~UIManager();
+   UIManager();
+   ~UIManager();
 
-    void setup();
-    void process_events();
+   void setup();
+   void process_events();
+   void tick_state();
 };
 
 #endif

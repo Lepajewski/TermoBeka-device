@@ -22,6 +22,8 @@ void uiManagerTask(void *pvParameters) {
     while (1) {
         uiManager.process_events();
 
+        uiManager.tick_state();
+
         vTaskDelay(pdMS_TO_TICKS(10));
     }
 }
