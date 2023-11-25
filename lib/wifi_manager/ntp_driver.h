@@ -19,7 +19,6 @@ typedef struct {
 
 esp_err_t ntp_start();
 void ntp_stop();
-void get_timestamp(char *timestamp);
 
 
 #ifdef __cplusplus

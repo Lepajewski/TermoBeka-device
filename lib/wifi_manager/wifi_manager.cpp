@@ -85,7 +85,7 @@ void WiFiManager::process_wifi_driver_events() {
         TB_LOGI(TAG, "NTP start");
         wifi_ntp_connect();
     } else if ((bits & BIT_WIFI_NTP_GOT_TIME) == BIT_WIFI_NTP_GOT_TIME) {
-        char timestamp[27];
+        char timestamp[TIMESTAMP_SIZE];
         get_timestamp(timestamp);
         TB_LOGI(TAG, "got time: %s", timestamp);
         this->send_evt_got_time();
@@ -130,7 +130,7 @@ void WiFiManager::process_wifi_event(WiFiEvent *evt) {
         }
         case WiFiEventType::GET_TIME:
         {
-            char timestamp[27];
+            char timestamp[TIMESTAMP_SIZE];
             get_timestamp(timestamp);
             TB_LOGI(TAG, "time is: %s", timestamp);
             break;

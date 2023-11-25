@@ -54,4 +54,8 @@ typedef struct {
 #define MAX(a,b) ((a) > (b) ? (a) : (b))
 
 
+#define TIMESTAMP_SIZE                      27
+void get_timestamp(char *timestamp);
+
+
 #endif  // SRC_CONFIG_H_
