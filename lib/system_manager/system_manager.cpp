@@ -30,9 +30,8 @@ SystemManager::SystemManager() {
 
     this->prompt_str = "esp $ ";
 
-    /* Initialize the console */
     this->esp_console_config = {
-        .max_cmdline_length = 256,
+        .max_cmdline_length = UART_BUF_SIZE,
         .max_cmdline_args = 8,
 #if CONFIG_LOG_COLORS
         .hint_color = atoi(LOG_COLOR_CYAN),
@@ -46,9 +45,8 @@ SystemManager::SystemManager() {
 SystemManager::SystemManager(uart_port_t uart_num, const char *prompt_str) {
     this->uart_num = uart_num;
     this->prompt_str = prompt_str;
-    /* Initialize the console */
     this->esp_console_config = {
-        .max_cmdline_length = 256,
+        .max_cmdline_length = UART_BUF_SIZE,
         .max_cmdline_args = 8,
 #if CONFIG_LOG_COLORS
         .hint_color = atoi(LOG_COLOR_CYAN),
@@ -74,7 +72,8 @@ SystemManager::~SystemManager() {
 void SystemManager::begin() {
     this->nvs_manager.begin();
 
-    this->nvs_manager.read_default_config();
+    this->nvs_manager.load_default_config();
+    this->nvs_manager.load_config();
 
     nvs_device_config_t *default_config = this->nvs_manager.get_default_config();
     nvs_device_config_t *config = this->nvs_manager.get_config();
@@ -187,16 +186,37 @@ void SystemManager::poll_event() {
         TB_LOGI(TAG, "new event: %d, type: %d", evt.origin, evt.type);
 
         switch (evt.type) {
+            case EventType::WIFI_CONNECTED:
+            {
+                TB_LOGI(TAG, "wifi connected");
+                break;
+            }
+            case EventType::WIFI_DISCONNECTED:
+            {
+                TB_LOGI(TAG, "wifi disconnected");
+                break;
+            }
+            case EventType::WIFI_GOT_TIME:
+            {
+                TB_LOGI(TAG, "ntp got time");
+                break;
+            }
             case EventType::CONSOLE_COMMAND:
             {
                 TB_LOGI(TAG, "command: %s", reinterpret_cast<char *>(evt.payload));
-
                 process_command(reinterpret_cast<char *>(evt.payload));
                 break;
             }
             case EventType::UI_BUTTON_PRESS:
             {
                 TB_LOGI(TAG, "button: %u", evt.payload[0]);
+                break;
+            }
+            case EventType::SD_CONFIG_LOAD:
+            {
+                EventSDConfigLoad *payload = reinterpret_cast<EventSDConfigLoad*>(evt.payload);
+                TB_LOGI(TAG, "CONFIG: | %s %s %d |", payload->config.wifi_ssid, payload->config.wifi_pass, payload->config.log_level);
+                this->nvs_manager.save_config(&payload->config);
                 break;
             }
             case EventType::UNKNOWN:

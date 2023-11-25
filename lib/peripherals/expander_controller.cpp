@@ -39,7 +39,6 @@ void ExpanderController::begin() {
         ESP_ERROR_CHECK(pca9539_init(&this->config));
 
         // set expander registers to default value since there is not RST option
-        // ESP_ERROR_CHECK(pca9539_set_default_config(&this->config));
         pca9539_set_default_config(&this->config);
 
         this->initialized = true;

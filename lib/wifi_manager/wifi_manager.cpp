@@ -74,10 +74,12 @@ void WiFiManager::process_wifi_driver_events() {
         ntp_stop();
         this->running = false;
         this->connected = false;
+        this->send_evt_disconnected();
     } else if ((bits & BIT_WIFI_CONNECTED) == BIT_WIFI_CONNECTED) {
         TB_LOGI(TAG, "wifi connected");
         this->running = true;
         this->connected = true;
+        this->send_evt_connected();
         xEventGroupSetBits(this->wifi_event_group, BIT_WIFI_NTP_START);
     } else if ((bits & BIT_WIFI_NTP_START) == BIT_WIFI_NTP_START) {
         TB_LOGI(TAG, "NTP start");
@@ -86,6 +88,7 @@ void WiFiManager::process_wifi_driver_events() {
         char timestamp[27];
         get_timestamp(timestamp);
         TB_LOGI(TAG, "got time: %s", timestamp);
+        this->send_evt_got_time();
     } else if ((bits & BIT_WIFI_SCAN_DONE) == BIT_WIFI_SCAN_DONE) {
         TB_LOGI(TAG, "wifi scan done");
     }
@@ -97,14 +100,11 @@ void WiFiManager::process_wifi_event(WiFiEvent *evt) {
         case WiFiEventType::CONNECT:
         {
             if (!this->running || !this->connected) {
-                char ssid[WIFI_MAX_SSID_LEN+1];
-                char pass[WIFI_MAX_PASS_LEN+1];
-                memcpy(&ssid[0], &evt->payload[0], (WIFI_MAX_SSID_LEN+1) * sizeof(evt->payload[0]));
-                memcpy(&pass[0], &evt->payload[WIFI_MAX_SSID_LEN+1], WIFI_MAX_PASS_LEN+1);
-                strlcpy(this->config.ssid, ssid, WIFI_MAX_SSID_LEN);
-                strlcpy(this->config.pass, pass, WIFI_MAX_PASS_LEN);
+                WiFiEventCredentials *payload = reinterpret_cast<WiFiEventCredentials*>(evt->payload);
+                strlcpy(this->config.credentials.ssid, payload->credentials.ssid, WIFI_MAX_SSID_LEN);
+                strlcpy(this->config.credentials.pass, payload->credentials.pass, WIFI_MAX_PASS_LEN);
 
-                TB_LOGI(TAG, "NEW: ssid: %s pass: %s", this->config.ssid, this->config.pass);
+                TB_LOGI(TAG, "NEW: ssid: %s pass: %s", this->config.credentials.ssid, this->config.credentials.pass);
 
                 this->begin();
             } else {
@@ -114,9 +114,10 @@ void WiFiManager::process_wifi_event(WiFiEvent *evt) {
         }
         case WiFiEventType::DISCONNECT:
         {
-            if (this->running || !this->connected) {
+            if (this->running) {
                 TB_LOGI(TAG, "disconnecting");
                 this->end();
+                this->send_evt_disconnected();
             } else {
                 TB_LOGI(TAG, "already disconnected");
             }
@@ -155,7 +156,7 @@ void WiFiManager::process_wifi_event(WiFiEvent *evt) {
 }
 
 void WiFiManager::poll_wifi_events() {
-    WiFiEvent evt;
+    WiFiEvent evt = {};
 
     while (uxQueueMessagesWaiting(*this->wifi_queue_handle)) {
         if (xQueueReceive(*this->wifi_queue_handle, &evt, pdMS_TO_TICKS(10)) == pdPASS) {
@@ -170,3 +171,30 @@ void WiFiManager::process_events() {
     poll_wifi_events();
 }
 
+void WiFiManager::send_evt(Event *evt) {
+    evt->origin = EventOrigin::WIFI;
+    if (xQueueSend(*this->event_queue_handle, &*evt, portMAX_DELAY) != pdTRUE) {
+        TB_LOGE(TAG, "event send fail");
+    }
+}
+
+void WiFiManager::send_evt_connected() {
+    Event evt = {};
+    evt.type = EventType::WIFI_CONNECTED;
+
+    this->send_evt(&evt);
+}
+
+void WiFiManager::send_evt_disconnected() {
+    Event evt = {};
+    evt.type = EventType::WIFI_DISCONNECTED;
+
+    this->send_evt(&evt);
+}
+
+void WiFiManager::send_evt_got_time() {
+    Event evt = {};
+    evt.type = EventType::WIFI_GOT_TIME;
+
+    this->send_evt(&evt);
+}

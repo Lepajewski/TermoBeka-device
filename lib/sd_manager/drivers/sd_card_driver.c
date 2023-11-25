@@ -91,7 +91,6 @@ esp_err_t card_cat(const char *path, char *buf, size_t *bytes_read_last) {
             size_t bytes_read;
             if ((bytes_read = fread(buf, sizeof(*buf), SD_OPERATIONS_BUFFER_SIZE, file)) > 0) {
                 *bytes_read_last += bytes_read;
-                // printf("---BEGIN BLOCK (file ptr pos: %d)---\n", *bytes_read_last);
             }
         } else {
             err = ESP_FAIL;

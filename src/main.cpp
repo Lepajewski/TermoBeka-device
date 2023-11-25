@@ -1,13 +1,7 @@
-#include <stdio.h>
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 
-#include "esp_chip_info.h"
-#include "sdkconfig.h"
-#include "esp_flash.h"
-
 #include "global_config.h"
-#include "nvs_manager.h"
 #include "logger.h"
 
 #include "system_manager_task.h"
@@ -22,16 +16,14 @@ static const char * const TAG = "MAIN";
 // main must be C function
 #ifdef __cplusplus
 extern "C" {
-    void app_main(void);
-}
 #endif
-
 
 
 void app_main(void)
 {
     // default log level at at startup
     esp_log_level_set("*", DEFAULT_LOG_LEVEL);
+    TB_LOGI(TAG, "Start");
 
     // start System Manager Task
     xTaskCreatePinnedToCore(systemManagerTask, "SysMgr", 4096, NULL, 1, NULL, 1);
@@ -44,4 +36,12 @@ void app_main(void)
 
     // start WiFi Manager Task
     xTaskCreatePinnedToCore(wifiManagerTask, "WiFiMgr", 4096, NULL, 1, NULL, 0);
+
+    // end Main task
+    vTaskDelete(NULL);
 }
+
+
+#ifdef __cplusplus
+}
+#endif

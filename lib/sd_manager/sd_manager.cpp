@@ -30,15 +30,15 @@ void SDManager::end() {
     TB_LOGI(TAG, "SD Card unmounted");
 }
 
-char *SDManager::get_args(SDEvent *evt) {
+char *SDManager::make_path(const char *path) {
     uint8_t mount_point_len = strlen(this->card.get_mount_point()) + 1;
-    uint16_t payload_len = strlen(reinterpret_cast<char *>(evt->payload)) + 1;
+    uint16_t payload_len = strlen(path) + 1;
     const char *root_char = "/";
-    char *path = new char[payload_len + mount_point_len + strlen(root_char) + 1];
-    strncpy(path, this->card.get_mount_point(), mount_point_len);
-    strncat(path, root_char, strlen(root_char) + 1);
-    strncat(path, reinterpret_cast<char *>(evt->payload), payload_len);
-    return path;
+    char *new_path = new char[payload_len + mount_point_len + strlen(root_char) + 1];
+    strlcpy(new_path, this->card.get_mount_point(), mount_point_len);
+    strncat(new_path, root_char, strlen(root_char) + 1);
+    strncat(new_path, path, payload_len);
+    return new_path;
 }
 
 void SDManager::process_sd_event(SDEvent *evt) {
@@ -57,7 +57,8 @@ void SDManager::process_sd_event(SDEvent *evt) {
         }
         case SDEventType::LS:
         {
-            char *path = get_args(evt);
+            SDEventPathArg *payload = reinterpret_cast<SDEventPathArg*>(evt->payload);
+            char *path = this->make_path(payload->path);
             TB_LOGI(TAG, "list files, path: %s", path);
             this->card.ls(path);
 
@@ -66,7 +67,8 @@ void SDManager::process_sd_event(SDEvent *evt) {
         }
         case SDEventType::CAT:
         {
-            char *path = get_args(evt);
+            SDEventPathArg *payload = reinterpret_cast<SDEventPathArg*>(evt->payload);
+            char *path = this->make_path(payload->path);
             TB_LOGI(TAG, "cat, path: %s", path);
             this->card.cat(path);
 
@@ -75,7 +77,8 @@ void SDManager::process_sd_event(SDEvent *evt) {
         }
         case SDEventType::MKDIR:
         {
-            char *path = get_args(evt);
+            SDEventPathArg *payload = reinterpret_cast<SDEventPathArg*>(evt->payload);
+            char *path = this->make_path(payload->path);
             TB_LOGI(TAG, "mkdir %s", path);
             this->card.mkdir(path);
 
@@ -84,7 +87,8 @@ void SDManager::process_sd_event(SDEvent *evt) {
         }
         case SDEventType::TOUCH:
         {
-            char *path = get_args(evt);
+            SDEventPathArg *payload = reinterpret_cast<SDEventPathArg*>(evt->payload);
+            char *path = this->make_path(payload->path);
             TB_LOGI(TAG, "touch %s", path);
             this->card.touch(path);
 
@@ -93,7 +97,8 @@ void SDManager::process_sd_event(SDEvent *evt) {
         }
         case SDEventType::RM_FILE:
         {
-            char *path = get_args(evt);
+            SDEventPathArg *payload = reinterpret_cast<SDEventPathArg*>(evt->payload);
+            char *path = this->make_path(payload->path);
             TB_LOGI(TAG, "rm_file %s", path);
             this->card.rm(path);
 
@@ -102,7 +107,8 @@ void SDManager::process_sd_event(SDEvent *evt) {
         }
         case SDEventType::RM_DIR:
         {
-            char *path = get_args(evt);
+            SDEventPathArg *payload = reinterpret_cast<SDEventPathArg*>(evt->payload);
+            char *path = this->make_path(payload->path);
             TB_LOGI(TAG, "rm_dir %s", path);
             this->card.rmdir(path);
 
@@ -111,14 +117,13 @@ void SDManager::process_sd_event(SDEvent *evt) {
         }
         case SDEventType::SAVE_TO_FILE:
         {
-            char *path_line = get_args(evt);
-            char *line;
-            strtok_r(path_line, " ", &line);
-            TB_LOGI(TAG, "save_to_file: %s buf: %s", path_line, line);
+            SDEventPathBufArg *payload = reinterpret_cast<SDEventPathBufArg*>(evt->payload);
+            char *path = this->make_path(payload->params.path);
+            TB_LOGI(TAG, "save_to_file: %s buf: %s", path, payload->params.record);
             
-            this->card.save_buf(path_line, line);
+            this->card.save_buf(path, payload->params.record);
 
-            delete [] path_line;
+            delete [] path;
             break;
         }
         case SDEventType::NONE:

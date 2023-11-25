@@ -26,20 +26,15 @@ esp_err_t send_to_wifi_queue(WiFiEvent *evt) {
 }
 
 esp_err_t process_wifi_credentials(WiFiEventType e_type, const char *ssid, const char *pass) {
-    esp_err_t err = ESP_OK;
-    WiFiEvent evt;
+    WiFiEvent evt = {};
     evt.type = e_type;
+    WiFiEventCredentials payload = {};
 
-    if ((strlen(ssid) + strlen(pass)) < WIFI_QUEUE_MAX_PAYLOAD) {
-        memset(&evt.payload, 0, WIFI_QUEUE_MAX_PAYLOAD * sizeof(evt.payload[0]));
-        memcpy(&evt.payload[0], ssid, MIN(strlen(ssid), WIFI_MAX_SSID_LEN));
-        memcpy(&evt.payload[WIFI_MAX_SSID_LEN+1], pass, MIN(strlen(pass), WIFI_MAX_PASS_LEN));
-        err = send_to_wifi_queue(&evt);
-    } else {
-        err = ESP_FAIL;
-    }
+    strlcpy(payload.credentials.ssid, ssid, WIFI_MAX_SSID_LEN);
+    strlcpy(payload.credentials.pass, pass, WIFI_MAX_PASS_LEN);
+    memcpy(&evt.payload, &payload.buffer, sizeof(WiFiEventCredentials));
 
-    return err;
+    return send_to_wifi_queue(&evt);
 }
 
 

@@ -14,9 +14,6 @@ void uiManagerTask(void *pvParameters) {
     TB_LOGI(TAG, "start");
     UIManager uiManager;
 
-    // setup UI peripherals
-    // setup display
-
     uiManager.setup();
 
     while (1) {

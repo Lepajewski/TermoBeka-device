@@ -3,17 +3,26 @@
 
 #include <inttypes.h>
 
-#define EVENT_QUEUE_MAX_PAYLOAD         100  // bytes
+#include "global_config.h"
+#include "nvs_config.h"
+
+#define QUEUE_DEFAULT_PAYLOAD           100
+
+#define EVENT_QUEUE_MAX_PAYLOAD         128  // bytes
 #define EVENT_QUEUE_SIZE                20
 
 #define UI_QUEUE_SIZE                   EVENT_QUEUE_SIZE
-#define UI_QUEUE_MAX_PAYLOAD            EVENT_QUEUE_MAX_PAYLOAD
+#define UI_QUEUE_MAX_PAYLOAD            QUEUE_DEFAULT_PAYLOAD
 
 #define SD_QUEUE_SIZE                   EVENT_QUEUE_SIZE
-#define SD_QUEUE_MAX_PAYLOAD            EVENT_QUEUE_MAX_PAYLOAD
+#define SD_QUEUE_MAX_PAYLOAD            196
 
 #define WIFI_QUEUE_SIZE                 EVENT_QUEUE_SIZE
-#define WIFI_QUEUE_MAX_PAYLOAD          EVENT_QUEUE_MAX_PAYLOAD
+#define WIFI_QUEUE_MAX_PAYLOAD          QUEUE_DEFAULT_PAYLOAD
+
+
+#define MAX_PATH_LENGTH                 64
+#define MAX_RECORD_SIZE                 SD_QUEUE_MAX_PAYLOAD - MAX_PATH_LENGTH
 
 
 enum class EventOrigin {
@@ -77,6 +86,19 @@ typedef struct {
     uint8_t payload[EVENT_QUEUE_MAX_PAYLOAD];
 } Event;
 
+typedef union {
+    struct {
+        uint8_t num;
+        uint8_t type;
+    } press_data;
+    uint8_t buffer[EVENT_QUEUE_MAX_PAYLOAD];
+} EventUIButtonPress;
+
+typedef union {
+    nvs_device_config_t config;
+    uint8_t buffer[MAX(sizeof(nvs_device_config_t), EVENT_QUEUE_MAX_PAYLOAD)];
+} EventSDConfigLoad;
+
 
 enum class UIEventType {
     BUZZER_BEEP,
@@ -89,6 +111,11 @@ typedef struct {
     UIEventType type;
     uint8_t payload[UI_QUEUE_MAX_PAYLOAD];
 } UIEvent;
+
+typedef union {
+    uint32_t duration;
+    uint8_t buffer[UI_QUEUE_MAX_PAYLOAD];
+} UIEventBuzzerBeep;
 
 
 enum class SDEventType {
@@ -110,6 +137,19 @@ typedef struct {
     uint8_t payload[SD_QUEUE_MAX_PAYLOAD];
 } SDEvent;
 
+typedef union {
+    char path[SD_QUEUE_MAX_PAYLOAD];
+    uint8_t buffer[SD_QUEUE_MAX_PAYLOAD];
+} SDEventPathArg;
+
+typedef union {
+    struct {
+        char path[MAX_PATH_LENGTH];
+        char record[MAX_RECORD_SIZE];
+    } params;
+    uint8_t buffer[SD_QUEUE_MAX_PAYLOAD];
+} SDEventPathBufArg;
+
 
 enum class WiFiEventType {
     CONNECT,            // <ssid> <pass>
@@ -125,6 +165,11 @@ typedef struct {
     WiFiEventType type;
     uint8_t payload[WIFI_QUEUE_MAX_PAYLOAD];
 } WiFiEvent;
+
+typedef union {
+    wifi_credentials credentials;
+    uint8_t buffer[WIFI_QUEUE_MAX_PAYLOAD];
+} WiFiEventCredentials;
 
 
 const char *event_origin_to_s(EventOrigin origin);

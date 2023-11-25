@@ -105,8 +105,8 @@ esp_err_t wifi_begin(wifi_driver_config_t *cfg) {
     }
 
     wifi_config_t wifi_config = {0};
-    memcpy(wifi_config.sta.ssid, cfg->ssid, WIFI_MAX_SSID_LEN);
-    memcpy(wifi_config.sta.password, cfg->pass, WIFI_MAX_PASS_LEN);
+    memcpy(wifi_config.sta.ssid, cfg->credentials.ssid, WIFI_MAX_SSID_LEN);
+    memcpy(wifi_config.sta.password, cfg->credentials.pass, WIFI_MAX_PASS_LEN);
     wifi_config.sta.threshold.authmode = WIFI_AUTH_WPA2_PSK;
     wifi_config.sta.sae_pwe_h2e = WPA3_SAE_PWE_BOTH;
 

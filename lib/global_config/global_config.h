@@ -20,13 +20,14 @@
 #define PIN_GPIO_EXPANDER_INTR              GPIO_NUM_3  // GPIO_NUM_46
 #define GPIO_EXPANDER_FREQ_HZ               400000
 
+// LCD configuration
 #define PIN_LCD_SCLK                        GPIO_NUM_38  // CLK
 #define PIN_LCD_DIN                         GPIO_NUM_39  // DIN/MOSI
 #define PIN_LCD_DC                          GPIO_NUM_40  // DC - Data/Command
 #define PIN_LCD_CS                          GPIO_NUM_41  // CE - Chip Select
 #define PIN_LCD_RST                         GPIO_NUM_42  // RST - RESET
 
-
+// SD configuration
 #define PIN_SD_SCLK                         GPIO_NUM_12
 #define PIN_SD_MOSI                         GPIO_NUM_13
 #define PIN_SD_MISO                         GPIO_NUM_11
@@ -43,8 +44,14 @@
 #define NTP_CONNECT_TIMEOUT_MS              5000
 #define NTP_RECONNECT_INTERVAL_MS           15000
 
+typedef struct {
+    char ssid[WIFI_MAX_SSID_LEN];
+    char pass[WIFI_MAX_PASS_LEN];
+} wifi_credentials;
+
 
 #define MIN(a,b) ((a) < (b) ? (a) : (b))
+#define MAX(a,b) ((a) > (b) ? (a) : (b))
 
 
 #endif  // SRC_CONFIG_H_

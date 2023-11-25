@@ -45,9 +45,13 @@ static int cmd_beep(int argc, char **argv) {
         cmd_beep_args.duration->ival[0] = 500;
     }
 
-    UIEvent evt;
+    UIEvent evt = {};
     evt.type = UIEventType::BUZZER_BEEP;
-    memcpy(evt.payload, &cmd_beep_args.duration->ival[0], sizeof(cmd_beep_args.duration->ival[0]));
+
+    UIEventBuzzerBeep payload = {};
+    payload.duration = cmd_beep_args.duration->ival[0];
+
+    memcpy(&evt.payload, &payload.buffer, sizeof(payload));
 
     return send_to_ui_queue(&evt);
 }

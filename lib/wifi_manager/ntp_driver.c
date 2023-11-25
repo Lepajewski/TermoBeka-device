@@ -65,7 +65,7 @@ esp_err_t ntp_start() {
 
 void ntp_stop() {
     TB_LOGI(TAG, "stop");
-   esp_sntp_stop();
+    esp_sntp_stop();
 }
 
 void get_timestamp(char *timestamp) {

@@ -2,6 +2,10 @@
 #define LIB_WIFI_MANAGER_WIFI_DRIVER_H_
 
 
+#include "freertos/FreeRTOS.h"
+#include "freertos/event_groups.h"
+
+#include "global_config.h"
 #include "ntp_driver.h"
 
 
@@ -32,8 +36,7 @@ extern "C" {
 
 
 typedef struct {
-    char ssid[WIFI_MAX_SSID_LEN];
-    char pass[WIFI_MAX_PASS_LEN];
+    wifi_credentials credentials;
     ntp_driver_config_t ntp_config;
 } wifi_driver_config_t;
 

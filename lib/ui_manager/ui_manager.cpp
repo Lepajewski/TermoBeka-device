@@ -18,7 +18,6 @@ UIManager::~UIManager() {
 
 void UIManager::button_callback(Button *button, PressType type) {
     pca9539_pin_num pin_num = button->get_pin_num();
-    // TB_LOGI(TAG, "BUTTON %u, %u", pin_num, type);
 
     this->buzzer.beep(50);
 
@@ -26,6 +25,8 @@ void UIManager::button_callback(Button *button, PressType type) {
     switch (type) {
         case PressType::SHORT_PRESS:
         {
+            this->send_evt_button_press(pin_num, PressType::SHORT_PRESS);
+
             switch (pin_num) {
                 case P0_0:
                 case P0_1:
@@ -46,6 +47,8 @@ void UIManager::button_callback(Button *button, PressType type) {
         }
         case PressType::LONG_PRESS:
         {
+            this->send_evt_button_press(pin_num, PressType::LONG_PRESS);
+
             switch (pin_num) {
                 case P0_0:
                 {
@@ -61,19 +64,6 @@ void UIManager::button_callback(Button *button, PressType type) {
                 case P0_2:
                 {
                     this->expander->set_backlight_color(Color::G);
-
-                    Event evt;
-                    evt.origin = EventOrigin::UI;
-                    evt.type = EventType::UI_BUTTON_PRESS;
-                    
-                    if (sizeof(pin_num) < EVENT_QUEUE_MAX_PAYLOAD) {
-                        memcpy(evt.payload, &pin_num, sizeof(pin_num));
-                    }
-
-                    if (xQueueSend(*this->event_queue_handle, &evt, portMAX_DELAY) != pdTRUE) {
-                        TB_LOGE(TAG, "button event send fail");
-                    }
-
                     break;
                 }
                 case P0_3:
@@ -115,11 +105,10 @@ void UIManager::process_ui_event(UIEvent *evt) {
     switch (evt->type) {
         case UIEventType::BUZZER_BEEP:
         {
-            uint32_t duration = 0;
-            memcpy(&duration, evt->payload, sizeof(duration));
+            UIEventBuzzerBeep *payload = reinterpret_cast<UIEventBuzzerBeep*> (evt->payload);
 
-            TB_LOGI(TAG, "Duration: %u", duration);
-            this->buzzer.beep(duration);
+            TB_LOGI(TAG, "Duration: %u", payload->duration);
+            this->buzzer.beep(payload->duration);
             break;
         }
         case UIEventType::ERROR_SHOW:
@@ -146,4 +135,23 @@ void UIManager::poll_ui_events() {
 void UIManager::process_events() {
     this->expander->poll_intr_events();
     poll_ui_events();
+}
+
+void UIManager::send_evt(Event *evt) {
+    evt->origin = EventOrigin::UI;
+    if (xQueueSend(*this->event_queue_handle, &*evt, portMAX_DELAY) != pdTRUE) {
+        TB_LOGE(TAG, "event send fail");
+    }
+}
+
+void UIManager::send_evt_button_press(pca9539_pin_num pin_num, PressType type) {
+    Event evt = {};
+    evt.type = EventType::UI_BUTTON_PRESS;
+    EventUIButtonPress payload = {};
+    payload.press_data.num = static_cast<uint8_t>(pin_num);
+    payload.press_data.type = static_cast<uint8_t>(type);
+
+    memcpy(&evt.payload, &payload.buffer, sizeof(payload));
+
+    this->send_evt(&evt);
 }

@@ -26,6 +26,9 @@ class UIManager {
     void button_callback(Button* button, PressType type);
     void process_ui_event(UIEvent *evt);
     void poll_ui_events();
+
+    void send_evt(Event *evt);
+    void send_evt_button_press(pca9539_pin_num pin_num, PressType type);
  public:
     UIManager();
     ~UIManager();

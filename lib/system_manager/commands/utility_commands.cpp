@@ -1,16 +1,35 @@
+#include "string.h"
+
 #include "esp_system.h"
 #include "esp_chip_info.h"
 #include "esp_flash.h"
+#include "esp_log.h"
 #include "sdkconfig.h"
 #include "esp_console.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 
 #include "logger.h"
+#include "tb_event.h"
+#include "nvs_config.h"
+#include "system_manager.h"
 #include "utility_commands.h"
 
 
 const char * const TAG = "CMDsys";
+
+
+static esp_err_t send_to_event_queue(Event *evt) {
+    SystemManager *sysMgr = get_system_manager();
+    QueueHandle_t *queue = sysMgr->get_event_queue();
+    evt->origin = EventOrigin::CONSOLE;
+
+    if (xQueueSend(*queue, &*evt, portMAX_DELAY) != pdTRUE) {
+        TB_LOGE(TAG, "cmd sd event send fail");
+        return ESP_FAIL;
+    }
+    return ESP_OK;
+}
 
 
 static int cmd_get_free(int argc, char **argv) {
@@ -91,6 +110,19 @@ static int cmd_set_log_level(int argc, char **argv) {
     return ESP_OK;
 }
 
+static int cmd_new_cfg_sim(int argc, char **argv) {
+    TB_ACK(TAG, "new cfg sim");
+    Event evt = {};
+    evt.type = EventType::SD_CONFIG_LOAD;
+    EventSDConfigLoad payload = {};
+
+    strlcpy(payload.config.wifi_ssid, "ABCDEFGHIJK", WIFI_MAX_SSID_LEN);
+    strlcpy(payload.config.wifi_pass, "1234 1234", WIFI_MAX_PASS_LEN);
+    payload.config.log_level = ESP_LOG_WARN;
+    memcpy(&evt.payload, &payload.buffer, sizeof(EventSDConfigLoad));
+
+    return send_to_event_queue(&evt);
+}
 
 static const esp_console_cmd_t commands[] = {
 //    command               help print                                              hint        callback                arguments
@@ -101,7 +133,8 @@ static const esp_console_cmd_t commands[] = {
     { "get_tasks_info",     "Get information about running tasks",                  NULL,       &cmd_get_tasks_info,    NULL    },
     { "get_tasks_stats",    "Get tasks run time statistics",                        NULL,       &cmd_get_tasks_stats,   NULL    },
     { "get_log_level",      "Get current log level",                                NULL,       &cmd_get_log_level,     NULL    },
-    { "set_log_level",      "Set current log level",                                NULL,       &cmd_set_log_level,     NULL    }
+    { "set_log_level",      "Set current log level",                                NULL,       &cmd_set_log_level,     NULL    },
+    { "new_cfg_sim",        "simulate new config",                                  NULL,       &cmd_new_cfg_sim,       NULL    }
 };
 
 void register_system_utility() {
