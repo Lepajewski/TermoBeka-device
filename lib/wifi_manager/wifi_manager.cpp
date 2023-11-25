@@ -23,6 +23,7 @@ WiFiManager::~WiFiManager() {
 void WiFiManager::setup() {
     this->wifi_event_group = xEventGroupCreate();
     wifi_set_event_group(&this->wifi_event_group);
+    wifi_setup_timers();
 
     this->sysMgr = get_system_manager();
     this->event_queue_handle = this->sysMgr->get_event_queue();
@@ -37,21 +38,29 @@ void WiFiManager::setup() {
 }
 
 void WiFiManager::begin() {
-    esp_err_t err = wifi_begin(&this->config);
-    if (err != ESP_OK) {
-        TB_LOGE(TAG, "begin: %d", err);
-    }
+    this->end();
+    if (!this->running) {
+        esp_err_t err = wifi_begin(&this->config);
+        if (err != ESP_OK) {
+            TB_LOGE(TAG, "begin: %d", err);
+        }
+    } else {
+        TB_LOGI(TAG, "already connected");
+    }    
 }
 
 void WiFiManager::end() {
-    esp_err_t err = wifi_end();
-    if (err != ESP_OK) {
-        TB_LOGW(TAG, "fail to disconnect: %d", err);
+    if (this->running) {
+        esp_err_t err = wifi_end();
+        if (err != ESP_OK) {
+            TB_LOGE(TAG, "fail to disconnect: %d", err);
+        } else {
+            this->running = false;
+        }
+        // else not necessary as driver will call events
     } else {
-        this->running = false;
-        this->connected = false;
+        TB_LOGI(TAG, "already disconnected");
     }
-    // else not necessary as driver will call events
 }
 
 void WiFiManager::process_wifi_driver_events() {
@@ -72,12 +81,10 @@ void WiFiManager::process_wifi_driver_events() {
     } else if ((bits & BIT_WIFI_DISCONNECTED) == BIT_WIFI_DISCONNECTED) {
         TB_LOGI(TAG, "wifi disconnected");
         ntp_stop();
-        this->running = false;
         this->connected = false;
         this->send_evt_disconnected();
     } else if ((bits & BIT_WIFI_CONNECTED) == BIT_WIFI_CONNECTED) {
         TB_LOGI(TAG, "wifi connected");
-        this->running = true;
         this->connected = true;
         this->send_evt_connected();
         xEventGroupSetBits(this->wifi_event_group, BIT_WIFI_NTP_START);
@@ -91,6 +98,9 @@ void WiFiManager::process_wifi_driver_events() {
         this->send_evt_got_time();
     } else if ((bits & BIT_WIFI_SCAN_DONE) == BIT_WIFI_SCAN_DONE) {
         TB_LOGI(TAG, "wifi scan done");
+    } else if ((bits & BIT_WIFI_CONNECT_TIMEOUT) == BIT_WIFI_CONNECT_TIMEOUT) {
+        TB_LOGI(TAG, "wifi reconnecting...");
+        this->begin();
     }
 }
 
@@ -99,28 +109,20 @@ void WiFiManager::process_wifi_event(WiFiEvent *evt) {
     switch (evt->type) {
         case WiFiEventType::CONNECT:
         {
-            if (!this->running || !this->connected) {
-                WiFiEventCredentials *payload = reinterpret_cast<WiFiEventCredentials*>(evt->payload);
-                strlcpy(this->config.credentials.ssid, payload->credentials.ssid, WIFI_MAX_SSID_LEN);
-                strlcpy(this->config.credentials.pass, payload->credentials.pass, WIFI_MAX_PASS_LEN);
+            WiFiEventCredentials *payload = reinterpret_cast<WiFiEventCredentials*>(evt->payload);
+            strlcpy(this->config.credentials.ssid, payload->credentials.ssid, WIFI_MAX_SSID_LEN);
+            strlcpy(this->config.credentials.pass, payload->credentials.pass, WIFI_MAX_PASS_LEN);
 
-                TB_LOGI(TAG, "NEW: ssid: %s pass: %s", this->config.credentials.ssid, this->config.credentials.pass);
+            TB_LOGI(TAG, "NEW: ssid: %s pass: %s", this->config.credentials.ssid, this->config.credentials.pass);
 
-                this->begin();
-            } else {
-                TB_LOGI(TAG, "already connected");
-            }
+            this->begin();
             break;
         }
         case WiFiEventType::DISCONNECT:
         {
-            if (this->running) {
-                TB_LOGI(TAG, "disconnecting");
-                this->end();
-                this->send_evt_disconnected();
-            } else {
-                TB_LOGI(TAG, "already disconnected");
-            }
+            TB_LOGI(TAG, "disconnecting");
+            this->end();
+            this->send_evt_disconnected();
             break;
         }
         case WiFiEventType::IS_CONNECTED:

@@ -15,6 +15,7 @@
 static const char * const TAG = "WIFI";
 static EventGroupHandle_t wifi_event_group;
 static TimerHandle_t ntp_reconnect_timer;
+static TimerHandle_t wifi_reconnect_timer;
 static uint16_t connection_retries = 0;
 static esp_netif_t* esp_netif_sta;
 
@@ -29,10 +30,15 @@ static void event_handler(void *arg, esp_event_base_t event_base, int32_t event_
         TB_LOGI(TAG, "stopped");
         xEventGroupSetBits(wifi_event_group, BIT_WIFI_STOPPED);
     } else if (event_base == WIFI_EVENT && event_id == WIFI_EVENT_STA_DISCONNECTED) {
-        connection_retries++;
-        esp_wifi_connect();
-        TB_LOGI(TAG, "disconnected... retrying... %" PRIu16, connection_retries);
-        xEventGroupSetBits(wifi_event_group, BIT_WIFI_DISCONNECTED);
+        if (connection_retries < WIFI_RECONNECT_RETRY) {
+            connection_retries++;
+            esp_wifi_connect();
+            TB_LOGI(TAG, "disconnected... retrying... %" PRIu16, connection_retries);
+            xEventGroupSetBits(wifi_event_group, BIT_WIFI_DISCONNECTED);
+        } else {
+            TB_LOGW(TAG, "cannot connect to wifi, retrying in %ds", WIFI_RECONNECT_INTERVAL_MS/1000);
+            xTimerStart(wifi_reconnect_timer, 0);
+        }
     } else if (event_base == WIFI_EVENT && event_id == WIFI_EVENT_STA_CONNECTED) {
         TB_LOGI(TAG, "connected");
         xEventGroupSetBits(wifi_event_group, BIT_WIFI_CONNECTED);
@@ -48,14 +54,25 @@ static void event_handler(void *arg, esp_event_base_t event_base, int32_t event_
 
 static void ntp_reconnect_timer_cb(TimerHandle_t timer) {
     xEventGroupSetBits(wifi_event_group, BIT_WIFI_NTP_START);
+    xTimerStop(ntp_reconnect_timer, 0);
+}
+
+static void wifi_reconnect_timer_cb(TimerHandle_t timer) {
+    xEventGroupSetBits(wifi_event_group, BIT_WIFI_CONNECT_TIMEOUT);
+    connection_retries = 0;
+    xTimerStop(wifi_reconnect_timer, 0);
+}
+
+static void stop_timers() {
+    xTimerStop(ntp_reconnect_timer, 0);
+    xTimerStop(wifi_reconnect_timer, 0);
 }
 
 void wifi_set_event_group(EventGroupHandle_t *event_group) {
     wifi_event_group = *event_group;
 }
 
-esp_err_t wifi_begin(wifi_driver_config_t *cfg) {
-    esp_err_t err = ESP_OK;
+void wifi_setup_timers() {
     ntp_reconnect_timer = xTimerCreate(
         "ntpReconn",
         pdMS_TO_TICKS(NTP_RECONNECT_INTERVAL_MS),
@@ -63,6 +80,21 @@ esp_err_t wifi_begin(wifi_driver_config_t *cfg) {
         NULL,
         ntp_reconnect_timer_cb
     );
+
+    wifi_reconnect_timer = xTimerCreate(
+        "wifiReconn",
+        pdMS_TO_TICKS(WIFI_RECONNECT_INTERVAL_MS),
+        pdFALSE,
+        NULL,
+        wifi_reconnect_timer_cb
+    );
+}
+
+esp_err_t wifi_begin(wifi_driver_config_t *cfg) {
+    esp_err_t err = ESP_OK;
+    connection_retries = 0;
+
+    stop_timers();
 
     // initialize wifi in STA (stationary) mode
     if ((err = esp_netif_init()) != ESP_OK) {
@@ -127,6 +159,7 @@ esp_err_t wifi_begin(wifi_driver_config_t *cfg) {
 esp_err_t wifi_end() {
     esp_err_t err = ESP_OK;
 
+    stop_timers();
     ntp_stop();
 
     if ((err = esp_event_loop_delete_default()) != ESP_OK) {

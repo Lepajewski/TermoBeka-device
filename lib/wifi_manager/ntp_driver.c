@@ -14,6 +14,7 @@
 
 static const char * const TAG = "NTP";
 static EventGroupHandle_t ntp_event_group;
+static uint8_t ntp_running = 0;
 
 
 static void time_sync_notification_cb(struct timeval *tv) {
@@ -34,8 +35,14 @@ esp_err_t ntp_start() {
     TB_LOGI(TAG, "initializing SNTP");
     esp_err_t err = ESP_OK;
     ntp_event_group = xEventGroupCreate();
+
+    if (ntp_running == 1) {
+        TB_LOGW(TAG, "already running");
+        return ESP_FAIL;
+    }
     
     ntp_init();
+    ntp_running = 1;
 
     // wait for time to be set
     TB_LOGI(TAG, "Waiting for system time to be set...");
@@ -53,7 +60,7 @@ esp_err_t ntp_start() {
         tzset();
     } else {
         TB_LOGW(TAG, "could not get time, stopping NTP");
-        esp_sntp_stop();
+        ntp_stop();
         err = ESP_ERR_TIMEOUT;
     }
 
@@ -62,5 +69,8 @@ esp_err_t ntp_start() {
 
 void ntp_stop() {
     TB_LOGI(TAG, "stop");
-    esp_sntp_stop();
+    if (ntp_running == 1) {
+        esp_sntp_stop();
+        ntp_running = 0;
+    }
 }

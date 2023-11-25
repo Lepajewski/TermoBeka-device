@@ -4,6 +4,7 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/queue.h"
 #include "freertos/event_groups.h"
+#include "freertos/timers.h"
 
 #include "system_manager.h"
 #include "tb_event.h"

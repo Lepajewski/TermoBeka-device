@@ -116,9 +116,9 @@ static int cmd_new_cfg_sim(int argc, char **argv) {
     evt.type = EventType::SD_CONFIG_LOAD;
     EventSDConfigLoad payload = {};
 
-    strlcpy(payload.config.wifi_ssid, "ABCDEFGHIJK", WIFI_MAX_SSID_LEN);
-    strlcpy(payload.config.wifi_pass, "1234 1234", WIFI_MAX_PASS_LEN);
-    payload.config.log_level = ESP_LOG_WARN;
+    strlcpy(payload.config.wifi_ssid, "Orange_Swiatlowod_3760", WIFI_MAX_SSID_LEN);
+    strlcpy(payload.config.wifi_pass, "2FT752946HF7", WIFI_MAX_PASS_LEN);
+    payload.config.log_level = ESP_LOG_DEBUG;
     memcpy(&evt.payload, &payload.buffer, sizeof(EventSDConfigLoad));
 
     return send_to_event_queue(&evt);
