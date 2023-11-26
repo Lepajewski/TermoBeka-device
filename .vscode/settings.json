@@ -54,6 +54,7 @@
         "typeinfo": "cpp",
         "ets_sys.h": "c",
         "dirent.h": "c",
-        "cstring": "c"
+        "cstring": "c",
+        "condition_variable": "cpp"
     }
 }
