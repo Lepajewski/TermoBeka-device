@@ -24,6 +24,7 @@ class SystemManager {
     QueueHandle_t ui_queue_handle;
     QueueHandle_t sd_queue_handle;
     QueueHandle_t wifi_queue_handle;
+    QueueHandle_t profile_queue_handle;
 
     uart_port_t uart_num;
     const char *prompt_str;
@@ -54,6 +55,7 @@ class SystemManager {
     QueueHandle_t *get_ui_queue();
     QueueHandle_t *get_sd_queue();
     QueueHandle_t *get_wifi_queue();
+    QueueHandle_t *get_profile_queue();
 
     void poll_event();
     void init_console();

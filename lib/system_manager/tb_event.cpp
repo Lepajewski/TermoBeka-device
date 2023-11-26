@@ -7,8 +7,8 @@ const char *event_origin_to_s(EventOrigin origin) {
         case EventOrigin::UI:                               return "UI";
         case EventOrigin::SD:                               return "SD";
         case EventOrigin::WIFI:                             return "WiFi";
-        case EventOrigin::SERVER:                           return " Server";
-        case EventOrigin::PROFILE_CONTROLLER:               return "Profile Controller";
+        case EventOrigin::SERVER:                           return "Server";
+        case EventOrigin::PROFILE:                          return "Profile";
         case EventOrigin::NONE:                             return "none";
         case EventOrigin::UNKNOWN:                          return "unknown";
         default:                                            return "invalid";
@@ -42,7 +42,10 @@ const char *event_type_to_s(EventType type) {
         case EventType::SD_PROFILE_LOAD:                    return "SD profile load";
         case EventType::SD_PROFILE_DELETE:                  return "SD profile delete";
         case EventType::SD_LOG:                             return "SD log";
-        case EventType::PROFILE_CONTROLLER_STATUS_UPDATE:   return "profile controller status update";
+        case EventType::PROFILE_START:                      return "Profile start";
+        case EventType::PROFILE_STOP:                       return "Profile stop";
+        case EventType::PROFILE_RESUME:                     return "Profile resume";
+        case EventType::PROFILE_END:                        return "Profile end";
         case EventType::SERVER_CONNECTED:                   return "server connected";
         case EventType::SERVER_DISCONNECTED:                return "server disconnected";
         case EventType::SERVER_PROFILE_DOWNLOAD:            return "server profile download";
@@ -86,6 +89,18 @@ const char *wifi_event_type_to_s(WiFiEventType type) {
         case WiFiEventType::GET_TIME:                       return "get time";
         case WiFiEventType::SCAN:                           return "scan";
         case WiFiEventType::NONE:                           return "none";
+        default:                                            return "invalid";
+    }
+}
+
+const char *profile_event_type_to_s(ProfileEventType type) {
+    switch (type) {
+        case ProfileEventType::NEW_PROFILE:                 return "new profile";
+        case ProfileEventType::START:                       return "start";
+        case ProfileEventType::STOP:                        return "stop";
+        case ProfileEventType::RESUME:                      return "resume";
+        case ProfileEventType::END:                         return "end";
+        case ProfileEventType::NONE:                        return "none";
         default:                                            return "invalid";
     }
 }

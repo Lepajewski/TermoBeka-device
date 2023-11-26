@@ -5,6 +5,7 @@ idf_component_register(
         "commands/ui_commands.cpp"
         "commands/sd_commands.cpp"
         "commands/wifi_commands.cpp"
+        "commands/profile_commands.cpp"
         "commands/commands.cpp"
         "console_task.cpp"
         "system_manager.cpp"
@@ -18,4 +19,5 @@ idf_component_register(
         linenoise
         logger
         nvs_manager
+        profile_manager
 )

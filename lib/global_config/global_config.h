@@ -46,6 +46,16 @@
 #define NTP_CONNECT_TIMEOUT_MS              5000
 #define NTP_RECONNECT_INTERVAL_MS           15000
 
+
+// Profile configuration
+#define PROFILE_MAX_VERTICES                40
+#define PROFILE_MIN_TEMPERATURE             20
+#define PROFILE_MAX_TEMPERATURE             250
+#define PROFILE_STEP_TIME_MS                1000
+#define PROFILE_MIN_DURATION_S              60
+#define PROFILE_MAX_DURATION_S              86400
+
+
 typedef struct {
     char ssid[WIFI_MAX_SSID_LEN];
     char pass[WIFI_MAX_PASS_LEN];
@@ -58,6 +68,8 @@ typedef struct {
 
 #define TIMESTAMP_SIZE                      27
 void get_timestamp(char *timestamp);
+uint64_t get_time_ms();
+uint64_t get_time_since_startup_ms();
 
 
 #endif  // SRC_CONFIG_H_

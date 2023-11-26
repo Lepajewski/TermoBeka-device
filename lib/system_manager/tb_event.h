@@ -5,6 +5,8 @@
 
 #include "global_config.h"
 #include "nvs_config.h"
+#include "profile_type.h"
+
 
 #define QUEUE_DEFAULT_PAYLOAD           100
 
@@ -20,6 +22,9 @@
 #define WIFI_QUEUE_SIZE                 EVENT_QUEUE_SIZE
 #define WIFI_QUEUE_MAX_PAYLOAD          QUEUE_DEFAULT_PAYLOAD
 
+#define PROFILE_QUEUE_SIZE              EVENT_QUEUE_SIZE
+#define PROFILE_QUEUE_MAX_PAYLOAD       256
+
 
 #define MAX_PATH_LENGTH                 64
 #define MAX_RECORD_SIZE                 SD_QUEUE_MAX_PAYLOAD - MAX_PATH_LENGTH
@@ -32,7 +37,7 @@ enum class EventOrigin {
     SD,
     WIFI,
     SERVER,
-    PROFILE_CONTROLLER,
+    PROFILE,
     UNKNOWN,
     NONE,
 };
@@ -68,7 +73,10 @@ enum class EventType {
     SD_PROFILE_DELETE,
     SD_LOG,
 
-    PROFILE_CONTROLLER_STATUS_UPDATE,
+    PROFILE_START,
+    PROFILE_STOP,
+    PROFILE_RESUME,
+    PROFILE_END,
 
     SERVER_CONNECTED,
     SERVER_DISCONNECTED,
@@ -100,6 +108,7 @@ typedef union {
 } EventSDConfigLoad;
 
 
+
 enum class UIEventType {
     BUZZER_BEEP,
     ERROR_SHOW,
@@ -116,6 +125,7 @@ typedef union {
     uint32_t duration;
     uint8_t buffer[UI_QUEUE_MAX_PAYLOAD];
 } UIEventBuzzerBeep;
+
 
 
 enum class SDEventType {
@@ -172,10 +182,32 @@ typedef union {
 } WiFiEventCredentials;
 
 
+enum class ProfileEventType {
+    NEW_PROFILE,
+    START,
+    STOP,
+    RESUME,
+    END,
+    NONE
+};
+
+typedef struct {
+    EventOrigin origin;
+    ProfileEventType type;
+    uint8_t payload[PROFILE_QUEUE_MAX_PAYLOAD];
+} ProfileEvent;
+
+typedef union {
+    profile_t profile;
+    uint8_t buffer[PROFILE_QUEUE_MAX_PAYLOAD];
+} ProfileEventNewProfile;
+
+
 const char *event_origin_to_s(EventOrigin origin);
 const char *event_type_to_s(EventType type);
 const char *ui_event_type_to_s(UIEventType type);
 const char *sd_event_type_to_s(SDEventType type);
 const char *wifi_event_type_to_s(WiFiEventType type);
+const char *profile_event_type_to_s(ProfileEventType type);
 
 #endif  // LIB_SYSTEM_MANAGER_TB_EVENT_H_

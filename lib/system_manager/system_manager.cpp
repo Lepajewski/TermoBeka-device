@@ -97,11 +97,13 @@ void SystemManager::init_queues() {
     this->ui_queue_handle = xQueueCreate(UI_QUEUE_SIZE, sizeof(UIEvent));
     this->sd_queue_handle = xQueueCreate(SD_QUEUE_SIZE, sizeof(SDEvent));
     this->wifi_queue_handle = xQueueCreate(WIFI_QUEUE_SIZE, sizeof(WiFiEvent));
+    this->profile_queue_handle = xQueueCreate(PROFILE_QUEUE_SIZE, sizeof(ProfileEvent));
 
     if (this->event_queue_handle == NULL ||
         this->ui_queue_handle == NULL ||
         this->sd_queue_handle == NULL ||
-        this->wifi_queue_handle == NULL) {
+        this->wifi_queue_handle == NULL ||
+        this->profile_queue_handle == NULL) {
         TB_LOGE(TAG, "queues init fail. Restarting...");
         vTaskDelay(pdMS_TO_TICKS(2000));
         fflush(stdout);
@@ -282,6 +284,10 @@ QueueHandle_t *SystemManager::get_sd_queue() {
 
 QueueHandle_t *SystemManager::get_wifi_queue() {
     return &this->wifi_queue_handle;
+}
+
+QueueHandle_t *SystemManager::get_profile_queue() {
+    return &this->profile_queue_handle;
 }
 
 const char *SystemManager::get_wifi_ssid() {
