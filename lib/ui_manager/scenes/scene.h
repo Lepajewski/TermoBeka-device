@@ -24,6 +24,8 @@ public:
     virtual SceneEnum get_scene_enum() = 0;
     virtual void button_callback(Button *button, PressType type) = 0;
 
+    virtual void update(float d_time) {}
+
     static std::unique_ptr<Scene> create_scene(SceneEnum target, LCDController* lcd);
 };
 

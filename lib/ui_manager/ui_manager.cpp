@@ -73,13 +73,19 @@ void UIManager::switch_scene(SceneEnum target) {
     this->current_scene = Scene::create_scene(target, &this->lcd);
 }
 
+void UIManager::check_scene_transition() {
+    if (this->current_scene->get_should_be_changed()) {
+        switch_scene(this->current_scene->get_next_scene());
+    }
+}
+
 void UIManager::process_events() {
     this->expander->poll_intr_events();
     poll_ui_events();
 }
 
-void UIManager::tick_state() {
-    if (this->current_scene->get_should_be_changed()) {
-        switch_scene(this->current_scene->get_next_scene());
-    }
+void UIManager::update(float d_time) {
+    check_scene_transition();
+
+    this->current_scene->update(d_time);
 }

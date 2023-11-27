@@ -30,13 +30,14 @@ class UIManager {
    void poll_ui_events();
 
    void switch_scene(SceneEnum target);
+   void check_scene_transition();
  public:
    UIManager();
    ~UIManager();
 
    void setup();
    void process_events();
-   void tick_state();
+   void update(float d_time);
 };
 
 #endif
