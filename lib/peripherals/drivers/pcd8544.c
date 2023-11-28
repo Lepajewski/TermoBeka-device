@@ -60,7 +60,7 @@ static esp_err_t pcd8544_init_spi() {
     };
 
     spi_device_interface_config_t devcfg = {
-        .clock_speed_hz = 1 * 1000 * 1000,
+        .clock_speed_hz = 4 * 1000 * 1000,
         .mode = 0,
         .spics_io_num = config.spi_pin.spics_io_num,
         .queue_size = PCD8544_TRANS_QUEUE_SIZE,
@@ -291,7 +291,7 @@ void pcd8544_puts(const char *text) {
         for (uint8_t j = 0; j < char_width-1; j++) {
             data[i * char_width + j] = font5x7[text[i]-FONT5X7_CHAR_CODE_OFFSET][j];
         }
-	data[i * char_width + char_width-1] = 0;
+	    data[i * char_width + char_width-1] = 0;
     }
     pcd8544_data(data, data_len);
 }

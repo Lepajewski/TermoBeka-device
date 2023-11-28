@@ -7,6 +7,8 @@
 #include "logo.h"
 #include "global_config.h"
 
+#define LCD_WIDTH 84
+#define LCD_HEIGHT 48
 
 class LCDController {
  private:
