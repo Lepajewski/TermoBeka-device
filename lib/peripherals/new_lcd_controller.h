@@ -5,10 +5,15 @@
 #include "driver/spi_master.h"
 
 #define LCD_CONTROLLER_TRANS_QUEUE_SIZE 32
-#define LCD_CONTROLLER_FRAME_BUF_SIZE 504
+#define LCD_CONTROLLER_MAX_TRANS_LENGTH_WITHOUT_DMA 256 // 32 bytes * 8 bits = 256 bits
+
+#define LCD_CONTROLLER_FRAME_BUF_SIZE 504 // 84 rows * 6 cols
+
 #define LCD_CONTROLLER_DEFAULT_CONTRAST 50
 #define LCD_CONTROLLER_TEMPERATURE_COEFFICIENT 2
 #define LCD_CONTROLLER_DEFAULT_BIAS 5
+
+#define LCD_CONTROLLER_WARN_SUPPRESS_INTERVAL_MS 5000
 
 class NewLCDController {
 public:
@@ -44,6 +49,8 @@ private:
     static void** data_ptrs;
     static uint8_t *frame_buf;
     static uint8_t data_count;
+    static uint8_t trans_queue_size;
+    static uint32_t last_warned_at;
 
     static esp_err_t init();
     static esp_err_t init_control_pin();
@@ -54,6 +61,14 @@ private:
 
     static void *malloc_for_queue_trans(size_t size);
     static void register_buf_for_gc(void* buf);
+    static void gc_finished_trans_data();
+
+    static void sync_and_gc();
+    static void check_queue_size();
+
+    static void queue_trans(const uint8_t *cmds_or_data, int len, bool dc);
+    static void send_cmd(const uint8_t *cmds, int len);
+    static void send_data(const uint8_t *data, int len);
 
     static void set_display_mode_int(DisplayMode mode);
     static void set_contrast_int(uint8_t vop);
