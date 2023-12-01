@@ -188,6 +188,7 @@ enum class ProfileEventType {
     STOP,
     RESUME,
     END,
+    INFO,
     NONE
 };
 

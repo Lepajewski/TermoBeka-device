@@ -11,22 +11,44 @@ const char * const TAG = "ProfMgr";
 ProfileManager::ProfileManager() {
     profile_t profile = {};
     for (uint8_t i = 0; i < PROFILE_MAX_VERTICES; i++) {
-        profile.points[i] = {-1, -1};
+        profile.points[i] = {-1, UINT32_MAX};
     }
 
-    profile.points[0] = {2000, 0};
-    profile.points[1] = {2000, 30000};
-    profile.points[2] = {5000, 60000};
-    profile.points[3] = {5000, 90000};
-    profile.points[4] = {3000, 110000};
-    profile.points[5] = {3000, 140000};
+    // profile.points[0] = {2000, 0};
+    // profile.points[1] = {2000, 30000};
+    // profile.points[2] = {5000, 60000};
+    // profile.points[3] = {5000, 90000};
+    // profile.points[4] = {3000, 110000};
+    // profile.points[5] = {3000, 140000};
+
+    // profile.points[0] = {2000, 0};
+    // profile.points[1] = {2000, 10000};
+    // profile.points[2] = {2000, 20000};
+    // profile.points[3] = {2000, 30000};
+    // profile.points[4] = {2000, 40000};
+    // profile.points[5] = {2000, 50000};
+    // profile.points[6] = {2000, 60000};
+    // profile.points[7] = {2000, 70000};
+    // profile.points[8] = {2000, 80000};
+    // profile.points[9] = {2000, 90000};
+
+    // profile.points[0] = {2000,  0};
+    // profile.points[1] = {12000, 2000000};
+    // profile.points[2] = {12000, 12800000};
+    // profile.points[3] = {4000,  14420000};
+
+    profile.points[0] = {2000,  0};
+    profile.points[1] = {2000, 20000};
+    profile.points[2] = {2000, 10000000};
+    profile.points[3] = {2000, 40000000};
+
 
     this->config.profile = profile;
     this->config.min_temp = PROFILE_MIN_TEMPERATURE;
     this->config.max_temp = PROFILE_MAX_TEMPERATURE;
     this->config.step_time = PROFILE_STEP_TIME_MS;
-    this->config.min_duration = PROFILE_MIN_DURATION_S;
-    this->config.max_duration = PROFILE_MAX_DURATION_S;
+    this->config.min_duration = PROFILE_MIN_DURATION_MS;
+    this->config.max_duration = PROFILE_MAX_DURATION_MS;
 
     this->profile = new Profile(this->config);
 }
@@ -76,6 +98,11 @@ void ProfileManager::process_profile_queue_event(ProfileEvent *evt) {
             this->end_profile();
             break;
         }
+        case ProfileEventType::INFO:
+        {
+            this->print_profile_info();
+            break;
+        }
         case ProfileEventType::NONE:
         default:
             break;
@@ -86,7 +113,7 @@ void ProfileManager::poll_profile_queue_events() {
     ProfileEvent evt;
 
     while (uxQueueMessagesWaiting(*this->profile_queue_handle)) {
-        if (xQueueReceive(*this->profile_queue_handle, &evt, pdMS_TO_TICKS(5)) == pdPASS) {
+        if (xQueueReceive(*this->profile_queue_handle, &evt, pdMS_TO_TICKS(1)) == pdPASS) {
             TB_LOGI(TAG, "new event, type: %d", evt.type);
             process_profile_queue_event(&evt);
         }
@@ -96,10 +123,10 @@ void ProfileManager::poll_profile_queue_events() {
 void ProfileManager::poll_running_profile_events() {
     EventBits_t bits = xEventGroupWaitBits(
         *this->profile->get_profile_event_group(),
-        BIT_PROFILE_ALL,
+        BITS_PROFILE_CONTROL,
         pdTRUE,
         pdFALSE,
-        pdMS_TO_TICKS(5)
+        pdMS_TO_TICKS(1)
     );
 
     if ((bits & BIT_PROFILE_START) == BIT_PROFILE_START) {
@@ -118,11 +145,9 @@ void ProfileManager::poll_running_profile_events() {
 }
 
 void ProfileManager::process_events() {
-    if (this->profile->is_running()) {
-        this->profile->process_next_step();
-    }
     this->poll_profile_queue_events();
     this->poll_running_profile_events();
+    this->profile->process_profile();
 }
 
 void ProfileManager::process_new_profile(profile_t *profile) {
@@ -146,11 +171,21 @@ void ProfileManager::start_profile() {
 }
 
 void ProfileManager::stop_profile() {
-    return;
+    esp_err_t err = this->profile->stop();
+    if (err != ESP_OK) {
+        TB_LOGE(TAG, "fail to stop profile");
+    } else {
+        TB_LOGI(TAG, "stopped profile");
+    }
 }
 
 void ProfileManager::resume_profile() {
-    return;
+    esp_err_t err = this->profile->resume();
+    if (err != ESP_OK) {
+        TB_LOGE(TAG, "fail to resume profile");
+    } else {
+        TB_LOGI(TAG, "resumed profile");
+    }
 }
 
 void ProfileManager::end_profile() {
@@ -160,6 +195,10 @@ void ProfileManager::end_profile() {
     } else {
         TB_LOGI(TAG, "ended profile");
     }
+}
+
+void ProfileManager::print_profile_info() {
+    this->profile->print_info();
 }
 
 void ProfileManager::send_evt(Event *evt) {

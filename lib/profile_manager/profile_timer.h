@@ -13,8 +13,7 @@
 #define BIT_PROFILE_RESUME              BIT3
 #define BIT_PROFILE_END                 BIT4
 
-#define BIT_PROFILE_ALL         ( \
-    BIT_PROFILE_TIMER_TIMEOUT   | \
+#define BITS_PROFILE_CONTROL    ( \
     BIT_PROFILE_START           | \
     BIT_PROFILE_STOP            | \
     BIT_PROFILE_RESUME          | \
@@ -30,6 +29,8 @@ void profile_timer_set_event_group(EventGroupHandle_t *event_group);
 void profile_timer_setup(uint32_t timeout_ms);
 void profile_timer_run(uint32_t timeout);
 void profile_timer_stop();
+bool profile_timer_is_expired();
+uint32_t profile_timer_get_time_left();
 
 #ifdef __cplusplus
 }

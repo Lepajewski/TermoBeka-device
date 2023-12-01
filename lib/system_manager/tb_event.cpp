@@ -100,6 +100,7 @@ const char *profile_event_type_to_s(ProfileEventType type) {
         case ProfileEventType::STOP:                        return "stop";
         case ProfileEventType::RESUME:                      return "resume";
         case ProfileEventType::END:                         return "end";
+        case ProfileEventType::INFO:                        return "info";
         case ProfileEventType::NONE:                        return "none";
         default:                                            return "invalid";
     }

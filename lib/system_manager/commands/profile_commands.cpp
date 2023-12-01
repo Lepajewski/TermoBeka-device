@@ -34,7 +34,7 @@ static int cmd_new_profile(int argc, char **argv) {
     ProfileEventNewProfile payload = {};
 
     for (uint8_t i = 0; i < PROFILE_MAX_VERTICES; i++) {
-        payload.profile.points[i] = {-1, -1};
+        payload.profile.points[i] = {-1, UINT32_MAX};
     }
 
     payload.profile.points[0] = {2000,  0};
@@ -82,6 +82,14 @@ static int cmd_end_profile(int argc, char **argv) {
     return send_to_profile_queue(&evt);
 }
 
+static int cmd_profile_info(int argc, char **argv) {
+    TB_ACK(TAG, "profile info");
+    ProfileEvent evt = {};
+    evt.type = ProfileEventType::INFO;
+
+    return send_to_profile_queue(&evt);
+}
+
 static const esp_console_cmd_t commands[] = {
 //    command           help print                      hint        callback                arguments
     { "new_profile",    "load example profile",         NULL,       &cmd_new_profile,       NULL                },
@@ -89,6 +97,7 @@ static const esp_console_cmd_t commands[] = {
     { "stop_profile",   "stop running profile",         NULL,       &cmd_stop_profile,      NULL                },
     { "resume_profile", "resume stopped profile",       NULL,       &cmd_resume_profile,    NULL                },
     { "end_profile",    "end running profile",          NULL,       &cmd_end_profile,       NULL                },
+    { "profile_info",   "print profile info",           NULL,       &cmd_profile_info,      NULL                },
 };
 
 

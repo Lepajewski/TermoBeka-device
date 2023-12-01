@@ -28,6 +28,7 @@ class ProfileManager {
     void stop_profile();
     void resume_profile();
     void end_profile();
+    void print_profile_info();
 
     void send_evt(Event *evt);
     void send_evt_start();

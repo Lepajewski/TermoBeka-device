@@ -7,8 +7,8 @@
 
 
 typedef struct {
-    int16_t temperature;    // temperature in *C * 100
-    int32_t time_ms;        // time in ms
+    int16_t temperature;     // temperature in *C * 100
+    uint32_t time_ms;        // time in ms
 } __attribute__ ((packed)) profile_point;
 
 
