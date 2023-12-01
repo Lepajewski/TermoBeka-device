@@ -15,6 +15,8 @@ static EventGroupHandle_t profile_event_group;
 static TimerHandle_t profile_timer;
 static bool is_expired = true;
 
+static TimerHandle_t profile_update_timer;
+
 
 
 void profile_timer_set_event_group(EventGroupHandle_t *event_group) {
@@ -54,3 +56,28 @@ bool profile_timer_is_expired() {
 uint32_t profile_timer_get_time_left() {
     return _pdTICKS_TO_MS(xTimerGetExpiryTime(profile_timer) - xTaskGetTickCount());
 }
+
+
+
+static void profile_update_timer_cb(TimerHandle_t timer) {
+    xEventGroupSetBits(profile_event_group, BIT_PROFILE_UPDATE);
+}
+
+void profile_update_timer_setup(uint32_t interval_ms) {
+    profile_update_timer = xTimerCreate(
+        "profUpdTim",
+        pdMS_TO_TICKS(interval_ms),
+        pdTRUE,
+        NULL,
+        profile_update_timer_cb
+    );
+}
+
+void profile_update_timer_run() {
+    xTimerStart(profile_update_timer, 0);
+}
+
+void profile_update_timer_stop() {
+    xTimerStop(profile_update_timer, 0);
+}
+

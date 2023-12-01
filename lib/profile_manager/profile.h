@@ -18,6 +18,7 @@ typedef struct {
     uint32_t step_time;
     uint32_t min_duration;
     uint32_t max_duration;
+    uint32_t update_interval;
 } profile_config_t;
 
 typedef struct {
@@ -43,6 +44,9 @@ typedef struct {
     int16_t current_temperature;            // regulated temperature
     uint8_t current_vertices;               // #vertices left
     uint8_t total_vertices;                 // total #vertices
+
+    float progress_percent;                 // profile progress in %
+
     bool running;                           // profile is running
     bool stopped;                           // profile is stopped
     bool ended;                             // profile is ended/finished
@@ -76,6 +80,7 @@ class Profile {
     esp_err_t end();
 
     void process_profile();
+    profile_run_info get_profile_run_info();
 
     bool is_running();
 

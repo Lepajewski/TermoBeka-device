@@ -49,6 +49,7 @@ ProfileManager::ProfileManager() {
     this->config.step_time = PROFILE_STEP_TIME_MS;
     this->config.min_duration = PROFILE_MIN_DURATION_MS;
     this->config.max_duration = PROFILE_MAX_DURATION_MS;
+    this->config.update_interval = PROFILE_UPDATE_TIMER_INTERVAL_MS;
 
     this->profile = new Profile(this->config);
 }
@@ -141,6 +142,10 @@ void ProfileManager::poll_running_profile_events() {
     } else if ((bits & BIT_PROFILE_END) == BIT_PROFILE_END) {
         TB_LOGI(TAG, "profile ended");
         this->send_evt_end();
+    } else if ((bits & BIT_PROFILE_UPDATE) == BIT_PROFILE_UPDATE) {
+        TB_LOGI(TAG, "profile update");
+        profile_run_info info;
+        info = this->profile->get_profile_run_info();
     }
 }
 

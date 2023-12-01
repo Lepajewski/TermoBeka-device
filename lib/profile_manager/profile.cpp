@@ -18,6 +18,7 @@ Profile::Profile(profile_config_t config) :
 
     profile_timer_set_event_group(&this->profile_event_group);
     profile_timer_setup(this->config.step_time);
+    profile_update_timer_setup(this->config.update_interval);
 }
 
 Profile::~Profile() {
@@ -212,11 +213,16 @@ esp_err_t Profile::start() {
 
     this->info.current_temperature = 0;
     this->info.current_vertices = this->info.total_vertices;
+
+    this->info.progress_percent = 0.0f;
+
     this->info.running = true;
     this->info.stopped = false;
     this->info.ended = false;
 
     xEventGroupSetBits(this->profile_event_group, BIT_PROFILE_START);
+
+    profile_update_timer_run();
 
     return process_next_step();
 }
@@ -289,6 +295,8 @@ esp_err_t Profile::end() {
 
         this->print_info();
 
+        profile_update_timer_stop();
+
         xEventGroupSetBits(this->profile_event_group, BIT_PROFILE_END);
         return ESP_OK;
     }
@@ -320,6 +328,20 @@ void Profile::process_profile() {
             }
         }
     }
+}
+
+profile_run_info Profile::get_profile_run_info() {
+    if (this->info.running && !this->info.stopped) {
+        this->info.current_duration = (uint32_t)(get_time_since_startup_ms() - this->info.absolute_start_time) - this->info.profile_time_halted;
+        etl::list<profile_point, PROFILE_MAX_VERTICES + 1>::iterator it = etl::next(this->profile.begin());
+        this->info.step_time_left = it->time_ms - this->info.current_duration;
+        this->info.profile_time_left = this->info.total_duration - this->info.current_duration;
+        this->info.progress_percent = (float)this->info.current_duration / (float)this->info.total_duration * 100.0f;
+    }
+
+    this->print_info();
+
+    return this->info;
 }
 
 bool Profile::is_running() {
@@ -376,9 +398,10 @@ void Profile::print_info() {
     printf("Current Temperature: %d\n", this->info.current_temperature);
     printf("Current Vertices: %u\n", this->info.current_vertices);
     printf("Total Vertices: %u\n", this->info.total_vertices);
+
+    printf("Progress: %.2lf%\n", this->info.progress_percent);
+
     printf("Running: %s\n", this->info.running ? "true" : "false");
     printf("Stopped: %s\n", this->info.stopped ? "true" : "false");
     printf("Ended: %s\n", this->info.ended ? "true" : "false");
-
-    printf("TIMER TIME LEFT: %" PRIu32 "\n", profile_timer_get_time_left());
 }
