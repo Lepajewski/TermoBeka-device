@@ -3,6 +3,7 @@
 #include "freertos/event_groups.h"
 #include "freertos/timers.h"
 
+#include "ca_cert.h"
 #include "logger.h"
 #include "global_config.h"
 
@@ -100,14 +101,13 @@ esp_err_t mqtt_begin(mqtt_driver_config_t *cfg) {
 
     esp_mqtt_client_config_t mqtt_cfg = {};
 
+    mqtt_cfg.network.reconnect_timeout_ms = MQTT_AUTO_RECONNECT_TIMEOUT_MS;
+    mqtt_cfg.broker.address.uri = cfg->credentials.uri;
+    mqtt_cfg.broker.verification.certificate = (const char *) ca_crt;
     mqtt_cfg.credentials.username = cfg->credentials.username;
     mqtt_cfg.credentials.authentication.password = cfg->credentials.password;
-    mqtt_cfg.network.reconnect_timeout_ms = MQTT_AUTO_RECONNECT_TIMEOUT_MS;
 
     client = esp_mqtt_client_init(&mqtt_cfg);
-    if ((err = esp_mqtt_client_set_uri(client, cfg->credentials.uri)) != ESP_OK) {
-        return err;
-    }
 
     if ((err = esp_mqtt_client_register_event(client, ESP_EVENT_ANY_ID, event_handler, NULL)) != ESP_OK) {
         return err;
