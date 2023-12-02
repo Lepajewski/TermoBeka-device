@@ -179,6 +179,22 @@ esp_err_t Profile::process_stopped() {
     return ESP_OK;
 }
 
+profile_status Profile::get_status() {
+    if (this->info.ended) {
+        return PROFILE_ENDED;
+    }
+
+    if (!this->info.running) {
+        return PROFILE_NOT_RUNNING;
+    }
+
+    if (this->info.stopped) {
+        return PROFILE_STOPPED;
+    }
+    
+    return PROFILE_RUNNING;
+}
+
 esp_err_t Profile::start() {
     esp_err_t err = ESP_OK;
 
@@ -250,6 +266,8 @@ esp_err_t Profile::stop() {
         this->info.step_stopped_time = this->info.profile_stopped_time - this->info.step_start_time;
         this->info.step_time_left = this->info.step_end_time - this->info.current_duration;
         this->info.profile_time_left = this->info.total_duration - this->info.current_duration;
+
+        this->info.progress_percent = (float)this->info.current_duration / (float)this->info.total_duration * 100.0f;
 
         this->profile.push_front({this->info.current_temperature, this->info.profile_stopped_time});
         this->info.current_vertices++;
@@ -330,18 +348,31 @@ void Profile::process_profile() {
     }
 }
 
-profile_run_info Profile::get_profile_run_info() {
-    if (this->info.running && !this->info.stopped) {
-        this->info.current_duration = (uint32_t)(get_time_since_startup_ms() - this->info.absolute_start_time) - this->info.profile_time_halted;
+profile_update_info Profile::get_profile_run_info() {
+    profile_update_info info = {};
+
+    info.status = this->get_status();
+
+    info.total_duration = this->info.total_duration;
+    info.step_start_time = this->info.step_start_time;
+    info.step_end_time = this->info.step_end_time;
+    info.current_temperature = this->info.current_temperature;
+
+    if (this->info.running) {
+        info.current_duration = (uint32_t)(get_time_since_startup_ms() - this->info.absolute_start_time) - this->info.profile_time_halted;
         etl::list<profile_point, PROFILE_MAX_VERTICES + 1>::iterator it = etl::next(this->profile.begin());
-        this->info.step_time_left = it->time_ms - this->info.current_duration;
-        this->info.profile_time_left = this->info.total_duration - this->info.current_duration;
-        this->info.progress_percent = (float)this->info.current_duration / (float)this->info.total_duration * 100.0f;
+        info.step_time_left = it->time_ms - info.current_duration;
+        info.profile_time_left = info.total_duration - info.current_duration;
+        info.progress_percent = (float)info.current_duration / (float)info.total_duration * 100.0f;
+    }
+    
+    if (this->info.stopped) {
+        info.step_stopped_time = this->info.step_stopped_time;
+        info.profile_stopped_time = this->info.profile_stopped_time;
+        info.profile_time_halted = this->info.profile_time_halted + (uint32_t)(get_time_since_startup_ms() - this->info.absolute_time_stopped);
     }
 
-    this->print_info();
-
-    return this->info;
+    return info;
 }
 
 bool Profile::is_running() {

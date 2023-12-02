@@ -35,6 +35,7 @@ class ProfileManager {
     void send_evt_stop();
     void send_evt_resume();
     void send_evt_end();
+    void send_evt_update();
  public:
     ProfileManager();
     ~ProfileManager();

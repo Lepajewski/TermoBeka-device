@@ -77,6 +77,8 @@ enum class EventType {
     PROFILE_STOP,
     PROFILE_RESUME,
     PROFILE_END,
+    PROFILE_RESPONSE,
+    PROFILE_UPDATE,
 
     SERVER_CONNECTED,
     SERVER_DISCONNECTED,
@@ -106,6 +108,11 @@ typedef union {
     nvs_device_config_t config;
     uint8_t buffer[MAX(sizeof(nvs_device_config_t), EVENT_QUEUE_MAX_PAYLOAD)];
 } EventSDConfigLoad;
+
+typedef union {
+    profile_update_info info;
+    uint8_t buffer[EVENT_QUEUE_MAX_PAYLOAD];
+} EventProfileUpdate;
 
 
 

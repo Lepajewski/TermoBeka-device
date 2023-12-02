@@ -144,8 +144,10 @@ void ProfileManager::poll_running_profile_events() {
         this->send_evt_end();
     } else if ((bits & BIT_PROFILE_UPDATE) == BIT_PROFILE_UPDATE) {
         TB_LOGI(TAG, "profile update");
-        profile_run_info info;
-        info = this->profile->get_profile_run_info();
+    }
+
+    if (bits) {
+        this->send_evt_update();
     }
 }
 
@@ -237,3 +239,12 @@ void ProfileManager::send_evt_end() {
     this->send_evt(&evt);
 }
 
+void ProfileManager::send_evt_update() {
+    Event evt = {};
+    evt.type = EventType::PROFILE_UPDATE;
+    EventProfileUpdate payload = {};
+    payload.info = this->profile->get_profile_run_info();
+    memcpy(&evt.payload, &payload.buffer, sizeof(EventProfileUpdate));
+
+    this->send_evt(&evt);
+}

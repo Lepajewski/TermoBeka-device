@@ -226,6 +226,23 @@ void SystemManager::poll_event() {
                 }
                 break;
             }
+            case EventType::PROFILE_UPDATE:
+            {
+                EventProfileUpdate *payload = reinterpret_cast<EventProfileUpdate*>(evt.payload);
+                printf("Status: %d\n", payload->info.status);
+                printf("Current Duration: %u ms\n", payload->info.current_duration);
+                printf("Total Duration: %u ms\n", payload->info.total_duration);
+                printf("Step Start Time: %u ms\n", payload->info.step_start_time);
+                printf("Step Stopped Time: %u ms\n", payload->info.step_stopped_time);
+                printf("Profile Stopped Time: %u ms\n", payload->info.profile_stopped_time);
+                printf("Step End Time: %u ms\n", payload->info.step_end_time);
+                printf("Step Time Left: %u ms\n", payload->info.step_time_left);
+                printf("Profile Time Halted: %" PRIu32 " ms\n", payload->info.profile_time_halted);
+                printf("Profile Time Left: %u ms\n", payload->info.profile_time_left);
+                printf("Current Temperature: %d\n", payload->info.current_temperature);
+                printf("Progress: %.2lf%\n", payload->info.progress_percent);
+                break;
+            }
             case EventType::UNKNOWN:
             default:
             {

@@ -46,6 +46,8 @@ const char *event_type_to_s(EventType type) {
         case EventType::PROFILE_STOP:                       return "Profile stop";
         case EventType::PROFILE_RESUME:                     return "Profile resume";
         case EventType::PROFILE_END:                        return "Profile end";
+        case EventType::PROFILE_RESPONSE:                   return "Profile response";
+        case EventType::PROFILE_UPDATE:                     return "Profile update";
         case EventType::SERVER_CONNECTED:                   return "server connected";
         case EventType::SERVER_DISCONNECTED:                return "server disconnected";
         case EventType::SERVER_PROFILE_DOWNLOAD:            return "server profile download";
