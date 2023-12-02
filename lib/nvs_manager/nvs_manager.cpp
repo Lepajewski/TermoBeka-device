@@ -14,6 +14,7 @@ const char * const TAG = "NVS";
 NVSManager::NVSManager() {
     strlcpy(this->default_config.wifi_ssid, WIFI_DEFAULT_SSID, WIFI_MAX_SSID_LEN);
     strlcpy(this->default_config.wifi_pass, WIFI_DEFAULT_PASS, WIFI_MAX_PASS_LEN);
+    strlcpy(this->default_config.mqtt_broker_uri, MQTT_DEFAULT_BROKER_URI, MQTT_MAX_BROKER_URI_LEN);
     this->default_config.log_level = DEFAULT_LOG_LEVEL;
 }
 
@@ -118,6 +119,14 @@ esp_err_t NVSManager::save_config(nvs_device_config_t *config) {
     } else {
         TB_LOGI(TAG, "%s -> %s", this->config.wifi_pass, config->wifi_pass);
         strlcpy(this->config.wifi_pass, config->wifi_pass, WIFI_MAX_SSID_LEN);
+        config_changed = true;
+    }
+
+    if (strncmp(this->config.mqtt_broker_uri, config->mqtt_broker_uri, MQTT_MAX_BROKER_URI_LEN) == 0) {
+        TB_LOGI(TAG, "mqtt_broker_uri no change");
+    } else {
+        TB_LOGI(TAG, "%s -> %s", this->config.mqtt_broker_uri, config->mqtt_broker_uri);
+        strlcpy(this->config.mqtt_broker_uri, config->mqtt_broker_uri, WIFI_MAX_SSID_LEN);
         config_changed = true;
     }
 

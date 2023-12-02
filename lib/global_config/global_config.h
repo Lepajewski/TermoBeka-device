@@ -52,6 +52,7 @@
 // mqtt configuration
 #define MQTT_MAX_BROKER_URI_LEN                 32
 #define MQTT_DEFAULT_BROKER_URI                 "mqtt://192.168.1.105:1883"
+#define MQTT_AUTO_RECONNECT_TIMEOUT_MS          3000
 #define MQTT_RECONNECT_RETRY                    3
 #define MQTT_RECONNECT_INTERVAL_MS              30000
 

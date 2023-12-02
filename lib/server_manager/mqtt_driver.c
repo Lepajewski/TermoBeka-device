@@ -100,7 +100,7 @@ esp_err_t mqtt_begin(mqtt_driver_config_t *cfg) {
 
     esp_mqtt_client_config_t mqtt_cfg = {};
 
-    mqtt_cfg.network.reconnect_timeout_ms = 2000;
+    mqtt_cfg.network.reconnect_timeout_ms = MQTT_AUTO_RECONNECT_TIMEOUT_MS;
 
     client = esp_mqtt_client_init(&mqtt_cfg);
     if ((err = esp_mqtt_client_set_uri(client, cfg->credentials.uri)) != ESP_OK) {

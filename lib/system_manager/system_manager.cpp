@@ -79,8 +79,8 @@ void SystemManager::begin() {
     nvs_device_config_t *default_config = this->nvs_manager.get_default_config();
     nvs_device_config_t *config = this->nvs_manager.get_config();
 
-    TB_LOGI(TAG, "DEFAULT CONFIG: | %s %s %d |", default_config->wifi_ssid, default_config->wifi_pass, default_config->log_level);
-    TB_LOGI(TAG, "CONFIG: | %s %s %d |", config->wifi_ssid, config->wifi_pass, config->log_level);
+    TB_LOGI(TAG, "DEFAULT CONFIG: | %s %s %s %d |", default_config->wifi_ssid, default_config->wifi_pass, default_config->mqtt_broker_uri, default_config->log_level);
+    TB_LOGI(TAG, "CONFIG: | %s %s %s %d |", config->wifi_ssid, config->wifi_pass, default_config->mqtt_broker_uri, config->log_level);
 
     this->setup_logger();
     this->init_console();

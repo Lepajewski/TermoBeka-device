@@ -8,9 +8,9 @@
 #include "profile_type.h"
 
 
-#define QUEUE_DEFAULT_PAYLOAD           100
+#define QUEUE_DEFAULT_PAYLOAD           100  // bytes
 
-#define EVENT_QUEUE_MAX_PAYLOAD         128  // bytes
+#define EVENT_QUEUE_MAX_PAYLOAD         196
 #define EVENT_QUEUE_SIZE                20
 
 #define UI_QUEUE_SIZE                   EVENT_QUEUE_SIZE
