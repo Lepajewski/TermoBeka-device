@@ -119,6 +119,8 @@ static int cmd_new_cfg_sim(int argc, char **argv) {
     strlcpy(payload.config.wifi_ssid, "Orange_Swiatlowod_3760", WIFI_MAX_SSID_LEN);
     strlcpy(payload.config.wifi_pass, "2FT752946HF7", WIFI_MAX_PASS_LEN);
     strlcpy(payload.config.mqtt_broker_uri, "mqtt://192.168.1.105:1883", MQTT_MAX_BROKER_URI_LEN);
+    strlcpy(payload.config.mqtt_username, "termobeka", MQTT_MAX_USERNAME_LEN);
+    strlcpy(payload.config.mqtt_password, "qwerty", MQTT_MAX_PASSWORD_LEN);
     payload.config.log_level = ESP_LOG_DEBUG;
     memcpy(&evt.payload, &payload.buffer, sizeof(EventSDConfigLoad));
 

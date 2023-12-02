@@ -79,8 +79,22 @@ void SystemManager::begin() {
     nvs_device_config_t *default_config = this->nvs_manager.get_default_config();
     nvs_device_config_t *config = this->nvs_manager.get_config();
 
-    TB_LOGI(TAG, "DEFAULT CONFIG: | %s %s %s %d |", default_config->wifi_ssid, default_config->wifi_pass, default_config->mqtt_broker_uri, default_config->log_level);
-    TB_LOGI(TAG, "CONFIG: | %s %s %s %d |", config->wifi_ssid, config->wifi_pass, default_config->mqtt_broker_uri, config->log_level);
+    TB_LOGI(TAG, "DEFAULT CONFIG: | %s %s %s %s %s %d |", 
+        default_config->wifi_ssid,
+        default_config->wifi_pass,
+        default_config->mqtt_broker_uri,
+        default_config->mqtt_username,
+        default_config->mqtt_password,
+        default_config->log_level
+    );
+    TB_LOGI(TAG, "CONFIG: | %s %s %s %s %s %d |",
+        config->wifi_ssid,
+        config->wifi_pass,
+        default_config->mqtt_broker_uri,
+        default_config->mqtt_username,
+        default_config->mqtt_password,
+        config->log_level
+    );
 
     this->setup_logger();
     this->init_console();
@@ -312,9 +326,11 @@ esp_err_t SystemManager::send_connect_mqtt() {
         return err;
     }
 
-    const char *uri = MQTT_DEFAULT_BROKER_URI;
+    const char *uri = this->nvs_manager.get_config()->mqtt_broker_uri;
+    const char *username = this->nvs_manager.get_config()->mqtt_username;
+    const char *password = this->nvs_manager.get_config()->mqtt_password;
 
-    return process_server_credentials(ServerEventType::CONNECT, uri);
+    return process_server_credentials(ServerEventType::CONNECT, uri, username, password);
 }
 
 esp_err_t SystemManager::send_disconnect_mqtt() {

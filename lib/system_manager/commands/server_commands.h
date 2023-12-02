@@ -3,7 +3,7 @@
 
 
 esp_err_t send_to_server_queue(ServerEvent *evt);
-esp_err_t process_server_credentials(ServerEventType e_type, const char *uri);
+esp_err_t process_server_credentials(ServerEventType e_type, const char *uri, const char *uname, const char *pass);
 void register_server();
 
 

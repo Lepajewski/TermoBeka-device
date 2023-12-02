@@ -93,8 +93,10 @@ void ServerManager::process_server_event(ServerEvent *evt) {
         {
             ServerEventCredentials *payload = reinterpret_cast<ServerEventCredentials*>(evt->payload);
             strlcpy(this->config.credentials.uri, payload->credentials.uri, MQTT_MAX_BROKER_URI_LEN);
+            strlcpy(this->config.credentials.username, payload->credentials.username, MQTT_MAX_USERNAME_LEN);
+            strlcpy(this->config.credentials.password, payload->credentials.password, MQTT_MAX_PASSWORD_LEN);
 
-            TB_LOGI(TAG, "NEW: uri: %s", this->config.credentials.uri);
+            TB_LOGI(TAG, "NEW: uri: %s uname: %s pass: %s", this->config.credentials.uri, this->config.credentials.username, this->config.credentials.password);
 
             this->begin();
             break;

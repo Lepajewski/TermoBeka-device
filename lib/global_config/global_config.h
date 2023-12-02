@@ -55,6 +55,10 @@
 #define MQTT_AUTO_RECONNECT_TIMEOUT_MS          3000
 #define MQTT_RECONNECT_RETRY                    3
 #define MQTT_RECONNECT_INTERVAL_MS              30000
+#define MQTT_MAX_USERNAME_LEN                   32
+#define MQTT_DEFAULT_USERNAME                   "default"
+#define MQTT_MAX_PASSWORD_LEN                   32
+#define MQTT_DEFAULT_PASSWORD                   "default"
 
 
 // Profile configuration
@@ -77,6 +81,8 @@ typedef struct {
 
 typedef struct {
     char uri[MQTT_MAX_BROKER_URI_LEN];
+    char username[MQTT_MAX_USERNAME_LEN];
+    char password[MQTT_MAX_PASSWORD_LEN];
 } mqtt_credentials;
 
 

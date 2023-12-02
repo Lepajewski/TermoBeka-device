@@ -100,6 +100,8 @@ esp_err_t mqtt_begin(mqtt_driver_config_t *cfg) {
 
     esp_mqtt_client_config_t mqtt_cfg = {};
 
+    mqtt_cfg.credentials.username = cfg->credentials.username;
+    mqtt_cfg.credentials.authentication.password = cfg->credentials.password;
     mqtt_cfg.network.reconnect_timeout_ms = MQTT_AUTO_RECONNECT_TIMEOUT_MS;
 
     client = esp_mqtt_client_init(&mqtt_cfg);

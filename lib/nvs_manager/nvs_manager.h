@@ -14,6 +14,8 @@ class NVSManager {
 
     esp_err_t save(const char* key, nvs_device_config_t *config);
     esp_err_t load(const char* key, nvs_device_config_t *config);
+
+    bool check_str_differ(const char* v1, const char *v2, uint32_t max_len);
  public:
     NVSManager();
     ~NVSManager();

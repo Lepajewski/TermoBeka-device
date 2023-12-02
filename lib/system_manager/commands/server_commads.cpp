@@ -26,12 +26,14 @@ esp_err_t send_to_server_queue(ServerEvent *evt) {
     return ESP_OK;
 }
 
-esp_err_t process_server_credentials(ServerEventType e_type, const char *uri) {
+esp_err_t process_server_credentials(ServerEventType e_type, const char *uri, const char *uname, const char *pass) {
     ServerEvent evt = {};
     evt.type = e_type;
     ServerEventCredentials payload = {};
 
     strlcpy(payload.credentials.uri, uri, MQTT_MAX_BROKER_URI_LEN);
+    strlcpy(payload.credentials.username, uname, MQTT_MAX_USERNAME_LEN);
+    strlcpy(payload.credentials.password, pass, MQTT_MAX_PASSWORD_LEN);
     memcpy(&evt.payload, &payload.buffer, sizeof(ServerEventCredentials));
 
     return send_to_server_queue(&evt);
@@ -39,11 +41,15 @@ esp_err_t process_server_credentials(ServerEventType e_type, const char *uri) {
 
 static struct {
     struct arg_str *uri;
+    struct arg_str *username;
+    struct arg_str *password;
     struct arg_end *end;
 } cmd_server_credentials;
 
 static void init_cmd_server_credentials_args() {
-    cmd_server_credentials.uri = arg_str0(NULL, NULL, "<uri>", "BROKER URI");
+    cmd_server_credentials.uri = arg_str0(NULL, NULL, "<uri>", "Broker URI");
+    cmd_server_credentials.username = arg_str0(NULL, NULL, "<uname>", "Client username");
+    cmd_server_credentials.password = arg_str0(NULL, NULL, "<pass>", "Client passsword");
     cmd_server_credentials.end = arg_end(2);
 }
 
@@ -60,9 +66,22 @@ static int cmd_mqtt_connect(int argc, char **argv) {
         cmd_server_credentials.uri->sval[0] = MQTT_DEFAULT_BROKER_URI;
     }
 
+    if (cmd_server_credentials.username->count == 0) {
+        cmd_server_credentials.username->sval[0] = MQTT_DEFAULT_USERNAME;
+    }
+
+    if (cmd_server_credentials.password->count == 0) {
+        cmd_server_credentials.password->sval[0] = MQTT_DEFAULT_PASSWORD;
+    }
+
     TB_ACK(TAG, "server credentials: %s", cmd_server_credentials.uri->sval[0]);
 
-    return process_server_credentials(ServerEventType::CONNECT, cmd_server_credentials.uri->sval[0]);
+    return process_server_credentials(
+        ServerEventType::CONNECT,
+        cmd_server_credentials.uri->sval[0],
+        cmd_server_credentials.username->sval[0],
+        cmd_server_credentials.password->sval[0]
+    );
 }
 
 static int cmd_mqtt_disconnect(int argc, char **argv) {

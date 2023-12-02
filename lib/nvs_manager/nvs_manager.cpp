@@ -15,6 +15,8 @@ NVSManager::NVSManager() {
     strlcpy(this->default_config.wifi_ssid, WIFI_DEFAULT_SSID, WIFI_MAX_SSID_LEN);
     strlcpy(this->default_config.wifi_pass, WIFI_DEFAULT_PASS, WIFI_MAX_PASS_LEN);
     strlcpy(this->default_config.mqtt_broker_uri, MQTT_DEFAULT_BROKER_URI, MQTT_MAX_BROKER_URI_LEN);
+    strlcpy(this->default_config.mqtt_username, MQTT_DEFAULT_USERNAME, MQTT_MAX_USERNAME_LEN);
+    strlcpy(this->default_config.mqtt_password, MQTT_DEFAULT_PASSWORD, MQTT_MAX_PASSWORD_LEN);
     this->default_config.log_level = DEFAULT_LOG_LEVEL;
 }
 
@@ -95,6 +97,16 @@ esp_err_t NVSManager::load(const char* key, nvs_device_config_t *config) {
     return err;
 }
 
+bool NVSManager::check_str_differ(const char* v1, const char *v2, uint32_t max_len) {
+    if (strncmp(v1, v2, max_len) == 0) {
+        TB_LOGI(TAG, "no change: %s == %s", v1, v2);
+        return false;
+    }
+
+    TB_LOGI(TAG, "%s -> %s", v1, v2);
+    return true;
+}
+
 esp_err_t NVSManager::save_default_config() {
     return this->save("default_config", &this->default_config);
 }
@@ -106,28 +118,24 @@ esp_err_t NVSManager::load_default_config() {
 esp_err_t NVSManager::save_config(nvs_device_config_t *config) {
     bool config_changed = false;
 
-    if (strncmp(this->config.wifi_ssid, config->wifi_ssid, WIFI_MAX_SSID_LEN) == 0) {
-        TB_LOGI(TAG, "wifi_ssid no change");
-    } else {
-        TB_LOGI(TAG, "%s -> %s", this->config.wifi_ssid, config->wifi_ssid);
+    if (this->check_str_differ(this->config.wifi_ssid, config->wifi_ssid, WIFI_MAX_SSID_LEN)) {
         strlcpy(this->config.wifi_ssid, config->wifi_ssid, WIFI_MAX_SSID_LEN);
-        config_changed = true;
     }
 
-    if (strncmp(this->config.wifi_pass, config->wifi_pass, WIFI_MAX_SSID_LEN) == 0) {
-        TB_LOGI(TAG, "wifi_pass no change");
-    } else {
-        TB_LOGI(TAG, "%s -> %s", this->config.wifi_pass, config->wifi_pass);
-        strlcpy(this->config.wifi_pass, config->wifi_pass, WIFI_MAX_SSID_LEN);
-        config_changed = true;
+    if (this->check_str_differ(this->config.wifi_pass, config->wifi_pass, WIFI_MAX_PASS_LEN)) {
+        strlcpy(this->config.wifi_pass, config->wifi_pass, WIFI_MAX_PASS_LEN);
     }
 
-    if (strncmp(this->config.mqtt_broker_uri, config->mqtt_broker_uri, MQTT_MAX_BROKER_URI_LEN) == 0) {
-        TB_LOGI(TAG, "mqtt_broker_uri no change");
-    } else {
-        TB_LOGI(TAG, "%s -> %s", this->config.mqtt_broker_uri, config->mqtt_broker_uri);
-        strlcpy(this->config.mqtt_broker_uri, config->mqtt_broker_uri, WIFI_MAX_SSID_LEN);
-        config_changed = true;
+    if (this->check_str_differ(this->config.mqtt_broker_uri, config->mqtt_broker_uri, MQTT_MAX_BROKER_URI_LEN)) {
+        strlcpy(this->config.mqtt_broker_uri, config->mqtt_broker_uri, MQTT_MAX_BROKER_URI_LEN);
+    }
+
+    if (this->check_str_differ(this->config.mqtt_username, config->mqtt_username, MQTT_MAX_USERNAME_LEN)) {
+        strlcpy(this->config.mqtt_username, config->mqtt_username, MQTT_MAX_USERNAME_LEN);
+    }
+
+    if (this->check_str_differ(this->config.mqtt_password, config->mqtt_password, MQTT_MAX_PASSWORD_LEN)) {
+        strlcpy(this->config.mqtt_password, config->mqtt_password, MQTT_MAX_PASSWORD_LEN);
     }
 
     if (this->config.log_level == config->log_level) {
