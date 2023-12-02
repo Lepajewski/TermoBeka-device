@@ -36,15 +36,24 @@
 
 // wifi & ntp configuration
 #define WIFI_MAX_SSID_LEN                       32
-#define WIFI_DEFAULT_SSID                       "Orange_Swiatlowod_3760"
+// #define WIFI_DEFAULT_SSID                       "Orange_Swiatlowod_3760"
+#define WIFI_DEFAULT_SSID                       "Net_gora"
 #define WIFI_MAX_PASS_LEN                       64
-#define WIFI_DEFAULT_PASS                       "2FT752946HF7"
+// #define WIFI_DEFAULT_PASS                       "2FT752946HF7"
+#define WIFI_DEFAULT_PASS                       "haslotookon"
 #define WIFI_RECONNECT_RETRY                    10
 #define WIFI_RECONNECT_INTERVAL_MS              60000
 #define NTP_DEFAULT_SERVER_ADDR                 "pool.ntp.org"
 #define NTP_TIME_ZONE                           "CET-1CEST,M3.5.0/2,M10.5.0/3"
 #define NTP_CONNECT_TIMEOUT_MS                  5000
 #define NTP_RECONNECT_INTERVAL_MS               15000
+
+
+// mqtt configuration
+#define MQTT_MAX_BROKER_URI_LEN                 32
+#define MQTT_DEFAULT_BROKER_URI                 "mqtt://192.168.1.105:1883"
+#define MQTT_RECONNECT_RETRY                    3
+#define MQTT_RECONNECT_INTERVAL_MS              30000
 
 
 // Profile configuration
@@ -64,6 +73,10 @@ typedef struct {
     char ssid[WIFI_MAX_SSID_LEN];
     char pass[WIFI_MAX_PASS_LEN];
 } wifi_credentials;
+
+typedef struct {
+    char uri[MQTT_MAX_BROKER_URI_LEN];
+} mqtt_credentials;
 
 
 #define MIN(a,b) ((a) < (b) ? (a) : (b))

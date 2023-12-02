@@ -24,6 +24,7 @@ class SystemManager {
     QueueHandle_t ui_queue_handle;
     QueueHandle_t sd_queue_handle;
     QueueHandle_t wifi_queue_handle;
+    QueueHandle_t server_queue_handle;
     QueueHandle_t profile_queue_handle;
 
     uart_port_t uart_num;
@@ -38,7 +39,9 @@ class SystemManager {
     void process_command(char *cmd);
 
     esp_err_t send_connect_wifi();
-    esp_err_t send_diconnect_wifi();
+    esp_err_t send_disconnect_wifi();
+    esp_err_t send_connect_mqtt();
+    esp_err_t send_disconnect_mqtt();
 
     const char *get_wifi_ssid();
     const char *get_wifi_pass();
@@ -55,6 +58,7 @@ class SystemManager {
     QueueHandle_t *get_ui_queue();
     QueueHandle_t *get_sd_queue();
     QueueHandle_t *get_wifi_queue();
+    QueueHandle_t *get_server_queue();
     QueueHandle_t *get_profile_queue();
 
     void poll_event();

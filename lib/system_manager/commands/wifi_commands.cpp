@@ -5,6 +5,7 @@
 #include "argtable3/argtable3.h"
 
 #include "global_config.h"
+#include "tb_event.h"
 #include "system_manager.h"
 #include "logger.h"
 #include "wifi_commands.h"
@@ -19,7 +20,7 @@ esp_err_t send_to_wifi_queue(WiFiEvent *evt) {
     evt->origin = EventOrigin::SYSTEM_MANAGER;
 
     if (xQueueSend(*queue, &*evt, portMAX_DELAY) != pdTRUE) {
-        TB_LOGE(TAG, "cmd sd event send fail");
+        TB_LOGE(TAG, "cmd wifi event send fail");
         return ESP_FAIL;
     }
     return ESP_OK;
@@ -51,6 +52,7 @@ static void init_cmd_wifi_credencials_args() {
 }
 
 static int cmd_connect(int argc, char **argv) {
+    TB_ACK(TAG, "connect");
     int nerrors = arg_parse(argc, argv, (void **) &cmd_wifi_credencials);
     if (nerrors != 0) {
         arg_print_errors(stderr, cmd_wifi_credencials.end, argv[0]);
@@ -70,7 +72,7 @@ static int cmd_connect(int argc, char **argv) {
 }
 
 static int cmd_disconnect(int argc, char **argv) {
-    TB_ACK(TAG, "mount card");
+    TB_ACK(TAG, "disconnect");
     WiFiEvent evt;
     evt.type = WiFiEventType::DISCONNECT;
 

@@ -9,6 +9,7 @@
 #include "tb_event.h"
 #include "console_task.h"
 #include "commands/wifi_commands.h"
+#include "commands/server_commands.h"
 #include "commands/commands.h"
 #include "system_manager.h"
 
@@ -97,12 +98,14 @@ void SystemManager::init_queues() {
     this->ui_queue_handle = xQueueCreate(UI_QUEUE_SIZE, sizeof(UIEvent));
     this->sd_queue_handle = xQueueCreate(SD_QUEUE_SIZE, sizeof(SDEvent));
     this->wifi_queue_handle = xQueueCreate(WIFI_QUEUE_SIZE, sizeof(WiFiEvent));
+    this->server_queue_handle = xQueueCreate(SERVER_QUEUE_SIZE, sizeof(ServerEvent));
     this->profile_queue_handle = xQueueCreate(PROFILE_QUEUE_SIZE, sizeof(ProfileEvent));
 
     if (this->event_queue_handle == NULL ||
         this->ui_queue_handle == NULL ||
         this->sd_queue_handle == NULL ||
         this->wifi_queue_handle == NULL ||
+        this->server_queue_handle == NULL ||
         this->profile_queue_handle == NULL) {
         TB_LOGE(TAG, "queues init fail. Restarting...");
         vTaskDelay(pdMS_TO_TICKS(2000));
@@ -191,11 +194,17 @@ void SystemManager::poll_event() {
             case EventType::WIFI_CONNECTED:
             {
                 TB_LOGI(TAG, "wifi connected");
+                if (this->send_connect_mqtt() != ESP_OK) {
+                    TB_LOGE(TAG, "fail to send MQTT connect");
+                }
                 break;
             }
             case EventType::WIFI_DISCONNECTED:
             {
                 TB_LOGI(TAG, "wifi disconnected");
+                if (this->send_disconnect_mqtt() != ESP_OK) {
+                    TB_LOGE(TAG, "fail to send MQTT disconnect");
+                }
                 break;
             }
             case EventType::WIFI_GOT_TIME:
@@ -279,18 +288,40 @@ void SystemManager::process_command(char *cmd) {
 }
 
 esp_err_t SystemManager::send_connect_wifi() {
-    this->send_diconnect_wifi();
+    esp_err_t err = ESP_OK;
+    if ((err = this->send_disconnect_wifi()) != ESP_OK) {
+        return err;
+    }
+
     const char *ssid = this->nvs_manager.get_config()->wifi_ssid;
     const char *pass = this->nvs_manager.get_config()->wifi_pass;
 
     return process_wifi_credentials(WiFiEventType::CONNECT, ssid, pass);
 }
 
-esp_err_t SystemManager::send_diconnect_wifi() {
+esp_err_t SystemManager::send_disconnect_wifi() {
     WiFiEvent evt;
     evt.type = WiFiEventType::DISCONNECT;
 
     return send_to_wifi_queue(&evt);
+}
+
+esp_err_t SystemManager::send_connect_mqtt() {
+    esp_err_t err = ESP_OK;
+    if ((err = this->send_disconnect_mqtt()) != ESP_OK) {
+        return err;
+    }
+
+    const char *uri = MQTT_DEFAULT_BROKER_URI;
+
+    return process_server_credentials(ServerEventType::CONNECT, uri);
+}
+
+esp_err_t SystemManager::send_disconnect_mqtt() {
+    ServerEvent evt;
+    evt.type = ServerEventType::DISCONNECT;
+
+    return send_to_server_queue(&evt);
 }
 
 QueueHandle_t *SystemManager::get_event_queue() {
@@ -307,6 +338,10 @@ QueueHandle_t *SystemManager::get_sd_queue() {
 
 QueueHandle_t *SystemManager::get_wifi_queue() {
     return &this->wifi_queue_handle;
+}
+
+QueueHandle_t *SystemManager::get_server_queue() {
+    return &this->server_queue_handle;
 }
 
 QueueHandle_t *SystemManager::get_profile_queue() {

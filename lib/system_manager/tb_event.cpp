@@ -95,6 +95,16 @@ const char *wifi_event_type_to_s(WiFiEventType type) {
     }
 }
 
+const char *server_event_type_to_s(ServerEventType type) {
+    switch (type) {
+        case ServerEventType::CONNECT:                      return "connect";
+        case ServerEventType::DISCONNECT:                   return "disconnect";
+        case ServerEventType::IS_CONNECTED:                 return "is connected";
+        case ServerEventType::NONE:                         return "none";
+        default:                                            return "invalid";
+    }
+}
+
 const char *profile_event_type_to_s(ProfileEventType type) {
     switch (type) {
         case ProfileEventType::NEW_PROFILE:                 return "new profile";

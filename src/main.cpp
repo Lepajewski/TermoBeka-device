@@ -8,6 +8,7 @@
 #include "ui_manager_task.h"
 #include "sd_manager_task.h"
 #include "wifi_manager_task.h"
+#include "server_manager_task.h"
 #include "profile_manager_task.h"
 
 
@@ -37,6 +38,9 @@ void app_main(void)
 
     // start WiFi Manager Task
     xTaskCreatePinnedToCore(wifiManagerTask, "WiFiMgr", 4096, NULL, 1, NULL, 0);
+
+    // start Server Manager Task
+    xTaskCreatePinnedToCore(serverManagerTask, "ServerMgr", 4096, NULL, 1, NULL, 0);
 
     // start Profile Manager Task
     xTaskCreatePinnedToCore(profileManagerTask, "ProfMgr", 4096, NULL, 1, NULL, 1);

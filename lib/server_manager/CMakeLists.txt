@@ -1,0 +1,11 @@
+idf_component_register(
+    SRCS
+        "mqtt_driver.c"
+        "server_manager.cpp"
+        "server_manager_task.cpp"
+    REQUIRES
+        mqtt_client
+        global_config
+        logger
+        system_manager
+)
