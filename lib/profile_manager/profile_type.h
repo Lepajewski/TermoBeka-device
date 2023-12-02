@@ -80,5 +80,19 @@ typedef struct {
     float progress_percent;                 // profile progress in %
 } __attribute__ ((packed)) profile_update_info;
 
+typedef enum {
+    PROFILE_LOAD_SUCCESS,
+    PROFILE_LOAD_FAIL,
+    PROFILE_START_SUCCESS,
+    PROFILE_START_FAIL,
+    PROFILE_STOP_SUCCESS,
+    PROFILE_STOP_FAIL,
+    PROFILE_RESUME_SUCCESS,
+    PROFILE_RESUME_FAIL,
+    PROFILE_END_SUCCESS,
+    PROFILE_END_FAIL,
+    PROFILE_EVENT_NONE
+} profile_event_response;
+
 
 #endif  // LIB_PROFILE_MANAGER_PROFILE_TYPE_H_

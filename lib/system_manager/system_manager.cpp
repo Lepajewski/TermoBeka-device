@@ -226,6 +226,12 @@ void SystemManager::poll_event() {
                 }
                 break;
             }
+            case EventType::PROFILE_RESPONSE:
+            {
+                EventProfileResponse *payload = reinterpret_cast<EventProfileResponse*>(evt.payload);
+                TB_LOGI(TAG, "profile response: %d", payload->response);
+                break;
+            }
             case EventType::PROFILE_UPDATE:
             {
                 EventProfileUpdate *payload = reinterpret_cast<EventProfileUpdate*>(evt.payload);

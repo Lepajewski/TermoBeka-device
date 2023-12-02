@@ -23,11 +23,11 @@ class ProfileManager {
     void poll_profile_queue_events();
     void poll_running_profile_events();
 
-    void process_new_profile(profile_t *profile);
-    void start_profile();
-    void stop_profile();
-    void resume_profile();
-    void end_profile();
+    profile_event_response process_new_profile(profile_t *profile);
+    profile_event_response start_profile();
+    profile_event_response stop_profile();
+    profile_event_response resume_profile();
+    profile_event_response end_profile();
     void print_profile_info();
 
     void send_evt(Event *evt);
@@ -35,6 +35,7 @@ class ProfileManager {
     void send_evt_stop();
     void send_evt_resume();
     void send_evt_end();
+    void send_evt_response(profile_event_response response);
     void send_evt_update();
  public:
     ProfileManager();

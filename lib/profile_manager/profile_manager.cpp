@@ -76,27 +76,27 @@ void ProfileManager::process_profile_queue_event(ProfileEvent *evt) {
         case ProfileEventType::NEW_PROFILE:
         {
             ProfileEventNewProfile *payload = reinterpret_cast<ProfileEventNewProfile*>(evt->payload);
-            this->process_new_profile(&payload->profile);
+            this->send_evt_response(this->process_new_profile(&payload->profile));
             break;
         }
         case ProfileEventType::START:
         {
-            this->start_profile();
+            this->send_evt_response(this->start_profile());
             break;
         }
         case ProfileEventType::STOP:
         {
-            this->stop_profile();
+            this->send_evt_response(this->stop_profile());
             break;
         }
         case ProfileEventType::RESUME:
         {
-            this->resume_profile();
+            this->send_evt_response(this->resume_profile());
             break;
         }
         case ProfileEventType::END:
         {
-            this->end_profile();
+            this->send_evt_response(this->end_profile());
             break;
         }
         case ProfileEventType::INFO:
@@ -157,51 +157,62 @@ void ProfileManager::process_events() {
     this->profile->process_profile();
 }
 
-void ProfileManager::process_new_profile(profile_t *profile) {
-    if (!this->profile->is_running()) {
-        delete this->profile;
-        memcpy(&this->config.profile, profile, sizeof(profile_t));
-        this->profile = new Profile(this->config);
-        this->profile->print_raw_profile();
-    } else {
-        TB_LOGW(TAG, "another profile is running");
+profile_event_response ProfileManager::process_new_profile(profile_t *profile) {
+    if (this->profile->is_running()) {
+        TB_LOGE(TAG, "another profile is running");
+        return PROFILE_LOAD_FAIL;
     }
+
+    delete this->profile;
+    memcpy(&this->config.profile, profile, sizeof(profile_t));
+    this->profile = new Profile(this->config);
+    this->profile->print_raw_profile();
+    return PROFILE_LOAD_SUCCESS;
+    
 }
 
-void ProfileManager::start_profile() {
+profile_event_response ProfileManager::start_profile() {
     esp_err_t err = this->profile->start();
     if (err != ESP_OK) {
         TB_LOGE(TAG, "fail to start profile");
-    } else {
-        TB_LOGI(TAG, "started profile");
+        return PROFILE_START_FAIL;
     }
+
+    TB_LOGI(TAG, "started profile");
+    return PROFILE_START_SUCCESS;
 }
 
-void ProfileManager::stop_profile() {
+profile_event_response ProfileManager::stop_profile() {
     esp_err_t err = this->profile->stop();
     if (err != ESP_OK) {
         TB_LOGE(TAG, "fail to stop profile");
-    } else {
-        TB_LOGI(TAG, "stopped profile");
+        return PROFILE_STOP_FAIL;
     }
+
+    TB_LOGI(TAG, "stopped profile");
+    return PROFILE_STOP_SUCCESS;
 }
 
-void ProfileManager::resume_profile() {
+profile_event_response ProfileManager::resume_profile() {
     esp_err_t err = this->profile->resume();
     if (err != ESP_OK) {
         TB_LOGE(TAG, "fail to resume profile");
-    } else {
-        TB_LOGI(TAG, "resumed profile");
+        return PROFILE_RESUME_FAIL;
     }
+
+    TB_LOGI(TAG, "resumed profile");
+    return PROFILE_RESUME_SUCCESS;
 }
 
-void ProfileManager::end_profile() {
+profile_event_response ProfileManager::end_profile() {
     esp_err_t err = this->profile->end();
     if (err != ESP_OK) {
         TB_LOGE(TAG, "fail to end profile");
-    } else {
-        TB_LOGI(TAG, "ended profile");
+        return PROFILE_END_FAIL;
     }
+
+    TB_LOGI(TAG, "ended profile");
+    return PROFILE_END_SUCCESS;
 }
 
 void ProfileManager::print_profile_info() {
@@ -239,12 +250,20 @@ void ProfileManager::send_evt_end() {
     this->send_evt(&evt);
 }
 
+void ProfileManager::send_evt_response(profile_event_response response) {
+    Event evt = {};
+    evt.type = EventType::PROFILE_RESPONSE;
+    EventProfileResponse payload = {};
+    payload.response = response;
+    memcpy(&evt.payload, &payload.buffer, sizeof(EventProfileResponse));
+    this->send_evt(&evt);
+}
+
 void ProfileManager::send_evt_update() {
     Event evt = {};
     evt.type = EventType::PROFILE_UPDATE;
     EventProfileUpdate payload = {};
     payload.info = this->profile->get_profile_run_info();
     memcpy(&evt.payload, &payload.buffer, sizeof(EventProfileUpdate));
-
     this->send_evt(&evt);
 }

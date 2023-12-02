@@ -110,6 +110,11 @@ typedef union {
 } EventSDConfigLoad;
 
 typedef union {
+    profile_event_response response;
+    uint8_t buffer[EVENT_QUEUE_MAX_PAYLOAD];
+} EventProfileResponse;
+
+typedef union {
     profile_update_info info;
     uint8_t buffer[EVENT_QUEUE_MAX_PAYLOAD];
 } EventProfileUpdate;
