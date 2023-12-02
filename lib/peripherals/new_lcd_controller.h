@@ -7,11 +7,14 @@
 #define LCD_CONTROLLER_TRANS_QUEUE_SIZE 32
 #define LCD_CONTROLLER_MAX_TRANS_LENGTH_WITHOUT_DMA 256 // 32 bytes * 8 bits = 256 bits
 
-#define LCD_CONTROLLER_FRAME_BUF_SIZE 504 // 84 rows * 6 cols
+#define LCD_WIDTH 84
+#define LCD_BYTE_HEIGHT 6
+#define LCD_HEIGHT LCD_BYTE_HEIGHT*8
+#define LCD_FRAME_BUF_SIZE LCD_WIDTH*LCD_BYTE_HEIGHT
 
-#define LCD_CONTROLLER_DEFAULT_CONTRAST 50
-#define LCD_CONTROLLER_TEMPERATURE_COEFFICIENT 2
-#define LCD_CONTROLLER_DEFAULT_BIAS 5
+#define LCD_DEFAULT_CONTRAST 50
+#define LCD_TEMPERATURE_COEFFICIENT 2
+#define LCD_DEFAULT_BIAS 5
 
 #define LCD_CONTROLLER_WARN_SUPPRESS_INTERVAL_MS 5000
 
@@ -76,6 +79,9 @@ private:
 public:
     static void begin();
     static void begin(Config config);
+
+    static void display_frame_buf();
+    static void clear_frame_buf();
 
     static void set_display_mode(DisplayMode mode);
     static void set_contrast(uint8_t vop);

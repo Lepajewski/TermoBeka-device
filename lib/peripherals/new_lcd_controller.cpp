@@ -4,10 +4,21 @@
 
 #include "logger.h"
 #include "global_config.h"
+#include "font5x7.h"
 
 #include <cstring>
 
 #define TAG "NewLCDController"
+
+#define CMD_BASIC_INSTR 0b00100000
+#define CMD_SET_X_ADDR  0b10000000
+#define CMD_SET_Y_ADDR  0b01000000
+#define CMD_SET_DISP_MOD 0b00001000
+
+#define CMD_EXTEND_INSTR 0b00100001
+#define CMD_SET_TMP_COEF 0b00000100
+#define CMD_SET_LCD_BIAS 0b00010000
+#define CMD_SET_CONTRAST 0b10000000
 
 bool NewLCDController::initialized = false;
 
@@ -33,12 +44,12 @@ esp_err_t NewLCDController::init() {
     data_count = 0;
     trans_queue_size = 0;
     last_warned_at = 0;
-    data_ptrs = (void**)malloc_for_queue_trans(LCD_CONTROLLER_TRANS_QUEUE_SIZE * sizeof(void *));
+    data_ptrs = static_cast<void**>(malloc_for_queue_trans(LCD_CONTROLLER_TRANS_QUEUE_SIZE * sizeof(void *)));
 
     set_display_mode_int(DisplayMode::NORMAL);
-    set_contrast_int(LCD_CONTROLLER_DEFAULT_CONTRAST);
+    set_contrast_int(LCD_DEFAULT_CONTRAST);
 
-    frame_buf = (uint8_t*)(config.dma_chan > 0 ? heap_caps_malloc(LCD_CONTROLLER_FRAME_BUF_SIZE, MALLOC_CAP_DMA) : malloc(LCD_CONTROLLER_FRAME_BUF_SIZE));
+    frame_buf = static_cast<uint8_t*>(config.dma_chan > 0 ? heap_caps_malloc(LCD_FRAME_BUF_SIZE, MALLOC_CAP_DMA) : malloc(LCD_FRAME_BUF_SIZE));
 
     return err;
 }
@@ -114,15 +125,15 @@ void NewLCDController::queue_trans(const uint8_t *cmds_or_data, int len, bool dc
     // On large data without DMA-enabled SPI, We have to queue data for each 32 bytes packet.
     if (config.dma_chan == 0 && length > LCD_CONTROLLER_MAX_TRANS_LENGTH_WITHOUT_DMA) {
         int length_left = length;
-        void* p = (void *) cmds_or_data;
+        void* p = static_cast<void*>(const_cast<uint8_t*>(cmds_or_data));
         while (length_left) {
-            spi_transaction_t *t = (spi_transaction_t*)malloc(sizeof(spi_transaction_t));
+            spi_transaction_t *t = static_cast<spi_transaction_t*>(malloc(sizeof(spi_transaction_t)));
             memset(t, 0, sizeof(spi_transaction_t));
             length = length_left > LCD_CONTROLLER_MAX_TRANS_LENGTH_WITHOUT_DMA
                     ? LCD_CONTROLLER_MAX_TRANS_LENGTH_WITHOUT_DMA : length_left;
             t->length = length;
             t->tx_buffer = p;
-            t->user = (void*)(dc ? 1 : 0);
+            t->user = reinterpret_cast<void*>(dc ? 1 : 0);
             t->flags = 0;
             check_queue_size();
             ESP_ERROR_CHECK( spi_device_queue_trans(spi, t, portMAX_DELAY) );
@@ -131,11 +142,11 @@ void NewLCDController::queue_trans(const uint8_t *cmds_or_data, int len, bool dc
             length_left -= length;
         }
     } else {
-        spi_transaction_t *t = (spi_transaction_t*)malloc(sizeof(spi_transaction_t));
+        spi_transaction_t *t = static_cast<spi_transaction_t*>(malloc(sizeof(spi_transaction_t)));
         memset(t, 0, sizeof(spi_transaction_t));
         t->length = length;
         t->tx_buffer = cmds_or_data;
-        t->user = (void*)(dc ? 1 : 0);
+        t->user = reinterpret_cast<void*>(dc ? 1 : 0);
         t->flags = 0;
         check_queue_size();
         ESP_ERROR_CHECK( spi_device_queue_trans(spi, t, portMAX_DELAY) );
@@ -183,20 +194,20 @@ void NewLCDController::sync_and_gc() {
 }
 
 void NewLCDController::set_contrast_int(uint8_t vop) {
-    uint8_t *cmds = (uint8_t*)malloc_for_queue_trans(5);
+    uint8_t *cmds = static_cast<uint8_t*>(malloc_for_queue_trans(5));
     register_buf_for_gc(cmds);
-    cmds[0] = 0b00100001; // extended instruction set
-    cmds[1] = 0b00000100 | LCD_CONTROLLER_TEMPERATURE_COEFFICIENT; // templerature coefficient
-    cmds[2] = 0b00010000 | LCD_CONTROLLER_DEFAULT_BIAS; // bias system
-    cmds[3] = 0b10000000 | vop; // Vop (contrast)
-    cmds[4] = 0b00100000; // basic instruction set
+    cmds[0] = CMD_EXTEND_INSTR; // extended instruction set
+    cmds[1] = CMD_SET_TMP_COEF | LCD_TEMPERATURE_COEFFICIENT; // templerature coefficient
+    cmds[2] = CMD_SET_LCD_BIAS | LCD_DEFAULT_BIAS; // bias system
+    cmds[3] = CMD_SET_CONTRAST | vop; // Vop (contrast)
+    cmds[4] = CMD_BASIC_INSTR; // basic instruction set
     send_cmd(cmds, 5);
 }
 
 void NewLCDController::set_display_mode_int(DisplayMode mode) {
-    uint8_t *cmd = (uint8_t*)malloc_for_queue_trans(1);
+    uint8_t *cmd = static_cast<uint8_t*>(malloc_for_queue_trans(1));
     register_buf_for_gc(cmd);
-    *cmd = 0b00001000 | (((uint8_t)mode & 2) << 1) | ((uint8_t)mode & 1); // display_mode
+    *cmd = CMD_SET_DISP_MOD | (((uint8_t)mode & 2) << 1) | ((uint8_t)mode & 1); // display_mode
     send_cmd(cmd, 1);
 }
 
@@ -226,6 +237,20 @@ void NewLCDController::begin(Config config) {
         ESP_ERROR_CHECK(init());
         initialized = true;
     }
+}
+
+void NewLCDController::display_frame_buf() {
+    uint8_t *cmds = static_cast<uint8_t*>(malloc_for_queue_trans(2));
+    register_buf_for_gc(cmds);
+    cmds[0] = CMD_SET_X_ADDR | 0;
+    cmds[1] = CMD_SET_Y_ADDR | 0;
+    send_cmd(cmds, 2);
+
+    send_data(frame_buf, LCD_FRAME_BUF_SIZE);
+}
+
+void NewLCDController::clear_frame_buf() {
+    memset(frame_buf, 0, LCD_FRAME_BUF_SIZE);
 }
 
 void NewLCDController::set_display_mode(DisplayMode mode) {
