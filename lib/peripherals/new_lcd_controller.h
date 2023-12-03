@@ -4,6 +4,8 @@
 #include "driver/gpio.h"
 #include "driver/spi_master.h"
 
+#include <string>
+
 #define LCD_CONTROLLER_TRANS_QUEUE_SIZE 32
 #define LCD_CONTROLLER_MAX_TRANS_LENGTH_WITHOUT_DMA 256 // 32 bytes * 8 bits = 256 bits
 
@@ -82,6 +84,13 @@ public:
 
     static void display_frame_buf();
     static void clear_frame_buf();
+
+    static void set_pixel(uint8_t x, uint8_t y, bool color = true);
+    static void draw_line(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1, bool color = true);
+    static void draw_circle(int x0, int y0, int r, bool color = true);
+    static void draw_bitmap(int x, int y, int w, int h, uint8_t bitmap[], bool color = true);
+    static void draw_char(int x, int y, char c);
+    static void draw_string(int x, int y, std::string s);
 
     static void set_display_mode(DisplayMode mode);
     static void set_contrast(uint8_t vop);

@@ -196,11 +196,11 @@ void NewLCDController::sync_and_gc() {
 void NewLCDController::set_contrast_int(uint8_t vop) {
     uint8_t *cmds = static_cast<uint8_t*>(malloc_for_queue_trans(5));
     register_buf_for_gc(cmds);
-    cmds[0] = CMD_EXTEND_INSTR; // extended instruction set
-    cmds[1] = CMD_SET_TMP_COEF | LCD_TEMPERATURE_COEFFICIENT; // templerature coefficient
-    cmds[2] = CMD_SET_LCD_BIAS | LCD_DEFAULT_BIAS; // bias system
-    cmds[3] = CMD_SET_CONTRAST | vop; // Vop (contrast)
-    cmds[4] = CMD_BASIC_INSTR; // basic instruction set
+    cmds[0] = CMD_EXTEND_INSTR;
+    cmds[1] = CMD_SET_TMP_COEF | LCD_TEMPERATURE_COEFFICIENT;
+    cmds[2] = CMD_SET_LCD_BIAS | LCD_DEFAULT_BIAS;
+    cmds[3] = CMD_SET_CONTRAST | vop;
+    cmds[4] = CMD_BASIC_INSTR;
     send_cmd(cmds, 5);
 }
 
@@ -240,6 +240,10 @@ void NewLCDController::begin(Config config) {
 }
 
 void NewLCDController::display_frame_buf() {
+    if (!initialized) {
+        return;
+    }
+
     uint8_t *cmds = static_cast<uint8_t*>(malloc_for_queue_trans(2));
     register_buf_for_gc(cmds);
     cmds[0] = CMD_SET_X_ADDR | 0;
@@ -250,7 +254,155 @@ void NewLCDController::display_frame_buf() {
 }
 
 void NewLCDController::clear_frame_buf() {
+    if (!initialized) {
+        return;
+    }
+
     memset(frame_buf, 0, LCD_FRAME_BUF_SIZE);
+}
+
+void NewLCDController::set_pixel(uint8_t x, uint8_t y, bool color = true) {
+    if (!initialized) {
+        return;
+    }
+
+    if (x >= LCD_WIDTH || y >= LCD_HEIGHT) {
+        return;
+    }
+
+    if (color)
+        frame_buf[x + (y / 8) * LCD_WIDTH] |= 1 << (y % 8);
+    else
+        frame_buf[x + (y / 8) * LCD_WIDTH] &= ~(1 << (y % 8));
+}
+
+void NewLCDController::draw_line(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1, bool color = true) {
+    if (!initialized) {
+        return;
+    }
+
+    int8_t dx = abs(x1 - x0);
+    int8_t dy = -abs(y1 - y0);
+    int8_t sx = x0 < x1 ? 1 : -1;
+    int8_t sy = y0 < y1 ? 1 : -1; 
+    int8_t err = dx + dy; 
+    int16_t err2;
+
+
+    while (1) {
+        set_pixel(x0,y0, color);
+        
+        if (x0 == x1 && y0 == y1) {
+            break;
+        }
+        
+        err2 = 2 * err;
+        
+        if (err2 >= dy) { 
+            err += dy; 
+            x0 += sx; 
+
+            if (x0 > LCD_WIDTH) {
+                break;
+            }
+        } 
+        
+        if (err2 <= dx) { 
+            err += dx;
+            y0 += sy; 
+
+            if (y0 > LCD_HEIGHT) {
+                break; 
+            }
+        }
+    }
+}
+
+void NewLCDController::draw_circle(int x0, int y0, int r, bool color = true) {
+    if (!initialized) {
+        return;
+    }
+
+    int x = -r;
+    int y = 0; 
+    int err = 2 - 2 * r;
+    
+    do {
+        set_pixel(x0-x, y0+y, color);
+        set_pixel(x0-y, y0-x, color);
+        set_pixel(x0+x, y0-y, color);
+        set_pixel(x0+y, y0+x, color);
+        
+        r = err;
+        
+        if (r >  x){
+            ++x; 
+            err = err + x * 2 + 1;   
+        }
+
+        if (r <= y) {
+            ++y;
+            err = err + y * 2 + 1;
+        }
+    } while (x < 0);
+}
+
+void NewLCDController::draw_bitmap(int x, int y, int w, int h, uint8_t bitmap[], bool color = true) {
+    if (!initialized) {
+        return;
+    }
+
+    int16_t byteWidth = (w + 7) / 8;
+    uint8_t b = 0;
+
+    for (int16_t j = 0; j < h; j++, y++) {
+        
+        for (int16_t i = 0; i < w; i++) {
+
+            if (i & 7)
+                b <<= 1;
+            else
+                b = bitmap[j * byteWidth + i / 8];
+
+            if (b & 0x80) {
+                set_pixel(x + i, y, color);
+            } 
+        }
+    }
+}
+
+void NewLCDController::draw_char(int x, int y, char c) {
+    if (!initialized) {
+        return;
+    }
+
+    if (c < 32 || c > 127) {
+        return;
+    }
+
+    for (int i = 0; i < FONT5X7_WIDTH; i++) {
+        int line = font5x7[c - FONT5X7_CHAR_CODE_OFFSET][i];
+
+        for (int j = 0; j < FONT5X7_HEIGHT; j++) {
+            set_pixel(x + i, y + j, line & (1 << j));
+        }
+    }
+}
+
+void NewLCDController::draw_string(int x, int y, std::string s) {
+    if (!initialized) {
+        return;
+    }
+
+    int curr_x = x;
+    for (char c : s) {
+        draw_char(curr_x, y, c);
+        curr_x += FONT5X7_WIDTH + 1;
+
+        if (curr_x >= LCD_WIDTH) {
+            break;
+        }
+    }
 }
 
 void NewLCDController::set_display_mode(DisplayMode mode) {
