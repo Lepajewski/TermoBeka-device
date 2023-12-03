@@ -1,11 +1,12 @@
 #include "menu_scene.h"
 
 #include "lcd_controller.h"
+#include "global_config.h"
+
+#include "logger.h"
 
 MenuScene::MenuScene() : Scene() {
     LCDController::clear_frame_buf();
-    this->list.draw();
-    LCDController::display_frame_buf();
 }
 
 SceneEnum MenuScene::get_scene_enum() {
@@ -20,39 +21,22 @@ void MenuScene::button_callback(Button *button, PressType type) {
             switch (pin_num) {
                 case P0_0: {
                     this->list.select();
-                    LCDController::clear_frame_buf();
-                    LCDController::draw_string_formatted(0, 0, "B%d, SHORT", static_cast<int>(pin_num));
-                    this->list.draw();
-                    LCDController::display_frame_buf();
                 }
                 break;
 
                 case P0_1: {
                     this->list.move_down();
-                    LCDController::clear_frame_buf();
-                    LCDController::draw_string_formatted(0, 0, "B%d, SHORT", static_cast<int>(pin_num));
-                    this->list.draw();
-                    LCDController::display_frame_buf();
                 }
                 break;
 
                 case P0_2: {
                     this->list.move_up();
-                    LCDController::clear_frame_buf();
-                    LCDController::draw_string_formatted(0, 0, "B%d, SHORT", static_cast<int>(pin_num));
-                    this->list.draw();
-                    LCDController::display_frame_buf();
                 }
                 break;
 
                 case P0_3:
                 case P0_4:
-                case P0_5: {
-                    LCDController::clear_frame_buf();
-                    LCDController::draw_string_formatted(0, 0, "B%d, SHORT", static_cast<int>(pin_num));
-                    this->list.draw();
-                    LCDController::display_frame_buf();
-                }
+                case P0_5:
                 break;
 
                 default:
@@ -67,13 +51,9 @@ void MenuScene::button_callback(Button *button, PressType type) {
                 case P0_2:
                 case P0_3:
                 case P0_4:
-                case P0_5: {
-                    LCDController::clear_frame_buf();
-                    LCDController::draw_string_formatted(0, 0, "B%d, LONG", static_cast<int>(pin_num));
-                    this->list.draw();
-                    LCDController::display_frame_buf();
-                }
+                case P0_5:
                 break;
+
                 default:
                 break;
             }
@@ -81,4 +61,18 @@ void MenuScene::button_callback(Button *button, PressType type) {
         default:
         break;
     }
+}
+
+void MenuScene::update(float d_time) {
+    LCDController::clear_frame_buf();
+
+    char timestamp[TIMESTAMP_SIZE];
+    get_timestamp(timestamp);
+    std::string time = std::string(timestamp);
+    time = time.substr(time.find('T') + 1, 5);
+    status.set_time(std::stoi(time.substr(0, 2)), std::stoi(time.substr(3, 2)));
+    
+    this->status.draw(d_time);
+    this->list.draw();
+    LCDController::display_frame_buf();
 }

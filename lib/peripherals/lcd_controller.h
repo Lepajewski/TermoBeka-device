@@ -1,5 +1,5 @@
-#ifndef LIB_PERIPHERALS_NEW_LCD_CONTROLLER_H_
-#define LIB_PERIPHERALS_NEW_LCD_CONTROLLER_H_
+#ifndef LIB_PERIPHERALS_LCD_CONTROLLER_H_
+#define LIB_PERIPHERALS_LCD_CONTROLLER_H_
 
 #include "driver/gpio.h"
 #include "driver/spi_master.h"

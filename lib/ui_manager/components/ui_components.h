@@ -3,5 +3,6 @@
 
 #include "rect.h"
 #include "option_list.h"
+#include "status_bar.h"
 
 #endif

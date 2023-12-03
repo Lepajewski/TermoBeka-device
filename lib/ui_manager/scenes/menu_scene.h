@@ -7,6 +7,8 @@
 
 class MenuScene : public Scene {
 private:
+    StatusBar status;
+
     OptionList list = OptionList(Rect(0, 8, LCD_WIDTH, LCD_HEIGHT - 8), {
         {"Intro", [this](){this->next_scene = SceneEnum::startup; this->should_be_changed = true;}},
         {"Start profile", [](){}},
@@ -23,6 +25,8 @@ public:
 
     SceneEnum get_scene_enum() override;
     void button_callback(Button *button, PressType type) override;
+
+    void update(float d_time) override;
 };
 
 #endif

@@ -59,6 +59,15 @@
         "freertos.h": "c",
         "profile_timer.h": "c",
         "mqtt_client.h": "c",
-        "esp_err.h": "c"
+        "esp_err.h": "c",
+        "chrono": "cpp",
+        "ctime": "cpp",
+        "ratio": "cpp",
+        "iostream": "cpp",
+        "mutex": "cpp",
+        "semaphore": "cpp",
+        "span": "cpp",
+        "stop_token": "cpp",
+        "thread": "cpp"
     }
 }
