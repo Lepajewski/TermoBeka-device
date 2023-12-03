@@ -1,0 +1,25 @@
+syntax = "proto3";
+
+
+enum ProfileStatus {
+    NOT_RUNNING = 0;
+    RUNNING = 1;
+    STOPPED = 2;
+    ENDED = 3;
+};
+
+
+message ProfileStatusUpdate {
+    ProfileStatus status = 1;
+    uint32 current_duration = 2;
+    uint32 total_duration = 3;
+    uint32 step_start_time = 4;
+    uint32 step_end_time = 5;
+    uint32 step_stopped_time = 6;
+    uint32 profile_stopped_time = 7;
+    uint32 step_time_left = 8;
+    uint32 profile_time_left = 9;
+    uint32 profile_time_halted = 10;
+    int32 current_temperature = 11;
+    float progress_percent = 12;
+}

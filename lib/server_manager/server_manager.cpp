@@ -1,6 +1,13 @@
 #include "string.h"
+#include <stdio.h>
 
+#include "esp_mac.h"
 #include "mqtt_driver.h"
+
+#include "profile_status_update.pb.h"
+#include "pb_encode.h"
+#include "pb_decode.h"
+
 #include "global_config.h"
 #include "logger.h"
 #include "server_manager.h"
@@ -21,6 +28,7 @@ ServerManager::~ServerManager() {
 }
 
 void ServerManager::setup() {
+    this->init_topics();
     this->config = {};
     this->server_event_group = xEventGroupCreate();
     mqtt_set_event_group(&this->server_event_group);
@@ -29,6 +37,35 @@ void ServerManager::setup() {
     this->sysMgr = get_system_manager();
     this->event_queue_handle = this->sysMgr->get_event_queue();
     this->server_queue_handle = this->sysMgr->get_server_queue();
+}
+
+void ServerManager::create_topic(mqtt_topic *topic, const char* prefix, const char* postfix) {
+    snprintf((char *) topic, sizeof(mqtt_topic), "%s%02X%02X%02X%s",
+        prefix,
+        this->mac_address[3],
+        this->mac_address[4],
+        this->mac_address[5],
+        postfix
+    );
+}
+
+void ServerManager::init_topics() {
+    if (esp_read_mac(this->mac_address, ESP_MAC_WIFI_STA) != ESP_OK) {
+        memset(this->mac_address, 0, sizeof(this->mac_address));
+    }
+
+    TB_LOGI(TAG, "MAC address: %02X%02X%02X%02X%02X%02X",
+        this->mac_address[0], this->mac_address[1], this->mac_address[2],
+        this->mac_address[3], this->mac_address[4], this->mac_address[5]
+    );
+
+    this->create_topic(&this->topic_profile_update, MQTT_TOPIC_PREFIX, MQTT_TOPIC_PROFILE_UPDATE);
+    this->create_topic(&this->topic_regulator_update, MQTT_TOPIC_PREFIX, MQTT_TOPIC_REGULATOR_UPDATE);
+    this->create_topic(&this->topic_server_commands, MQTT_TOPIC_PREFIX, MQTT_TOPIC_SERVER_COMMANDS);
+
+    TB_LOGI(TAG, "topic_profile_update: %s", this->topic_profile_update);
+    TB_LOGI(TAG, "topic_regulator_update: %s", this->topic_regulator_update);
+    TB_LOGI(TAG, "topic_server_commands: %s", this->topic_server_commands);
 }
 
 void ServerManager::begin() {
@@ -113,10 +150,43 @@ void ServerManager::process_server_event(ServerEvent *evt) {
             TB_LOGI(TAG, "connected: %s", this->connected ? "true" : "false");
             break;
         }
+        case ServerEventType::PUBLISH_PROFILE_UPDATE:
+        {
+            ServerEventPubProfileUpdate *payload = reinterpret_cast<ServerEventPubProfileUpdate*>(evt->payload);
+            if (this->running && this->connected) {
+                this->process_publish_profile_update(&payload->info);
+            }
+            break;
+        }
         case ServerEventType::NONE:
         default:
             break;
     }
+}
+
+void ServerManager::process_publish_profile_update(ProfileStatusUpdate *info) {
+    printf("Progress: %.2lf%\n", info->progress_percent);
+    uint8_t buffer[256] = {};
+    pb_ostream_t ostream;
+
+    ostream = pb_ostream_from_buffer(buffer, sizeof(buffer));
+    pb_encode(&ostream, &ProfileStatusUpdate_msg, info);
+
+    size_t written = ostream.bytes_written;
+    TB_LOGI(TAG, "written: %d", written);
+
+    esp_err_t err = mqtt_publish(this->topic_profile_update, (const char *) buffer, (uint16_t) written, 1);
+    if (err != ESP_OK) {
+        TB_LOGE(TAG, "fail to publish");
+    }
+
+    // istream = pb_istream_from_buffer(buffer, written);
+    // ProfileStatusUpdate decoded = ProfileStatusUpdate_init_zero;
+
+    // pb_decode(&istream, &ProfileStatusUpdate_msg, &decoded);
+
+    // printf("Current Temperature: %d\n", decoded.current_temperature);
+    // printf("Progress: %.2lf%\n", decoded.progress_percent);
 }
 
 void ServerManager::poll_server_events() {

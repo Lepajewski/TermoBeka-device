@@ -60,6 +60,11 @@
 #define MQTT_MAX_PASSWORD_LEN                   32
 #define MQTT_DEFAULT_PASSWORD                   "default"
 
+#define MQTT_TOPIC_PREFIX                       "termobeka/"
+#define MQTT_TOPIC_PROFILE_UPDATE               "/profile-update"
+#define MQTT_TOPIC_REGULATOR_UPDATE             "/regulator-update"
+#define MQTT_TOPIC_SERVER_COMMANDS              "/server-commands"
+
 
 // Profile configuration
 #define PROFILE_MAX_VERTICES                    40

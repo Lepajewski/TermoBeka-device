@@ -5,6 +5,9 @@
 #include "etl/list.h"
 #include "esp_err.h"
 
+#include <pb.h>
+#include "profile_status_update.pb.h"
+
 #include "freertos/FreeRTOS.h"
 #include "freertos/event_groups.h"
 
@@ -29,7 +32,7 @@ class Profile {
     esp_err_t process_next_step();
     esp_err_t process_stopped();
 
-    profile_status get_status();
+    ProfileStatus get_status();
  public:
     Profile(profile_config_t config);
     ~Profile();
@@ -40,7 +43,7 @@ class Profile {
     esp_err_t end();
 
     void process_profile();
-    profile_update_info get_profile_run_info();
+    ProfileStatusUpdate get_profile_run_info();
 
     bool is_running();
 

@@ -59,28 +59,6 @@ typedef struct {
 } profile_run_info;
 
 typedef enum {
-    PROFILE_NOT_RUNNING,
-    PROFILE_RUNNING,
-    PROFILE_STOPPED,
-    PROFILE_ENDED
-} profile_status;
-
-typedef struct {
-    profile_status status;
-    uint32_t current_duration;              // ms from uC start
-    uint32_t total_duration;                // profile duration in ms
-    uint32_t step_start_time;               // start time of current step in profile (ms)
-    uint32_t step_end_time;                 // end time of current step in profile (ms)
-    uint32_t step_stopped_time;             // ms from current step start
-    uint32_t profile_stopped_time;          // ms from profile start
-    uint32_t step_time_left;                // ms left to stopped step end
-    uint32_t profile_time_left;             // ms left to profile end
-    uint32_t profile_time_halted;           // total profile halt duration ms
-    int16_t current_temperature;            // regulated temperature
-    float progress_percent;                 // profile progress in %
-} __attribute__ ((packed)) profile_update_info;
-
-typedef enum {
     PROFILE_LOAD_SUCCESS,
     PROFILE_LOAD_FAIL,
     PROFILE_START_SUCCESS,

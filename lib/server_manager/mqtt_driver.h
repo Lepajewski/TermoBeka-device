@@ -1,7 +1,7 @@
 #ifndef LIB_SERVER_MANAGER_MQTT_DRIVER_H_
 #define LIB_SERVER_MANAGER_MQTT_DRIVER_H_
 
-
+#include "inttypes.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/event_groups.h"
 
@@ -32,10 +32,14 @@ typedef struct {
 } mqtt_driver_config_t;
 
 
+typedef char mqtt_topic[50];
+
 void mqtt_set_event_group(EventGroupHandle_t *event_group);
 void mqtt_setup_timer();
 esp_err_t mqtt_begin(mqtt_driver_config_t *cfg);
 esp_err_t mqtt_end();
+
+esp_err_t mqtt_publish(const char *topic, const char *buf, uint16_t len, uint8_t qos);
 
 
 #ifdef __cplusplus

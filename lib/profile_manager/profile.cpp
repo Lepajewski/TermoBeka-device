@@ -179,20 +179,20 @@ esp_err_t Profile::process_stopped() {
     return ESP_OK;
 }
 
-profile_status Profile::get_status() {
+ProfileStatus Profile::get_status() {
     if (this->info.ended) {
-        return PROFILE_ENDED;
+        return ProfileStatus_ENDED;
     }
 
     if (!this->info.running) {
-        return PROFILE_NOT_RUNNING;
+        return ProfileStatus_NOT_RUNNING;
     }
 
     if (this->info.stopped) {
-        return PROFILE_STOPPED;
+        return ProfileStatus_STOPPED;
     }
     
-    return PROFILE_RUNNING;
+    return ProfileStatus_RUNNING;
 }
 
 esp_err_t Profile::start() {
@@ -348,15 +348,15 @@ void Profile::process_profile() {
     }
 }
 
-profile_update_info Profile::get_profile_run_info() {
-    profile_update_info info = {};
+ProfileStatusUpdate Profile::get_profile_run_info() {
+    ProfileStatusUpdate info = ProfileStatusUpdate_init_zero;
 
     info.status = this->get_status();
 
     info.total_duration = this->info.total_duration;
     info.step_start_time = this->info.step_start_time;
     info.step_end_time = this->info.step_end_time;
-    info.current_temperature = this->info.current_temperature;
+    info.current_temperature = (int32_t) this->info.current_temperature;
 
     if (this->info.running) {
         info.current_duration = (uint32_t)(get_time_since_startup_ms() - this->info.absolute_start_time) - this->info.profile_time_halted;

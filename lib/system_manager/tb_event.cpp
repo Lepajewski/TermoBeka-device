@@ -1,5 +1,6 @@
 #include "tb_event.h"
 
+
 const char *event_origin_to_s(EventOrigin origin) {
     switch (origin) {
         case EventOrigin::SYSTEM_MANAGER:                   return "System Manager";
@@ -100,6 +101,8 @@ const char *server_event_type_to_s(ServerEventType type) {
         case ServerEventType::CONNECT:                      return "connect";
         case ServerEventType::DISCONNECT:                   return "disconnect";
         case ServerEventType::IS_CONNECTED:                 return "is connected";
+        case ServerEventType::PUBLISH_PROFILE_UPDATE:       return "publish profile update";
+        case ServerEventType::PUBLISH_REGULATOR_UPDATE:     return "publish regulator update";
         case ServerEventType::NONE:                         return "none";
         default:                                            return "invalid";
     }

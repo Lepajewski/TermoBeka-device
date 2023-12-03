@@ -3,12 +3,15 @@
 
 #include <inttypes.h>
 
+#include <pb.h>
+#include "profile_status_update.pb.h"
+
 #include "global_config.h"
 #include "nvs_config.h"
 #include "profile_type.h"
 
 
-#define QUEUE_DEFAULT_PAYLOAD           100  // bytes
+#define QUEUE_DEFAULT_PAYLOAD           196  // bytes
 
 #define EVENT_QUEUE_MAX_PAYLOAD         196
 #define EVENT_QUEUE_SIZE                20
@@ -118,7 +121,7 @@ typedef union {
 } EventProfileResponse;
 
 typedef union {
-    profile_update_info info;
+    ProfileStatusUpdate info;
     uint8_t buffer[EVENT_QUEUE_MAX_PAYLOAD];
 } EventProfileUpdate;
 
@@ -201,6 +204,8 @@ enum class ServerEventType {
     CONNECT,            // <broker uri>
     DISCONNECT,
     IS_CONNECTED,
+    PUBLISH_PROFILE_UPDATE,
+    PUBLISH_REGULATOR_UPDATE,
     NONE
 };
 
@@ -214,6 +219,11 @@ typedef union {
     mqtt_credentials credentials;
     uint8_t buffer[SERVER_QUEUE_MAX_PAYLOAD];
 } ServerEventCredentials;
+
+typedef union {
+    ProfileStatusUpdate info;
+    uint8_t buffer[SERVER_QUEUE_MAX_PAYLOAD];
+} ServerEventPubProfileUpdate;
 
 
 enum class ProfileEventType {

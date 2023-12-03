@@ -4,6 +4,7 @@ idf_component_register(
         "server_manager.cpp"
         "server_manager_task.cpp"
     REQUIRES
+        esp_mac
         mqtt_client
         global_config
         logger

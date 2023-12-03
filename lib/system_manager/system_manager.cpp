@@ -270,6 +270,12 @@ void SystemManager::poll_event() {
                 printf("Profile Time Left: %u ms\n", payload->info.profile_time_left);
                 printf("Current Temperature: %d\n", payload->info.current_temperature);
                 printf("Progress: %.2lf%\n", payload->info.progress_percent);
+
+                ServerEvent evt;
+                evt.type = ServerEventType::PUBLISH_PROFILE_UPDATE;
+                memcpy(&evt.payload, payload->buffer, SERVER_QUEUE_MAX_PAYLOAD);
+                send_to_server_queue(&evt);
+
                 break;
             }
             case EventType::UNKNOWN:
