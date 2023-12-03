@@ -6,7 +6,7 @@
 
 class StartupScene : public Scene {
 public:
-    StartupScene(LCDController* lcd);
+    StartupScene();
 
     SceneEnum get_scene_enum() override;
     void button_callback(Button *button, PressType type) override;

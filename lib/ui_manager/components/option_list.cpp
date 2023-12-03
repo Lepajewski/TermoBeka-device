@@ -1,25 +1,23 @@
 #include "option_list.h"
 
-#define FONT_HEIGHT 7
-#define FONT_WIDTH 5
+#include "font5x7.h"
 
 OptionList::OptionList(Rect rect, std::vector<OptionEntry> options) {
     this->rect = rect;
     this->options = options;
-    this->visible_char_count = rect.width / FONT_WIDTH;
-    this->visible_entries_count = rect.height / (FONT_HEIGHT + 1);
+    this->visible_char_count = rect.width / FONT5X7_WIDTH;
+    this->visible_entries_count = rect.height / (FONT5X7_HEIGHT + 1);
 }
 
-void OptionList::draw(LCDController *lcd) {
-    int y = (rect.y + 7) / 8;
-    lcd->set_cursor(rect.x, y);
+void OptionList::draw() {
+    int y = rect.y;
+
     for (int i = min_visible_index; i < min_visible_index + visible_entries_count && i < options.size(); i++) {
         std::string visible_string = options[i].option_name.substr(0, visible_char_count - 1);
         visible_string = (i == current_index ? ">" : " ") + visible_string;
-        lcd->print(visible_string.c_str());
-
-        y++;
-        lcd->set_cursor(rect.x, y);
+        LCDController::draw_string(rect.x, y, visible_string);
+        
+        y += FONT5X7_HEIGHT + 1;
     }
 }
 

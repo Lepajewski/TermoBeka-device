@@ -26,7 +26,7 @@ private:
 public:
     OptionList(Rect rect, std::vector<OptionEntry> options);
 
-    void draw(LCDController* lcd);
+    void draw();
     void move_up();
     void move_down();
     void select();

@@ -1,38 +1,93 @@
-#ifndef LIB_PERIPHERALS_LCD_CONTROLLER_H_
-#define LIB_PERIPHERALS_LCD_CONTROLLER_H_
+#ifndef LIB_PERIPHERALS_NEW_LCD_CONTROLLER_H_
+#define LIB_PERIPHERALS_NEW_LCD_CONTROLLER_H_
 
+#include "driver/gpio.h"
+#include "driver/spi_master.h"
 
-#include "drivers/pcd8544.h"
-#include <cstdarg>
-#include "logo.h"
-#include "global_config.h"
+#include <string>
+
+#define LCD_CONTROLLER_TRANS_QUEUE_SIZE 32
+#define LCD_CONTROLLER_MAX_TRANS_LENGTH_WITHOUT_DMA 256 // 32 bytes * 8 bits = 256 bits
 
 #define LCD_WIDTH 84
-#define LCD_HEIGHT 48
+#define LCD_BYTE_HEIGHT 6
+#define LCD_HEIGHT LCD_BYTE_HEIGHT*8
+#define LCD_FRAME_BUF_SIZE LCD_WIDTH*LCD_BYTE_HEIGHT
+
+#define LCD_DEFAULT_CONTRAST 50
+#define LCD_TEMPERATURE_COEFFICIENT 2
+#define LCD_DEFAULT_BIAS 5
+
+#define LCD_CONTROLLER_WARN_SUPPRESS_INTERVAL_MS 5000
 
 class LCDController {
- private:
-    bool initialized;
-    pcd8544_config_t config;
+public:
+    struct SpiPinConfig {
+        gpio_num_t mosi_io_num;
+        gpio_num_t sclk_io_num;
+        gpio_num_t spics_io_num;
+    };
 
-    void finish_frame();
+    struct ControlPinConfig {
+        gpio_num_t reset_io_num;
+        gpio_num_t dc_io_num;
+    };
 
- public:
-    LCDController();
-    LCDController(pcd8544_config_t config);
-    ~LCDController();
+    struct Config {
+        spi_host_device_t spi_host;
+        spi_dma_chan_t dma_chan;
+        SpiPinConfig spi_pin;
+        ControlPinConfig control_pin;
+    };
 
-    void begin();
-    void end();
+    enum class DisplayMode {
+        BLANK = 0b00,
+        ALL_SEGMENTS_ON = 0b01,
+        NORMAL = 0b10,
+        INVERSE = 0b11,
+    };
 
-    void draw_logo();
-    void clear();
-    void set_cursor(uint8_t row, uint8_t col);
-    void draw_line(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1);
-    void draw_rectangle(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1);
-    void draw_bitmap(const uint8_t *bitmap, uint8_t rows, uint8_t cols, bool transparent);
-    void print(const char *text);
-    void print_formatted(const char *format, ...);
+private:
+    static bool initialized;
+
+    static esp_err_t init();
+    static esp_err_t init_control_pin();
+    static esp_err_t init_spi();
+    static void pre_transfer_callback(spi_transaction_t *t);
+
+    static void reset();
+
+    static void *malloc_for_queue_trans(size_t size);
+    static void register_buf_for_gc(void* buf);
+    static void gc_finished_trans_data();
+
+    static void sync_and_gc();
+    static void check_queue_size();
+
+    static void queue_trans(const uint8_t *cmds_or_data, int len, bool dc);
+    static void send_cmd(const uint8_t *cmds, int len);
+    static void send_data(const uint8_t *data, int len);
+
+    static void set_display_mode_int(DisplayMode mode);
+    static void set_contrast_int(uint8_t vop);
+
+public:
+    static void begin();
+    static void begin(Config config);
+
+    static void display_frame_buf();
+    static void clear_frame_buf();
+
+    static void set_pixel(uint8_t x, uint8_t y, bool color = true);
+    static void draw_line(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1, bool color = true);
+    static void draw_circle(int x0, int y0, int r, bool color = true);
+    static void draw_bitmap(int x, int y, int w, int h, const uint8_t bitmap[], bool color = true);
+    static void draw_char(int x, int y, char c);
+    static void draw_string(int x, int y, std::string s);
+    static void draw_string_formatted(int x, int y, std::string f, ...);
+
+    static void set_display_mode(DisplayMode mode);
+    static void set_contrast(uint8_t vop);
 };
 
-#endif  // LIB_PERIPHERALS_LCD_CONTROLLER_H_
+#endif

@@ -3,6 +3,7 @@
 #include "logger.h"
 
 #include "ui_manager.h"
+#include "lcd_controller.h"
 
 
 const char * const TAG = "UIMgr";
@@ -32,7 +33,7 @@ void UIManager::setup() {
     this->expander->begin();
 
     // setup LCD
-    this->lcd.begin();
+    LCDController::begin();
 
     switch_scene(SceneEnum::startup);
 }
@@ -70,7 +71,7 @@ void UIManager::poll_ui_events() {
 }
 
 void UIManager::switch_scene(SceneEnum target) {
-    this->current_scene = Scene::create_scene(target, &this->lcd);
+    this->current_scene = Scene::create_scene(target);
 }
 
 void UIManager::check_scene_transition() {

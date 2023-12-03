@@ -6,7 +6,6 @@
 #include "gpio_expander.h"
 #include "button.h"
 #include "buzzer.h"
-#include "lcd_controller.h"
 #include "system_manager.h"
 #include "scenes/scene.h"
 
@@ -21,7 +20,6 @@ class UIManager {
    QueueHandle_t *ui_queue_handle;
    GPIOExpander *expander;
    Buzzer buzzer;
-   LCDController lcd;
 
    std::unique_ptr<Scene> current_scene;
 

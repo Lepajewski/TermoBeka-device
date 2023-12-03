@@ -1,8 +1,11 @@
 #include "menu_scene.h"
 
-MenuScene::MenuScene(LCDController *lcd) : Scene(lcd) {
-    this->lcd->clear();
-    this->list.draw(this->lcd);
+#include "lcd_controller.h"
+
+MenuScene::MenuScene() : Scene() {
+    LCDController::clear_frame_buf();
+    this->list.draw();
+    LCDController::display_frame_buf();
 }
 
 SceneEnum MenuScene::get_scene_enum() {
@@ -17,34 +20,38 @@ void MenuScene::button_callback(Button *button, PressType type) {
             switch (pin_num) {
                 case P0_0: {
                     this->list.select();
-                    this->lcd->set_cursor(0, 0);
-                    this->lcd->print_formatted("B%d, SHORT", (int) pin_num);
+                    LCDController::clear_frame_buf();
+                    LCDController::draw_string_formatted(0, 0, "B%d, SHORT", static_cast<int>(pin_num));
+                    this->list.draw();
+                    LCDController::display_frame_buf();
                 }
                 break;
 
                 case P0_1: {
-                    this->lcd->clear();
                     this->list.move_down();
-                    this->list.draw(this->lcd);
-                    this->lcd->set_cursor(0, 0);
-                    this->lcd->print_formatted("B%d, SHORT", (int) pin_num);
+                    LCDController::clear_frame_buf();
+                    LCDController::draw_string_formatted(0, 0, "B%d, SHORT", static_cast<int>(pin_num));
+                    this->list.draw();
+                    LCDController::display_frame_buf();
                 }
                 break;
 
                 case P0_2: {
-                    this->lcd->clear();
                     this->list.move_up();
-                    this->list.draw(this->lcd);
-                    this->lcd->set_cursor(0, 0);
-                    this->lcd->print_formatted("B%d, SHORT", (int) pin_num);
+                    LCDController::clear_frame_buf();
+                    LCDController::draw_string_formatted(0, 0, "B%d, SHORT", static_cast<int>(pin_num));
+                    this->list.draw();
+                    LCDController::display_frame_buf();
                 }
                 break;
 
                 case P0_3:
                 case P0_4:
                 case P0_5: {
-                    this->lcd->set_cursor(0, 0);
-                    this->lcd->print_formatted("B%d, SHORT", (int) pin_num);
+                    LCDController::clear_frame_buf();
+                    LCDController::draw_string_formatted(0, 0, "B%d, SHORT", static_cast<int>(pin_num));
+                    this->list.draw();
+                    LCDController::display_frame_buf();
                 }
                 break;
 
@@ -61,8 +68,10 @@ void MenuScene::button_callback(Button *button, PressType type) {
                 case P0_3:
                 case P0_4:
                 case P0_5: {
-                    this->lcd->set_cursor(0, 0);
-                    this->lcd->print_formatted("B%d, LONG ", (int) pin_num);
+                    LCDController::clear_frame_buf();
+                    LCDController::draw_string_formatted(0, 0, "B%d, LONG", static_cast<int>(pin_num));
+                    this->list.draw();
+                    LCDController::display_frame_buf();
                 }
                 break;
                 default:

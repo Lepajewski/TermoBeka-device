@@ -1,7 +1,12 @@
 #include "startup_scene.h"
 
-StartupScene::StartupScene(LCDController* lcd) : Scene(lcd) {
-    this->lcd->draw_logo();
+#include "logo.h"
+#include "lcd_controller.h"
+
+StartupScene::StartupScene() : Scene() {
+    LCDController::clear_frame_buf();
+    LCDController::draw_bitmap(0, 0, LCD_WIDTH, LCD_HEIGHT, logo_bitmap);
+    LCDController::display_frame_buf();
 }
 
 SceneEnum StartupScene::get_scene_enum() {

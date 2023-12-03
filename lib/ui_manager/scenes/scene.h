@@ -2,7 +2,6 @@
 #define LIB_UI_MANAGER_SCENE_H_
 
 #include "button.h"
-#include "lcd_controller.h"
 
 #include <memory>
 
@@ -10,13 +9,11 @@ enum class SceneEnum { startup, menu, settings, none };
 
 class Scene {
 protected:
-    LCDController* const lcd;
-
     bool should_be_changed;
     SceneEnum next_scene;
 
 public:
-    Scene(LCDController* lcd);
+    Scene();
 
     bool get_should_be_changed();
     SceneEnum get_next_scene();
@@ -26,7 +23,7 @@ public:
 
     virtual void update(float d_time) {}
 
-    static std::unique_ptr<Scene> create_scene(SceneEnum target, LCDController* lcd);
+    static std::unique_ptr<Scene> create_scene(SceneEnum target);
 };
 
 #include "startup_scene.h"
