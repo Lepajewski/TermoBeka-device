@@ -5,7 +5,7 @@
 
 StartupScene::StartupScene() : Scene() {
     LCDController::clear_frame_buf();
-    LCDController::draw_bitmap(0, 0, LCD_WIDTH, LCD_HEIGHT, logo_bitmap);
+    LCDController::draw_bitmap(0, 0, logo_width, logo_height, logo_bitmap);
     LCDController::display_frame_buf();
 }
 
