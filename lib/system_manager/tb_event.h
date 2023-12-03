@@ -3,17 +3,34 @@
 
 #include <inttypes.h>
 
-#define EVENT_QUEUE_MAX_PAYLOAD         100  // bytes
+#include "global_config.h"
+#include "nvs_config.h"
+#include "profile_type.h"
+
+
+#define QUEUE_DEFAULT_PAYLOAD           100  // bytes
+
+#define EVENT_QUEUE_MAX_PAYLOAD         196
 #define EVENT_QUEUE_SIZE                20
 
 #define UI_QUEUE_SIZE                   EVENT_QUEUE_SIZE
-#define UI_QUEUE_MAX_PAYLOAD            EVENT_QUEUE_MAX_PAYLOAD
+#define UI_QUEUE_MAX_PAYLOAD            QUEUE_DEFAULT_PAYLOAD
 
 #define SD_QUEUE_SIZE                   EVENT_QUEUE_SIZE
-#define SD_QUEUE_MAX_PAYLOAD            EVENT_QUEUE_MAX_PAYLOAD
+#define SD_QUEUE_MAX_PAYLOAD            196
 
 #define WIFI_QUEUE_SIZE                 EVENT_QUEUE_SIZE
-#define WIFI_QUEUE_MAX_PAYLOAD          EVENT_QUEUE_MAX_PAYLOAD
+#define WIFI_QUEUE_MAX_PAYLOAD          QUEUE_DEFAULT_PAYLOAD
+
+#define SERVER_QUEUE_SIZE               EVENT_QUEUE_SIZE
+#define SERVER_QUEUE_MAX_PAYLOAD        QUEUE_DEFAULT_PAYLOAD
+
+#define PROFILE_QUEUE_SIZE              EVENT_QUEUE_SIZE
+#define PROFILE_QUEUE_MAX_PAYLOAD       256
+
+
+#define MAX_PATH_LENGTH                 64
+#define MAX_RECORD_SIZE                 SD_QUEUE_MAX_PAYLOAD - MAX_PATH_LENGTH
 
 
 enum class EventOrigin {
@@ -23,7 +40,7 @@ enum class EventOrigin {
     SD,
     WIFI,
     SERVER,
-    PROFILE_CONTROLLER,
+    PROFILE,
     UNKNOWN,
     NONE,
 };
@@ -59,7 +76,12 @@ enum class EventType {
     SD_PROFILE_DELETE,
     SD_LOG,
 
-    PROFILE_CONTROLLER_STATUS_UPDATE,
+    PROFILE_START,
+    PROFILE_STOP,
+    PROFILE_RESUME,
+    PROFILE_END,
+    PROFILE_RESPONSE,
+    PROFILE_UPDATE,
 
     SERVER_CONNECTED,
     SERVER_DISCONNECTED,
@@ -77,6 +99,30 @@ typedef struct {
     uint8_t payload[EVENT_QUEUE_MAX_PAYLOAD];
 } Event;
 
+typedef union {
+    struct {
+        uint8_t num;
+        uint8_t type;
+    } press_data;
+    uint8_t buffer[EVENT_QUEUE_MAX_PAYLOAD];
+} EventUIButtonPress;
+
+typedef union {
+    nvs_device_config_t config;
+    uint8_t buffer[MAX(sizeof(nvs_device_config_t), EVENT_QUEUE_MAX_PAYLOAD)];
+} EventSDConfigLoad;
+
+typedef union {
+    profile_event_response response;
+    uint8_t buffer[EVENT_QUEUE_MAX_PAYLOAD];
+} EventProfileResponse;
+
+typedef union {
+    profile_update_info info;
+    uint8_t buffer[EVENT_QUEUE_MAX_PAYLOAD];
+} EventProfileUpdate;
+
+
 
 enum class UIEventType {
     BUZZER_BEEP,
@@ -89,6 +135,12 @@ typedef struct {
     UIEventType type;
     uint8_t payload[UI_QUEUE_MAX_PAYLOAD];
 } UIEvent;
+
+typedef union {
+    uint32_t duration;
+    uint8_t buffer[UI_QUEUE_MAX_PAYLOAD];
+} UIEventBuzzerBeep;
+
 
 
 enum class SDEventType {
@@ -110,6 +162,19 @@ typedef struct {
     uint8_t payload[SD_QUEUE_MAX_PAYLOAD];
 } SDEvent;
 
+typedef union {
+    char path[SD_QUEUE_MAX_PAYLOAD];
+    uint8_t buffer[SD_QUEUE_MAX_PAYLOAD];
+} SDEventPathArg;
+
+typedef union {
+    struct {
+        char path[MAX_PATH_LENGTH];
+        char record[MAX_RECORD_SIZE];
+    } params;
+    uint8_t buffer[SD_QUEUE_MAX_PAYLOAD];
+} SDEventPathBufArg;
+
 
 enum class WiFiEventType {
     CONNECT,            // <ssid> <pass>
@@ -126,11 +191,59 @@ typedef struct {
     uint8_t payload[WIFI_QUEUE_MAX_PAYLOAD];
 } WiFiEvent;
 
+typedef union {
+    wifi_credentials credentials;
+    uint8_t buffer[WIFI_QUEUE_MAX_PAYLOAD];
+} WiFiEventCredentials;
+
+
+enum class ServerEventType {
+    CONNECT,            // <broker uri>
+    DISCONNECT,
+    IS_CONNECTED,
+    NONE
+};
+
+typedef struct {
+    EventOrigin origin;
+    ServerEventType type;
+    uint8_t payload[SERVER_QUEUE_MAX_PAYLOAD];
+} ServerEvent;
+
+typedef union {
+    mqtt_credentials credentials;
+    uint8_t buffer[SERVER_QUEUE_MAX_PAYLOAD];
+} ServerEventCredentials;
+
+
+enum class ProfileEventType {
+    NEW_PROFILE,
+    START,
+    STOP,
+    RESUME,
+    END,
+    INFO,
+    NONE
+};
+
+typedef struct {
+    EventOrigin origin;
+    ProfileEventType type;
+    uint8_t payload[PROFILE_QUEUE_MAX_PAYLOAD];
+} ProfileEvent;
+
+typedef union {
+    profile_t profile;
+    uint8_t buffer[PROFILE_QUEUE_MAX_PAYLOAD];
+} ProfileEventNewProfile;
+
 
 const char *event_origin_to_s(EventOrigin origin);
 const char *event_type_to_s(EventType type);
 const char *ui_event_type_to_s(UIEventType type);
 const char *sd_event_type_to_s(SDEventType type);
 const char *wifi_event_type_to_s(WiFiEventType type);
+const char *server_event_type_to_s(ServerEventType type);
+const char *profile_event_type_to_s(ProfileEventType type);
 
 #endif  // LIB_SYSTEM_MANAGER_TB_EVENT_H_

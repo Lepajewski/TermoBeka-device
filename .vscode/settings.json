@@ -54,6 +54,11 @@
         "typeinfo": "cpp",
         "ets_sys.h": "c",
         "dirent.h": "c",
-        "cstring": "c"
+        "cstring": "c",
+        "condition_variable": "cpp",
+        "freertos.h": "c",
+        "profile_timer.h": "c",
+        "mqtt_client.h": "c",
+        "esp_err.h": "c"
     }
 }

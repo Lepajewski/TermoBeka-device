@@ -14,6 +14,7 @@
 
 static const char * const TAG = "NTP";
 static EventGroupHandle_t ntp_event_group;
+static uint8_t ntp_running = 0;
 
 
 static void time_sync_notification_cb(struct timeval *tv) {
@@ -24,7 +25,7 @@ static void time_sync_notification_cb(struct timeval *tv) {
 
 static void ntp_init() {
     esp_sntp_setoperatingmode(SNTP_OPMODE_POLL);
-    esp_sntp_setservername(0, NTP_SERVER_ADDR);
+    esp_sntp_setservername(0, NTP_DEFAULT_SERVER_ADDR);
     sntp_set_time_sync_notification_cb(time_sync_notification_cb);
     esp_sntp_init();
 }
@@ -34,8 +35,14 @@ esp_err_t ntp_start() {
     TB_LOGI(TAG, "initializing SNTP");
     esp_err_t err = ESP_OK;
     ntp_event_group = xEventGroupCreate();
+
+    if (ntp_running == 1) {
+        TB_LOGW(TAG, "already running");
+        return ESP_FAIL;
+    }
     
     ntp_init();
+    ntp_running = 1;
 
     // wait for time to be set
     TB_LOGI(TAG, "Waiting for system time to be set...");
@@ -51,12 +58,9 @@ esp_err_t ntp_start() {
         // set timezone
         setenv("TZ", NTP_TIME_ZONE, 1);
         tzset();
-        char timestamp[27];
-        get_timestamp(timestamp);
-        TB_LOGI(TAG, "got time: %s", timestamp);
     } else {
         TB_LOGW(TAG, "could not get time, stopping NTP");
-        esp_sntp_stop();
+        ntp_stop();
         err = ESP_ERR_TIMEOUT;
     }
 
@@ -65,17 +69,8 @@ esp_err_t ntp_start() {
 
 void ntp_stop() {
     TB_LOGI(TAG, "stop");
-   esp_sntp_stop();
-}
-
-void get_timestamp(char *timestamp) {
-    // get current timestamp in format YYYY-MM-DDTHH:MM:SS.xxxxxx
-    char micro_sec_str[7];
-    struct timeval tv;
-
-    gettimeofday(&tv, NULL);
-    struct tm *seconds = localtime(&tv.tv_sec);
-    strftime(timestamp, sizeof(char) * 21, "%Y-%m-%dT%H:%M:%S.", seconds);
-    snprintf(micro_sec_str, sizeof(char) * 7, "%lu", tv.tv_usec);
-    strcat(timestamp, micro_sec_str);
+    if (ntp_running == 1) {
+        esp_sntp_stop();
+        ntp_running = 0;
+    }
 }

@@ -10,9 +10,7 @@ void systemManagerTask(void *pvParameters) {
     TB_LOGI(TAG, "start");
     SystemManager *sysMgr = get_system_manager();
 
-    sysMgr->init_console();
-    TB_LOGI(TAG, "init console");
-
+    sysMgr->begin();
 
     while (1) {
         sysMgr->poll_event();

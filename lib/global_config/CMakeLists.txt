@@ -1,4 +1,4 @@
 idf_component_register(
     SRCS 
-        "global_config.c"
+        "global_config.cpp"
 )

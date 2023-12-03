@@ -16,4 +16,11 @@ SRC_LINES := $(shell find $(SRC_DIR) -type f \( -name "*.c" -o -name "*.cpp" -o 
 count:
 	@echo "Lines total: $$(( $(LIB_LINES) + $(SRC_LINES) ))"
 
+cert-convert:
+	@echo "#ifndef LIB_SERVER_MANAGER_CA_CERT_H_" > lib/server_manager/ca_cert.h
+	@echo "#define LIB_SERVER_MANAGER_CA_CERT_H_\n\n" >> lib/server_manager/ca_cert.h
+	xxd -i ca.crt >> lib/server_manager/ca_cert.h
+	@echo "\n\n#endif  // LIB_SERVER_MANAGER_CA_CERT_H_" >> lib/server_manager/ca_cert.h
+
+
 .PHONY: setup all count

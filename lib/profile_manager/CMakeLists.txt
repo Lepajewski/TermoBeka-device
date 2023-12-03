@@ -1,0 +1,10 @@
+idf_component_register(
+    SRCS
+        "profile.cpp"
+        "profile_manager.cpp"
+        "profile_manager_task.cpp"
+    REQUIRES
+        global_config
+        logger
+        system_manager
+)

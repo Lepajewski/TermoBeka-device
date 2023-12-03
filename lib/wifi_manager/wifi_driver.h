@@ -2,6 +2,10 @@
 #define LIB_WIFI_MANAGER_WIFI_DRIVER_H_
 
 
+#include "freertos/FreeRTOS.h"
+#include "freertos/event_groups.h"
+
+#include "global_config.h"
 #include "ntp_driver.h"
 
 
@@ -12,6 +16,7 @@
 #define BIT_WIFI_NTP_START          BIT4
 #define BIT_WIFI_NTP_GOT_TIME       BIT5
 #define BIT_WIFI_SCAN_DONE          BIT6
+#define BIT_WIFI_CONNECT_TIMEOUT    BIT7
 
 #define BIT_WIFI_ALL    (     \
     BIT_WIFI_RUNNING        | \
@@ -20,7 +25,8 @@
     BIT_WIFI_CONNECTED      | \
     BIT_WIFI_NTP_START      | \
     BIT_WIFI_NTP_GOT_TIME   | \
-    BIT_WIFI_SCAN_DONE)
+    BIT_WIFI_SCAN_DONE      | \
+    BIT_WIFI_CONNECT_TIMEOUT)
 
 
 #define SCAN_LIST_SIZE              10
@@ -32,13 +38,13 @@ extern "C" {
 
 
 typedef struct {
-    char ssid[32];
-    char pass[64];
+    wifi_credentials credentials;
     ntp_driver_config_t ntp_config;
 } wifi_driver_config_t;
 
 
 void wifi_set_event_group(EventGroupHandle_t *event_group);
+void wifi_setup_timers();
 esp_err_t wifi_begin(wifi_driver_config_t *cfg);
 esp_err_t wifi_end();
 esp_err_t wifi_scan();

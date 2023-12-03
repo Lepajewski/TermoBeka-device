@@ -9,6 +9,7 @@
 extern "C" {
 #endif
 
+
 typedef struct {
     const char *server_address;
     const char *timezone;
@@ -18,10 +19,11 @@ typedef struct {
 
 esp_err_t ntp_start();
 void ntp_stop();
-void get_timestamp(char *timestamp);
+
 
 #ifdef __cplusplus
 }
 #endif
+
 
 #endif  // LIB_WIFI_MANAGER_NTP_DRIVER_H_

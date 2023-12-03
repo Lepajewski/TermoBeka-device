@@ -2,6 +2,8 @@
 #include "ui_commands.h"
 #include "sd_commands.h"
 #include "wifi_commands.h"
+#include "server_commands.h"
+#include "profile_commands.h"
 
 #include "commands.h"
 
@@ -11,4 +13,6 @@ void register_system_commands() {
     register_user_interface();
     register_sd_card();
     register_wifi();
+    register_server();
+    register_profile();
 }

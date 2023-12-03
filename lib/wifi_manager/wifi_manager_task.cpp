@@ -11,8 +11,6 @@ void wifiManagerTask(void *pvParameters) {
 
     WiFiManager manager;
 
-    manager.begin();
-
     while (1) {
         manager.process_events();
 

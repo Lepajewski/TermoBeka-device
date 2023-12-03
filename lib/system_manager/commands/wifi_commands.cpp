@@ -1,47 +1,41 @@
 #include <cstring>
 
-#include "esp_err.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/queue.h"
 #include "argtable3/argtable3.h"
 
 #include "global_config.h"
+#include "tb_event.h"
 #include "system_manager.h"
 #include "logger.h"
-#include "tb_event.h"
 #include "wifi_commands.h"
 
 
 const char * const TAG = "CMDwifi";
 
 
-static esp_err_t send_to_wifi_queue(WiFiEvent *evt) {
+esp_err_t send_to_wifi_queue(WiFiEvent *evt) {
     SystemManager *sysMgr = get_system_manager();
     QueueHandle_t *queue = sysMgr->get_wifi_queue();
     evt->origin = EventOrigin::SYSTEM_MANAGER;
 
     if (xQueueSend(*queue, &*evt, portMAX_DELAY) != pdTRUE) {
-        TB_LOGE(TAG, "cmd sd event send fail");
+        TB_LOGE(TAG, "cmd wifi event send fail");
         return ESP_FAIL;
     }
     return ESP_OK;
 }
 
-static esp_err_t process_wifi_credentials(WiFiEventType e_type, const char *ssid, const char *pass) {
-    esp_err_t err = ESP_OK;
-    WiFiEvent evt;
+esp_err_t process_wifi_credentials(WiFiEventType e_type, const char *ssid, const char *pass) {
+    WiFiEvent evt = {};
     evt.type = e_type;
+    WiFiEventCredentials payload = {};
 
-    if ((strlen(ssid) + strlen(pass)) < WIFI_QUEUE_MAX_PAYLOAD) {
-        memset(&evt.payload, 0, WIFI_QUEUE_MAX_PAYLOAD * sizeof(evt.payload[0]));
-        memcpy(&evt.payload[0], ssid, MIN(strlen(ssid), WIFI_MAX_SSID_LEN));
-        memcpy(&evt.payload[WIFI_MAX_SSID_LEN+1], pass, MIN(strlen(pass), WIFI_MAX_PASS_LEN));
-        err = send_to_wifi_queue(&evt);
-    } else {
-        err = ESP_FAIL;
-    }
+    strlcpy(payload.credentials.ssid, ssid, WIFI_MAX_SSID_LEN);
+    strlcpy(payload.credentials.pass, pass, WIFI_MAX_PASS_LEN);
+    memcpy(&evt.payload, &payload.buffer, sizeof(WiFiEventCredentials));
 
-    return err;
+    return send_to_wifi_queue(&evt);
 }
 
 
@@ -58,6 +52,7 @@ static void init_cmd_wifi_credencials_args() {
 }
 
 static int cmd_connect(int argc, char **argv) {
+    TB_ACK(TAG, "connect");
     int nerrors = arg_parse(argc, argv, (void **) &cmd_wifi_credencials);
     if (nerrors != 0) {
         arg_print_errors(stderr, cmd_wifi_credencials.end, argv[0]);
@@ -77,7 +72,7 @@ static int cmd_connect(int argc, char **argv) {
 }
 
 static int cmd_disconnect(int argc, char **argv) {
-    TB_ACK(TAG, "mount card");
+    TB_ACK(TAG, "disconnect");
     WiFiEvent evt;
     evt.type = WiFiEventType::DISCONNECT;
 

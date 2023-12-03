@@ -29,6 +29,9 @@ class UIManager {
 
    void switch_scene(SceneEnum target);
    void check_scene_transition();
+
+    void send_evt(Event *evt);
+    void send_evt_button_press(pca9539_pin_num pin_num, PressType type);
  public:
    UIManager();
    ~UIManager();

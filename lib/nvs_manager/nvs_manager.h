@@ -2,25 +2,33 @@
 #define LIB_NVS_MANAGER_H_
 
 #include "esp_err.h"
-#include "global_config.h"
+#include "nvs_config.h"
 
 
-// class NVSManager {
+class NVSManager {
+ private:
+    nvs_device_config_t default_config;
+    nvs_device_config_t config;
 
-//  public:
-//     NVSManager();
-//     ~NVSManager();
+    esp_err_t nvs_check();
 
-// esp_err_t nvs_erase();
-esp_err_t nvs_check();
+    esp_err_t save(const char* key, nvs_device_config_t *config);
+    esp_err_t load(const char* key, nvs_device_config_t *config);
 
-esp_err_t nvs_read_config(nvs_device_config_t *config, uint8_t *config_found);
+    bool check_str_differ(const char* v1, const char *v2, uint32_t max_len);
+ public:
+    NVSManager();
+    ~NVSManager();
 
-// esp_err_t nvs_write_config(nvs_device_config_t *config, uint8_t *config_found);
-// esp_err_t nvs_write_value(const char *key, void *value, size_t length);
-// };
+    void begin();
+    esp_err_t save_default_config();
+    esp_err_t load_default_config();
+    esp_err_t save_config(nvs_device_config_t *config);
+    esp_err_t load_config();
 
-
+    nvs_device_config_t *get_default_config();
+    nvs_device_config_t *get_config();
+};
 
 
 #endif  // LIB_NVS_MANAGER_H_

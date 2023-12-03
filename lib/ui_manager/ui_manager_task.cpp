@@ -15,9 +15,6 @@ void uiManagerTask(void *pvParameters) {
     TB_LOGI(TAG, "start");
     UIManager uiManager;
 
-    // setup UI peripherals
-    // setup display
-
     uiManager.setup();
 
     auto end = std::chrono::system_clock::now();

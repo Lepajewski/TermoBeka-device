@@ -102,15 +102,20 @@ void GPIOExpander::process_intr_event(pca9539_intr_evt_t *intr_evt) {
 
 void GPIOExpander::setup_buttons() {
     for (auto &b : this->buttons) {
-        // ESP_ERROR_CHECK(b.setup());
-        b.setup();
-        b.set_callback(this->button_callback);
+        esp_err_t err = ESP_OK;
+        if ((err = b.setup()) != ESP_OK) {
+            TB_LOGE(TAG, "button setup error: %d", err);
+        } else {
+            b.set_callback(this->button_callback);
+        }
     }
 }
 
 void GPIOExpander::setup_leds() {
-    // ESP_ERROR_CHECK(this->leds->setup());
-    this->leds->setup();
+    esp_err_t err = this->leds->setup();
+    if (err != ESP_OK) {
+        TB_LOGE(TAG, "leds setup error: %d", err);
+    }
 }
 
 Button *GPIOExpander::lookup_button(pca9539_pin_num num){
@@ -144,5 +149,4 @@ void GPIOExpander::set_callback(std::function<void(Button*, PressType)> cb) {
 
 void GPIOExpander::set_backlight_color(Color color) {
     this->leds->set_color(color);
-    // TB_LOGI(TAG, "BL Color set to: %u", color);
 }

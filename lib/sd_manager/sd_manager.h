@@ -17,7 +17,7 @@ class SDManager {
     QueueHandle_t *sd_queue_handle;
     SDCard card;
 
-    char *get_args(SDEvent *evt);
+    char *make_path(const char *path);
 
     void process_sd_event(SDEvent *evt);
     void poll_sd_events();

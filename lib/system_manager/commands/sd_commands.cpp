@@ -27,35 +27,26 @@ static esp_err_t send_to_sd_queue(SDEvent *evt) {
 }
 
 static esp_err_t process_path_cmd(SDEventType e_type, const char *path) {
-    esp_err_t err = ESP_OK;
-    SDEvent evt;
+    SDEvent evt = {};
     evt.type = e_type;
-    uint16_t path_len = strlen(path) + 1;
+    SDEventPathArg payload;
 
-    if (path_len < SD_QUEUE_MAX_PAYLOAD) {
-        memcpy(evt.payload, path, path_len);
-        err = send_to_sd_queue(&evt);
-    } else {
-        err = ESP_FAIL;
-    }
+    strlcpy(payload.path, path, SD_QUEUE_MAX_PAYLOAD);
+    memcpy(&evt.payload, &payload.buffer, sizeof(SDEventPathArg));
 
-    return err;
+    return send_to_sd_queue(&evt);
 }
 
 static esp_err_t process_path_buffer(SDEventType e_type, const char *path, const char *buf) {
-    esp_err_t err = ESP_OK;
-    SDEvent evt;
+    SDEvent evt = {};
     evt.type = e_type;
-    uint16_t path_len = strlen(path) + 1;
+    SDEventPathBufArg payload = {};
 
-    if (path_len < SD_QUEUE_MAX_PAYLOAD) {
-        snprintf(reinterpret_cast<char *>(evt.payload), SD_QUEUE_MAX_PAYLOAD, "%s %s", path, buf);
-        err = send_to_sd_queue(&evt);
-    } else {
-        err = ESP_FAIL;
-    }
+    strlcpy(payload.params.path, path, MAX_PATH_LENGTH);
+    strlcpy(payload.params.record, buf, MAX_RECORD_SIZE);
+    memcpy(&evt.payload, &payload.buffer, sizeof(SDEventPathBufArg));
 
-    return err;
+    return send_to_sd_queue(&evt);
 }
 
 

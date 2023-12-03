@@ -1,0 +1,8 @@
+#ifndef LIB_PROFILE_MANAGER_PROFILE_MANAGER_TASK_H_
+#define LIB_PROFILE_MANAGER_PROFILE_MANAGER_TASK_H_
+
+
+void profileManagerTask(void *pvParameters);
+
+
+#endif  // LIB_PROFILE_MANAGER_PROFILE_MANAGER_TASK_H_

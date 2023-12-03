@@ -8,6 +8,8 @@
 #include "logger.h"
 #include "tb_event.h"
 #include "console_task.h"
+#include "commands/wifi_commands.h"
+#include "commands/server_commands.h"
 #include "commands/commands.h"
 #include "system_manager.h"
 
@@ -29,9 +31,8 @@ SystemManager::SystemManager() {
 
     this->prompt_str = "esp $ ";
 
-    /* Initialize the console */
     this->esp_console_config = {
-        .max_cmdline_length = 256,
+        .max_cmdline_length = UART_BUF_SIZE,
         .max_cmdline_args = 8,
 #if CONFIG_LOG_COLORS
         .hint_color = atoi(LOG_COLOR_CYAN),
@@ -45,9 +46,8 @@ SystemManager::SystemManager() {
 SystemManager::SystemManager(uart_port_t uart_num, const char *prompt_str) {
     this->uart_num = uart_num;
     this->prompt_str = prompt_str;
-    /* Initialize the console */
     this->esp_console_config = {
-        .max_cmdline_length = 256,
+        .max_cmdline_length = UART_BUF_SIZE,
         .max_cmdline_args = 8,
 #if CONFIG_LOG_COLORS
         .hint_color = atoi(LOG_COLOR_CYAN),
@@ -70,16 +70,57 @@ SystemManager::~SystemManager() {
     deinit_console();
 }
 
+void SystemManager::begin() {
+    this->nvs_manager.begin();
+
+    this->nvs_manager.load_default_config();
+    this->nvs_manager.load_config();
+
+    nvs_device_config_t *default_config = this->nvs_manager.get_default_config();
+    nvs_device_config_t *config = this->nvs_manager.get_config();
+
+    TB_LOGI(TAG, "DEFAULT CONFIG: | %s %s %s %s %s %d |", 
+        default_config->wifi_ssid,
+        default_config->wifi_pass,
+        default_config->mqtt_broker_uri,
+        default_config->mqtt_username,
+        default_config->mqtt_password,
+        default_config->log_level
+    );
+    TB_LOGI(TAG, "CONFIG: | %s %s %s %s %s %d |",
+        config->wifi_ssid,
+        config->wifi_pass,
+        default_config->mqtt_broker_uri,
+        default_config->mqtt_username,
+        default_config->mqtt_password,
+        config->log_level
+    );
+
+    this->setup_logger();
+    this->init_console();
+    if (this->send_connect_wifi() != ESP_OK) {
+        TB_LOGE(TAG, "fail to send wifi connect evt");
+    }
+}
+
+void SystemManager::setup_logger() {
+    esp_log_level_set("*", this->nvs_manager.get_config()->log_level);
+}
+
 void SystemManager::init_queues() {
     this->event_queue_handle = xQueueCreate(EVENT_QUEUE_SIZE, sizeof(Event));
     this->ui_queue_handle = xQueueCreate(UI_QUEUE_SIZE, sizeof(UIEvent));
     this->sd_queue_handle = xQueueCreate(SD_QUEUE_SIZE, sizeof(SDEvent));
     this->wifi_queue_handle = xQueueCreate(WIFI_QUEUE_SIZE, sizeof(WiFiEvent));
+    this->server_queue_handle = xQueueCreate(SERVER_QUEUE_SIZE, sizeof(ServerEvent));
+    this->profile_queue_handle = xQueueCreate(PROFILE_QUEUE_SIZE, sizeof(ProfileEvent));
 
     if (this->event_queue_handle == NULL ||
         this->ui_queue_handle == NULL ||
         this->sd_queue_handle == NULL ||
-        this->wifi_queue_handle == NULL) {
+        this->wifi_queue_handle == NULL ||
+        this->server_queue_handle == NULL ||
+        this->profile_queue_handle == NULL) {
         TB_LOGE(TAG, "queues init fail. Restarting...");
         vTaskDelay(pdMS_TO_TICKS(2000));
         fflush(stdout);
@@ -147,6 +188,7 @@ void SystemManager::init_console() {
 
     register_commands();
 
+    TB_LOGI(TAG, "init console");
     xTaskCreate(consoleTask, "ConsoleTask", 4096, (void *) this->prompt_str, 1, NULL);
 }
 
@@ -163,16 +205,71 @@ void SystemManager::poll_event() {
         TB_LOGI(TAG, "new event: %d, type: %d", evt.origin, evt.type);
 
         switch (evt.type) {
+            case EventType::WIFI_CONNECTED:
+            {
+                TB_LOGI(TAG, "wifi connected");
+                if (this->send_connect_mqtt() != ESP_OK) {
+                    TB_LOGE(TAG, "fail to send MQTT connect");
+                }
+                break;
+            }
+            case EventType::WIFI_DISCONNECTED:
+            {
+                TB_LOGI(TAG, "wifi disconnected");
+                if (this->send_disconnect_mqtt() != ESP_OK) {
+                    TB_LOGE(TAG, "fail to send MQTT disconnect");
+                }
+                break;
+            }
+            case EventType::WIFI_GOT_TIME:
+            {
+                TB_LOGI(TAG, "ntp got time");
+                break;
+            }
             case EventType::CONSOLE_COMMAND:
             {
                 TB_LOGI(TAG, "command: %s", reinterpret_cast<char *>(evt.payload));
-
                 process_command(reinterpret_cast<char *>(evt.payload));
                 break;
             }
             case EventType::UI_BUTTON_PRESS:
             {
                 TB_LOGI(TAG, "button: %u", evt.payload[0]);
+                break;
+            }
+            case EventType::SD_CONFIG_LOAD:
+            {
+                EventSDConfigLoad *payload = reinterpret_cast<EventSDConfigLoad*>(evt.payload);
+                TB_LOGI(TAG, "CONFIG: | %s %s %d |", payload->config.wifi_ssid, payload->config.wifi_pass, payload->config.log_level);
+                esp_err_t config_changed = this->nvs_manager.save_config(&payload->config);
+                if (config_changed == ESP_OK) {
+                    if (this->send_connect_wifi() != ESP_OK) {
+                        TB_LOGE(TAG, "fail to send wifi connect evt");
+                    }
+                }
+                break;
+            }
+            case EventType::PROFILE_RESPONSE:
+            {
+                EventProfileResponse *payload = reinterpret_cast<EventProfileResponse*>(evt.payload);
+                TB_LOGI(TAG, "profile response: %d", payload->response);
+                break;
+            }
+            case EventType::PROFILE_UPDATE:
+            {
+                EventProfileUpdate *payload = reinterpret_cast<EventProfileUpdate*>(evt.payload);
+                printf("Status: %d\n", payload->info.status);
+                printf("Current Duration: %u ms\n", payload->info.current_duration);
+                printf("Total Duration: %u ms\n", payload->info.total_duration);
+                printf("Step Start Time: %u ms\n", payload->info.step_start_time);
+                printf("Step Stopped Time: %u ms\n", payload->info.step_stopped_time);
+                printf("Profile Stopped Time: %u ms\n", payload->info.profile_stopped_time);
+                printf("Step End Time: %u ms\n", payload->info.step_end_time);
+                printf("Step Time Left: %u ms\n", payload->info.step_time_left);
+                printf("Profile Time Halted: %" PRIu32 " ms\n", payload->info.profile_time_halted);
+                printf("Profile Time Left: %u ms\n", payload->info.profile_time_left);
+                printf("Current Temperature: %d\n", payload->info.current_temperature);
+                printf("Progress: %.2lf%\n", payload->info.progress_percent);
                 break;
             }
             case EventType::UNKNOWN:
@@ -182,18 +279,14 @@ void SystemManager::poll_event() {
                 break;
             }
         }
-
     }
 }
 
 void SystemManager::process_command(char *cmd) {
-    /* Add the command to the history if not empty*/
-
     if (strlen(cmd) > 0) {
         linenoiseHistoryAdd(cmd);
     }
 
-    /* Try to run the command */
     int ret;
     esp_err_t err = esp_console_run(cmd, &ret);
 
@@ -206,8 +299,45 @@ void SystemManager::process_command(char *cmd) {
     } else if (err != ESP_OK) {
         TB_LOGI(TAG, "Internal error: %s\n", esp_err_to_name(err));
     }
+}
 
-    /* linenoise allocates line buffer on the heap, so need to free it */
+esp_err_t SystemManager::send_connect_wifi() {
+    esp_err_t err = ESP_OK;
+    if ((err = this->send_disconnect_wifi()) != ESP_OK) {
+        return err;
+    }
+
+    const char *ssid = this->nvs_manager.get_config()->wifi_ssid;
+    const char *pass = this->nvs_manager.get_config()->wifi_pass;
+
+    return process_wifi_credentials(WiFiEventType::CONNECT, ssid, pass);
+}
+
+esp_err_t SystemManager::send_disconnect_wifi() {
+    WiFiEvent evt;
+    evt.type = WiFiEventType::DISCONNECT;
+
+    return send_to_wifi_queue(&evt);
+}
+
+esp_err_t SystemManager::send_connect_mqtt() {
+    esp_err_t err = ESP_OK;
+    if ((err = this->send_disconnect_mqtt()) != ESP_OK) {
+        return err;
+    }
+
+    const char *uri = this->nvs_manager.get_config()->mqtt_broker_uri;
+    const char *username = this->nvs_manager.get_config()->mqtt_username;
+    const char *password = this->nvs_manager.get_config()->mqtt_password;
+
+    return process_server_credentials(ServerEventType::CONNECT, uri, username, password);
+}
+
+esp_err_t SystemManager::send_disconnect_mqtt() {
+    ServerEvent evt;
+    evt.type = ServerEventType::DISCONNECT;
+
+    return send_to_server_queue(&evt);
 }
 
 QueueHandle_t *SystemManager::get_event_queue() {
@@ -224,6 +354,22 @@ QueueHandle_t *SystemManager::get_sd_queue() {
 
 QueueHandle_t *SystemManager::get_wifi_queue() {
     return &this->wifi_queue_handle;
+}
+
+QueueHandle_t *SystemManager::get_server_queue() {
+    return &this->server_queue_handle;
+}
+
+QueueHandle_t *SystemManager::get_profile_queue() {
+    return &this->profile_queue_handle;
+}
+
+const char *SystemManager::get_wifi_ssid() {
+    return this->nvs_manager.get_config()->wifi_ssid;
+}
+
+const char *SystemManager::get_wifi_pass() {
+    return this->nvs_manager.get_config()->wifi_pass;
 }
 
 void SystemManager::register_commands() {

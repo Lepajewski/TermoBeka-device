@@ -25,7 +25,6 @@ void consoleTask(void *pvParameters) {
         char *line = linenoise(prompt_str);
 
         if (line == NULL) { /* Break on EOF or error */
-            // return ESP_ERR_INVALID_STATE;
             TB_NAK(TAG, "empty command");
             continue;
         }

@@ -25,9 +25,13 @@ class WiFiManager {
     void process_wifi_driver_events();
     void process_wifi_event(WiFiEvent *evt);
     void poll_wifi_events();
+
+    void send_evt(Event *evt);
+    void send_evt_connected();
+    void send_evt_disconnected();
+    void send_evt_got_time();
  public:
     WiFiManager();
-    WiFiManager(wifi_driver_config_t *config);
     ~WiFiManager();
 
     void begin();
