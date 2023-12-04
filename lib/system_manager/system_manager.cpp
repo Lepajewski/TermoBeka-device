@@ -240,12 +240,21 @@ void SystemManager::poll_event() {
             case EventType::SD_CONFIG_LOAD:
             {
                 EventSDConfigLoad *payload = reinterpret_cast<EventSDConfigLoad*>(evt.payload);
-                TB_LOGI(TAG, "CONFIG: | %s %s %d |", payload->config.wifi_ssid, payload->config.wifi_pass, payload->config.log_level);
+                TB_LOGI(TAG, "CONFIG: | %s %s %s %s %s %d |", 
+                    payload->config.wifi_ssid,
+                    payload->config.wifi_pass,
+                    payload->config.mqtt_broker_uri,
+                    payload->config.mqtt_username,
+                    payload->config.mqtt_password,
+                    payload->config.log_level
+                );
                 esp_err_t config_changed = this->nvs_manager.save_config(&payload->config);
                 if (config_changed == ESP_OK) {
                     if (this->send_connect_wifi() != ESP_OK) {
                         TB_LOGE(TAG, "fail to send wifi connect evt");
                     }
+                } else {
+                    TB_LOGW(TAG, "config not changed");
                 }
                 break;
             }

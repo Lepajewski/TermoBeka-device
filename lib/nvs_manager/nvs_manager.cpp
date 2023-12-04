@@ -120,22 +120,27 @@ esp_err_t NVSManager::save_config(nvs_device_config_t *config) {
 
     if (this->check_str_differ(this->config.wifi_ssid, config->wifi_ssid, WIFI_MAX_SSID_LEN)) {
         strlcpy(this->config.wifi_ssid, config->wifi_ssid, WIFI_MAX_SSID_LEN);
+        config_changed = true;
     }
 
     if (this->check_str_differ(this->config.wifi_pass, config->wifi_pass, WIFI_MAX_PASS_LEN)) {
         strlcpy(this->config.wifi_pass, config->wifi_pass, WIFI_MAX_PASS_LEN);
+        config_changed = true;
     }
 
     if (this->check_str_differ(this->config.mqtt_broker_uri, config->mqtt_broker_uri, MQTT_MAX_BROKER_URI_LEN)) {
         strlcpy(this->config.mqtt_broker_uri, config->mqtt_broker_uri, MQTT_MAX_BROKER_URI_LEN);
+        config_changed = true;
     }
 
     if (this->check_str_differ(this->config.mqtt_username, config->mqtt_username, MQTT_MAX_USERNAME_LEN)) {
         strlcpy(this->config.mqtt_username, config->mqtt_username, MQTT_MAX_USERNAME_LEN);
+        config_changed = true;
     }
 
     if (this->check_str_differ(this->config.mqtt_password, config->mqtt_password, MQTT_MAX_PASSWORD_LEN)) {
         strlcpy(this->config.mqtt_password, config->mqtt_password, MQTT_MAX_PASSWORD_LEN);
+        config_changed = true;
     }
 
     if (this->config.log_level == config->log_level) {
