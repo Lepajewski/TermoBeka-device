@@ -1,6 +1,7 @@
 #include "option_list.h"
 
 #include "font5x7.h"
+#include "logger.h"
 
 OptionList::OptionList(Rect rect, std::vector<OptionEntry> options) {
     this->rect = rect;

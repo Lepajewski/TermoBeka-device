@@ -19,6 +19,7 @@ UIManager::~UIManager() {
 
 void UIManager::button_callback(Button *button, PressType type) {
     this->current_scene->button_callback(button, type);
+    send_evt_button_press(button->get_pin_num(), type);
 }
 
 void UIManager::setup() {

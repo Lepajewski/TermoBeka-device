@@ -5,8 +5,9 @@ idf_component_register(
         "scenes/scene.cpp"
         "scenes/startup_scene.cpp"
         "scenes/menu_scene.cpp"
-        "ui_manager/option_list.cpp"
-        "ui_manager/rect.cpp"
+        "components/option_list.cpp"
+        "components/rect.cpp"
+        "components/status_bar.cpp"
     REQUIRES
         logger
         peripherals

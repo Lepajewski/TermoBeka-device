@@ -7,8 +7,6 @@
 #include "lcd_controller.h"
 #include "global_config.h"
 
-#include <chrono>
-
 const char * const TAG = "UIMgrTask";
 
 void uiManagerTask(void *pvParameters) {
@@ -17,18 +15,17 @@ void uiManagerTask(void *pvParameters) {
 
     uiManager.setup();
 
-    auto end = std::chrono::system_clock::now();
+    uint64_t start = get_time_since_startup_ms();
 
     while (1) {
-        auto start = std::chrono::system_clock::now();
-        std::chrono::duration<float> frame_duration = start - end;
-        float d_time = frame_duration.count();
-        end = start;
+        uint64_t end = get_time_since_startup_ms();
+        float d_time = (end - start) / 1000.0f;
+        start = end;
 
         uiManager.process_events();
 
         uiManager.update(d_time);
 
-        vTaskDelay(pdMS_TO_TICKS(10));
+        vTaskDelay(pdMS_TO_TICKS(20));
     }
 }

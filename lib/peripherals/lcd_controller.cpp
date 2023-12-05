@@ -260,6 +260,8 @@ void LCDController::display_frame_buf() {
     send_cmd(cmds, 2);
 
     send_data(frame_buf, LCD_FRAME_BUF_SIZE);
+
+    sync_and_gc();
 }
 
 void LCDController::clear_frame_buf() {
