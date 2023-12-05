@@ -2,6 +2,8 @@
 #define LIB_PERIPHERALS_DRIVERS_FONT5X7_H_
 
 #define FONT5X7_CHAR_CODE_OFFSET 32
+#define FONT5X7_WIDTH 5
+#define FONT5X7_HEIGHT 7
 
 static unsigned char font5x7[96][5] = {
 	{ 0x00, 0x00, 0x00, 0x00, 0x00 },// (space)

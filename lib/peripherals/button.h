@@ -21,9 +21,7 @@ enum class PressType {
    INVALID_PRESS
 };
 
-
 class ExpanderController;
-
     
 class Button {
  private:

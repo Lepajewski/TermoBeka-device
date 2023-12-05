@@ -3,6 +3,7 @@
 #include "logger.h"
 
 #include "ui_manager.h"
+#include "lcd_controller.h"
 
 
 const char * const TAG = "UIMgr";
@@ -17,73 +18,7 @@ UIManager::~UIManager() {
 }
 
 void UIManager::button_callback(Button *button, PressType type) {
-    pca9539_pin_num pin_num = button->get_pin_num();
-
-    this->buzzer.beep(50);
-
-    // process event
-    switch (type) {
-        case PressType::SHORT_PRESS:
-        {
-            this->send_evt_button_press(pin_num, PressType::SHORT_PRESS);
-
-            switch (pin_num) {
-                case P0_0:
-                case P0_1:
-                case P0_2:
-                case P0_3:
-                case P0_4:
-                case P0_5:
-                {
-                    this->lcd.clear();
-                    this->lcd.print_formatted("B%d, SHORT", (int) pin_num);
-                    this->expander->set_backlight_color(Color::NONE);
-                    break;
-                }
-                default:
-                    break;
-            }
-            break;
-        }
-        case PressType::LONG_PRESS:
-        {
-            this->send_evt_button_press(pin_num, PressType::LONG_PRESS);
-
-            switch (pin_num) {
-                case P0_0:
-                {
-                    this->lcd.draw_logo();
-                    break;
-                }
-                case P0_1:
-                {
-                    this->lcd.clear();
-                    this->expander->set_backlight_color(Color::R);
-                    break;
-                }
-                case P0_2:
-                {
-                    this->expander->set_backlight_color(Color::G);
-                    break;
-                }
-                case P0_3:
-                {
-                    this->expander->set_backlight_color(Color::B);
-                    break;
-                }
-                case P0_4:
-                {
-                    this->expander->set_backlight_color(Color::RGB);
-                    break;
-                }
-                default:
-                    break;
-            }
-            break;
-        }
-        default:
-            break;
-    }
+    this->current_scene->button_callback(button, type);
 }
 
 void UIManager::setup() {
@@ -98,7 +33,9 @@ void UIManager::setup() {
     this->expander->begin();
 
     // setup LCD
-    this->lcd.begin();
+    LCDController::begin();
+
+    switch_scene(SceneEnum::startup);
 }
 
 void UIManager::process_ui_event(UIEvent *evt) {
@@ -132,11 +69,6 @@ void UIManager::poll_ui_events() {
     }
 }
 
-void UIManager::process_events() {
-    this->expander->poll_intr_events();
-    poll_ui_events();
-}
-
 void UIManager::send_evt(Event *evt) {
     evt->origin = EventOrigin::UI;
     if (xQueueSend(*this->event_queue_handle, &*evt, portMAX_DELAY) != pdTRUE) {
@@ -154,4 +86,25 @@ void UIManager::send_evt_button_press(pca9539_pin_num pin_num, PressType type) {
     memcpy(&evt.payload, &payload.buffer, sizeof(payload));
 
     this->send_evt(&evt);
+}
+
+void UIManager::switch_scene(SceneEnum target) {
+    this->current_scene = Scene::create_scene(target);
+}
+
+void UIManager::check_scene_transition() {
+    if (this->current_scene->get_should_be_changed()) {
+        switch_scene(this->current_scene->get_next_scene());
+    }
+}
+
+void UIManager::process_events() {
+    this->expander->poll_intr_events();
+    poll_ui_events();
+}
+
+void UIManager::update(float d_time) {
+    check_scene_transition();
+
+    this->current_scene->update(d_time);
 }
