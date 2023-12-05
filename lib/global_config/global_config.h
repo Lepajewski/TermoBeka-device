@@ -33,6 +33,8 @@
 #define PIN_SD_MISO                             GPIO_NUM_11
 #define PIN_SD_CS                               GPIO_NUM_14
 
+// Config ini
+#define CONFIG_INI_PATH                         "config.ini"
 
 // wifi & ntp configuration
 #define WIFI_MAX_SSID_LEN                       32

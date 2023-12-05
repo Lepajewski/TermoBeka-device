@@ -3,6 +3,7 @@
 
 
 #include "drivers/sd_card_driver.h"
+#include "nvs_config.h"
 
 
 class SDCard {
@@ -28,6 +29,7 @@ class SDCard {
     void rm(const char *path);
     void rmdir(const char *path);
     void save_buf(const char *path, char *buf);
+    bool load_config_ini(const char *path, nvs_device_config_t *config);
 
     char *get_sd_buf();
 

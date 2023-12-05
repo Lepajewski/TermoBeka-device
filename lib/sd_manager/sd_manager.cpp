@@ -3,7 +3,8 @@
 #include "logger.h"
 
 #include "sd_manager.h"
-
+#include "freertos/queue.h"
+#include "global_config.h"
 
 const char * const TAG = "SDMgr";
 
@@ -23,6 +24,8 @@ void SDManager::begin() {
     this->card.begin();
 
     TB_LOGI(TAG, "SD Card mounted");
+
+    load_and_send_config_ini();
 }
 
 void SDManager::end() {
@@ -140,6 +143,26 @@ void SDManager::poll_sd_events() {
             TB_LOGI(TAG, "new event, type: %d", evt.type);
             process_sd_event(&evt);
         }
+    }
+}
+
+void SDManager::load_and_send_config_ini() {
+    Event evt = {};
+    evt.type = EventType::SD_CONFIG_LOAD;
+    evt.origin = EventOrigin::SD;
+    EventSDConfigLoad payload = {};
+
+    bool ret = this->card.load_config_ini(make_path(CONFIG_INI_PATH), &payload.config);
+
+    if (!ret) {
+        TB_LOGE(TAG, "error loading config ini");
+        return;
+    }
+
+    memcpy(&evt.payload, &payload.buffer, sizeof(EventSDConfigLoad));
+
+    if (xQueueSend(*this->event_queue_handle, &evt, portMAX_DELAY) != pdTRUE) {
+        TB_LOGE(TAG, "sending config ini failed");
     }
 }
 

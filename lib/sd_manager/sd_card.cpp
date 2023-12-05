@@ -1,9 +1,15 @@
 #include <cstring>
 #include "global_config.h"
 
+#include "logger.h"
+
 #include "drivers/sd_card_driver.h"
 #include "sd_card.h"
 
+#include <fstream>
+#include "inipp.h"
+
+#define TAG "SDCard"
 
 SDCard::SDCard() :
     running(false),
@@ -192,6 +198,76 @@ void SDCard::save_buf(const char *path, char *buf) {
     } else {
         printf("No SD card mounted\n");
     }
+}
+
+bool SDCard::load_config_ini(const char *path, nvs_device_config_t *config) {
+    inipp::Ini<char> ini;
+    std::ifstream file(path);
+    if (!file.is_open()) {
+        TB_LOGE(TAG, "error oppening config ini (file: %s)", path);
+        return false;
+    }
+
+    ini.parse(file);
+    file.close();
+
+    std::string value;
+    if (!inipp::get_value(ini.sections["debug"], "log_level", value)) {
+        TB_LOGE(TAG, "error reading debug.log_level");
+        return false;
+    }
+    std::transform(value.begin(), value.end(), value.begin(), ::tolower);
+    if (value == "none") {
+        config->log_level = ESP_LOG_NONE;
+    }
+    else if (value == "error") {
+        config->log_level = ESP_LOG_ERROR;
+    }
+    else if (value == "warn") {
+        config->log_level = ESP_LOG_WARN;
+    }
+    else if (value == "info") {
+        config->log_level = ESP_LOG_INFO;
+    }
+    else if (value == "debug") {
+        config->log_level = ESP_LOG_DEBUG;
+    }
+    else if (value == "verbose") {
+        config->log_level = ESP_LOG_VERBOSE;
+    }
+    else {
+        TB_LOGE(TAG, "unknown debug.log_level value (%s)", value.c_str());
+        return false;
+    }
+
+    if (!inipp::get_value(ini.sections["wifi"], "ssid", value)) {
+        TB_LOGE(TAG, "error reading wifi.ssid");
+        return false;
+    }
+    strcpy(config->wifi_ssid, value.c_str());
+    if (!inipp::get_value(ini.sections["wifi"], "password", value)) {
+        TB_LOGE(TAG, "error reading wifi.password");
+        return false;
+    }
+    strcpy(config->wifi_pass, value.c_str());
+
+    if (!inipp::get_value(ini.sections["mqtt"], "broker_uri", value)) {
+        TB_LOGE(TAG, "error reading mqtt.broker_uri");
+        return false;
+    }
+    strcpy(config->mqtt_broker_uri, value.c_str());
+    if (!inipp::get_value(ini.sections["mqtt"], "username", value)) {
+        TB_LOGE(TAG, "error reading mqtt.username");
+        return false;
+    }
+    strcpy(config->mqtt_username, value.c_str());
+    if (!inipp::get_value(ini.sections["mqtt"], "password", value)) {
+        TB_LOGE(TAG, "error reading mqtt.password");
+        return false;
+    }
+    strcpy(config->mqtt_password, value.c_str());
+
+    return true;
 }
 
 char *SDCard::get_sd_buf() {

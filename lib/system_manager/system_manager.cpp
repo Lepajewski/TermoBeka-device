@@ -250,6 +250,7 @@ void SystemManager::poll_event() {
                 );
                 esp_err_t config_changed = this->nvs_manager.save_config(&payload->config);
                 if (config_changed == ESP_OK) {
+                    TB_LOGI(TAG, "sending new config to wifi");
                     if (this->send_connect_wifi() != ESP_OK) {
                         TB_LOGE(TAG, "fail to send wifi connect evt");
                     }

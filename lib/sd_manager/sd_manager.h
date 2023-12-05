@@ -21,6 +21,8 @@ class SDManager {
 
     void process_sd_event(SDEvent *evt);
     void poll_sd_events();
+
+    void load_and_send_config_ini();
  public:
     SDManager();
     ~SDManager();
