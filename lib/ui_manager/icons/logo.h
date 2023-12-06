@@ -1,5 +1,5 @@
-#ifndef LIB_PERIPHERALS_LOGO_H_
-#define LIB_PERIPHERALS_LOGO_H_
+#ifndef LIB_UI_MANAGER_LOGO_H_
+#define LIB_UI_MANAGER_LOGO_H_
 
 #include <inttypes.h>
 

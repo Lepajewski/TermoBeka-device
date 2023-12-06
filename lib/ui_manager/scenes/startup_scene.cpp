@@ -1,6 +1,6 @@
 #include "startup_scene.h"
 
-#include "logo.h"
+#include "icons/icons.h"
 #include "lcd_controller.h"
 
 StartupScene::StartupScene() : Scene() {
