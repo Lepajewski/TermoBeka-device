@@ -17,6 +17,7 @@ idf_component_register(
         driver/uart
         esp_console
         esp_flash
+        esp_ringbuf
         linenoise
         logger
         nvs_manager

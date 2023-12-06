@@ -34,13 +34,13 @@ void app_main(void)
     xTaskCreatePinnedToCore(uiManagerTask, "UIMgr", 4096, NULL, 1, NULL, 1);
 
     // start SD Manager Task
-    xTaskCreatePinnedToCore(sdManagerTask, "SDMgr", 8192, NULL, 1, NULL, 0);
+    xTaskCreatePinnedToCore(sdManagerTask, "SDMgr", 10240, NULL, 1, NULL, 0);
 
     // start WiFi Manager Task
     xTaskCreatePinnedToCore(wifiManagerTask, "WiFiMgr", 4096, NULL, 1, NULL, 0);
 
     // start Server Manager Task
-    xTaskCreatePinnedToCore(serverManagerTask, "ServerMgr", 4096, NULL, 1, NULL, 0);
+    xTaskCreatePinnedToCore(serverManagerTask, "ServerMgr", 10240, NULL, 1, NULL, 0);
 
     // start Profile Manager Task
     xTaskCreatePinnedToCore(profileManagerTask, "ProfMgr", 4096, NULL, 1, NULL, 1);

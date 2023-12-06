@@ -13,7 +13,7 @@
 
 SDCard::SDCard() :
     running(false),
-    mount_point("/sd")
+    mount_point(SD_CARD_MOUNT_POINT)
 {
     sdmmc_host_t host = SDSPI_HOST_DEFAULT();
     host.slot = SPI2_HOST;
@@ -48,34 +48,37 @@ SDCard::SDCard() :
 SDCard::SDCard(sd_card_config_t config) :
     running(false),
     config(config),
-    mount_point("/sd")
+    mount_point(SD_CARD_MOUNT_POINT)
 {}
 
 SDCard::~SDCard() {}
 
-void SDCard::begin() {
+esp_err_t SDCard::begin() {
     if (!this->running) {
         if (card_mount(&this->config) == ESP_OK) {
             printf("SD card mounted\n");
             sdmmc_card_print_info(stdout, this->config.card);
             this->running = true;
-        } else {
-            printf("SD card fail to mount\n");
+            return ESP_OK;
         }
+        printf("SD card fail to mount\n");
     }
+    
+    return ESP_FAIL;
 }
 
-void SDCard::end() {
+esp_err_t SDCard::end() {
     if (this->running) {
         if (card_unmount(&this->config) == ESP_OK) {
             printf("SD card unmounted\n");
             this->running = false;
-        } else {
-            printf("SD card fail to unmount\n");
+            return ESP_OK;
         }
-    } else {
-        printf("No SD card mounted\n");
+        printf("SD card fail to unmount\n");
     }
+
+    printf("No SD card mounted\n");
+    return ESP_FAIL;
 }
 
 bool SDCard::is_mounted() {
@@ -86,35 +89,40 @@ const char *SDCard::get_mount_point() {
     return this->mount_point;
 }
 
-const char* SDCard::ls(const char *path) {
+esp_err_t SDCard::ls(const char *path) {
+    esp_err_t err = ESP_OK;
+
     if (this->running) {
         memset(this->sd_buf, 0, sizeof(this->sd_buf));
-        esp_err_t err = card_ls(path, this->sd_buf);
-        switch (err) {
+        switch (card_ls(path, this->sd_buf)) {
             case ESP_OK:
             {
                 printf("%s\n", this->sd_buf);
+                err = ESP_OK;
                 break;
             }
             case ESP_ERR_NO_MEM:
             {
                 printf("Failed to list, buffer too small\n");
+                err = ESP_FAIL;
                 break;
             }
             default:
             {
                 printf("Failed to list: %s\n", path);
+                err = ESP_FAIL;
                 break;
             }
         }
     } else {
         printf("No SD card mounted\n");
+        err = ESP_FAIL;
     }
 
-    return "NO SD CARD";
+    return err;
 }
 
-const char* SDCard::cat(const char *path) {
+esp_err_t SDCard::cat(const char *path) {
     if (this->running) {
         size_t bytes_read_total = 0;
         uint16_t block_no = 0;
@@ -134,10 +142,12 @@ const char* SDCard::cat(const char *path) {
             }
             vTaskDelay(pdMS_TO_TICKS(1));
         } while (((bytes_read_total % SD_OPERATIONS_BUFFER_SIZE) == 0) && (bytes_read_total != 0));
-    } else {
-        printf("No SD card mounted\n");
+        
+        return ESP_OK;
     }
-    return "NO SD CARD";
+
+    printf("No SD card mounted\n");
+    return ESP_FAIL;
 }
 
 void SDCard::mkdir(const char *path) {

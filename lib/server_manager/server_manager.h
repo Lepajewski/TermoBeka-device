@@ -6,6 +6,7 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/queue.h"
 #include "freertos/event_groups.h"
+#include "freertos/ringbuf.h"
 
 #include <pb.h>
 #include "profile_status_update.pb.h"
@@ -21,7 +22,10 @@ class ServerManager {
     SystemManager *sysMgr;
     QueueHandle_t *event_queue_handle;
     QueueHandle_t *server_queue_handle;
+    RingbufHandle_t *sd_ring_buf_handle;
 
+    bool ca_file_loaded;
+    bool credentials_loaded;
     bool running;
     bool connected;
     EventGroupHandle_t server_event_group;
@@ -37,6 +41,8 @@ class ServerManager {
     void process_mqtt_driver_events();
     void process_server_event(ServerEvent *evt);
     void process_publish_profile_update(ProfileStatusUpdate *info);
+    void process_publish_regulator_update();
+    void process_read_ca_file();
     void poll_server_events();
 
     void send_evt(Event *evt);
