@@ -32,6 +32,8 @@
 #define PIN_SD_MOSI                             GPIO_NUM_13
 #define PIN_SD_MISO                             GPIO_NUM_11
 #define PIN_SD_CS                               GPIO_NUM_14
+#define SD_CARD_MOUNT_POINT                     "/sd"
+#define SD_CARD_DATA_RING_BUFFER_LEN            8192
 
 
 // wifi & ntp configuration
@@ -62,6 +64,9 @@
 #define MQTT_MAX_PASSWORD_LEN                   32
 // #define MQTT_DEFAULT_PASSWORD                   "default"
 #define MQTT_DEFAULT_PASSWORD                   "qwerty"
+
+#define MQTT_CA_CERT_MAX_LEN                    2048
+#define MQTT_TLS_CA_SD_CARD_PATH                "certificates/ca.crt"
 
 #define MQTT_TOPIC_PREFIX                       "termobeka/"
 #define MQTT_TOPIC_PROFILE_UPDATE               "/profile-update"

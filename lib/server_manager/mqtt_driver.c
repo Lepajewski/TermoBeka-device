@@ -1,9 +1,11 @@
+#include "string.h"
+#include "stdbool.h"
+
 #include "mqtt_client.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/event_groups.h"
 #include "freertos/timers.h"
 
-#include "ca_cert.h"
 #include "logger.h"
 #include "global_config.h"
 
@@ -15,6 +17,10 @@ static EventGroupHandle_t mqtt_event_group;
 static TimerHandle_t mqtt_reconnect_timer;
 static esp_mqtt_client_handle_t client;
 static uint16_t connection_retries = 0;
+
+
+static char ca_cert[MQTT_CA_CERT_MAX_LEN];
+static bool ca_cert_is_set = false;
 
 
 static void event_handler(void *handler_args, esp_event_base_t base, int32_t event_id, void *event_data) {
@@ -32,7 +38,7 @@ static void event_handler(void *handler_args, esp_event_base_t base, int32_t eve
         {
             if (connection_retries < MQTT_RECONNECT_RETRY) {
                 connection_retries++;
-                TB_LOGI(TAG, "disconnected... retrying... %" PRIu16, connection_retries);
+                TB_LOGW(TAG, "disconnected... retrying... %" PRIu16, connection_retries);
             } else {
                 TB_LOGW(TAG, "cannot connect to mqtt broker, retrying in %ds", MQTT_RECONNECT_INTERVAL_MS/1000);
                 xEventGroupSetBits(mqtt_event_group, BIT_MQTT_DISCONNECTED);
@@ -57,7 +63,7 @@ static void event_handler(void *handler_args, esp_event_base_t base, int32_t eve
         }
         case MQTT_EVENT_ERROR:
         {
-            TB_LOGI(TAG, "event error");
+            TB_LOGW(TAG, "event error");
             break;
         }
         default:
@@ -93,21 +99,39 @@ void mqtt_setup_timer() {
     );
 }
 
+void mqtt_set_ca_cert(char *cert, size_t len) {
+    memset(ca_cert, 0, MQTT_CA_CERT_MAX_LEN);
+    snprintf(ca_cert, len, "%s", cert);
+    TB_LOGI(TAG, "CA cert set");
+    ca_cert_is_set = true;
+}
+
 esp_err_t mqtt_begin(mqtt_driver_config_t *cfg) {
     esp_err_t err = ESP_OK;
+
+    if (!ca_cert_is_set) {
+        TB_LOGE(TAG, "CA cert not set");
+        return ESP_FAIL;
+    }
+
     connection_retries = 0;
 
     stop_timer();
 
     esp_mqtt_client_config_t mqtt_cfg = {};
-
     mqtt_cfg.network.reconnect_timeout_ms = MQTT_AUTO_RECONNECT_TIMEOUT_MS;
     mqtt_cfg.broker.address.uri = cfg->credentials.uri;
-    mqtt_cfg.broker.verification.certificate = (const char *) ca_crt;
+    mqtt_cfg.broker.verification.certificate = (const char *) ca_cert;
+    mqtt_cfg.broker.verification.certificate_len = strnlen(ca_cert, MQTT_CA_CERT_MAX_LEN-1) + 1;
     mqtt_cfg.credentials.username = cfg->credentials.username;
     mqtt_cfg.credentials.authentication.password = cfg->credentials.password;
 
     client = esp_mqtt_client_init(&mqtt_cfg);
+
+    if (client == NULL) {
+        TB_LOGE(TAG, "init client fail");
+        return ESP_FAIL;
+    }
 
     if ((err = esp_mqtt_client_register_event(client, ESP_EVENT_ANY_ID, event_handler, NULL)) != ESP_OK) {
         return err;
@@ -126,6 +150,10 @@ esp_err_t mqtt_begin(mqtt_driver_config_t *cfg) {
 
 esp_err_t mqtt_end() {
     esp_err_t err = ESP_OK;
+
+    if ((err = esp_mqtt_client_disconnect(client)) != ESP_OK) {
+        return err;
+    }
 
     if ((err = esp_mqtt_client_stop(client)) != ESP_OK) {
         return err;

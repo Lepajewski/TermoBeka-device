@@ -9,6 +9,7 @@ const char * const TAG = "SDMgr";
 
 
 SDManager::SDManager() {
+    this->begin();
 }
 
 SDManager::~SDManager() {
@@ -19,10 +20,7 @@ void SDManager::begin() {
     this->sysMgr = get_system_manager();
     this->event_queue_handle = this->sysMgr->get_event_queue();
     this->sd_queue_handle = this->sysMgr->get_sd_queue();
-
-    this->card.begin();
-
-    TB_LOGI(TAG, "SD Card mounted");
+    this->sd_ring_buf_handle = this->sysMgr->get_sd_ring_buf();
 }
 
 void SDManager::end() {
@@ -45,14 +43,12 @@ void SDManager::process_sd_event(SDEvent *evt) {
     switch (evt->type) {
         case SDEventType::MOUNT_CARD:
         {
-            TB_LOGI(TAG, "mount card");
-            this->card.begin();
+            this->process_mount_card();
             break;
         }
         case SDEventType::UNMOUNT_CARD:
         {
-            TB_LOGI(TAG, "unmount card");
-            this->card.end();
+            this->process_unmount_card();
             break;
         }
         case SDEventType::LS:
@@ -126,9 +122,36 @@ void SDManager::process_sd_event(SDEvent *evt) {
             delete [] path;
             break;
         }
+        case SDEventType::LOAD_CA_CERT:
+        {
+            SDEventPathArg *payload = reinterpret_cast<SDEventPathArg*>(evt->payload);
+            char *path = this->make_path(payload->path);
+            TB_LOGI(TAG, "load_ca_cert %s", path);
+
+            if (this->process_load_ca_cert(path) == ESP_OK) {
+                this->send_evt_sd_load_ca_file();
+            }
+
+            delete [] path;
+            break;
+        }
         case SDEventType::NONE:
         default:
             break;
+    }
+}
+
+void SDManager::process_mount_card() {
+    TB_LOGI(TAG, "mount card");
+    if (this->card.begin() == ESP_OK) {
+        this->send_evt_sd_mounted();
+    }
+}
+
+void SDManager::process_unmount_card() {
+    TB_LOGI(TAG, "unmount card");
+    if (this->card.end() == ESP_OK) {
+        this->send_evt_sd_unmounted();
     }
 }
 
@@ -145,4 +168,45 @@ void SDManager::poll_sd_events() {
 
 void SDManager::process_events() {
     poll_sd_events();
+}
+
+void SDManager::send_evt(Event *evt) {
+    evt->origin = EventOrigin::SD;
+    if (xQueueSend(*this->event_queue_handle, &*evt, portMAX_DELAY) != pdTRUE) {
+        TB_LOGE(TAG, "event send fail");
+    }
+}
+
+void SDManager::send_evt_sd_mounted() {
+    Event evt = {};
+    evt.type = EventType::SD_MOUNTED;
+    this->send_evt(&evt);
+}
+
+void SDManager::send_evt_sd_unmounted() {
+    Event evt = {};
+    evt.type = EventType::SD_UNMOUNTED;
+    this->send_evt(&evt);
+}
+
+void SDManager::send_evt_sd_config_load() {
+    ;
+}
+
+void SDManager::send_evt_sd_load_ca_file() {
+    Event evt = {};
+    evt.type = EventType::SD_LOAD_CA_FILE;
+    this->send_evt(&evt);
+}
+
+esp_err_t SDManager::process_load_ca_cert(const char *path) {
+    if (this->card.cat(path) == ESP_OK) {
+        char *buf = this->card.get_sd_buf();
+        UBaseType_t res = xRingbufferSend(*this->sd_ring_buf_handle, buf, strnlen(buf, SD_OPERATIONS_BUFFER_SIZE), pdMS_TO_TICKS(1000));
+        if (res != pdTRUE) {
+            TB_LOGE(TAG, "fail to send ca.crt to ringbuf");
+        }
+        return ESP_OK;
+    }
+    return ESP_FAIL;
 }

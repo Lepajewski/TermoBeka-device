@@ -6,6 +6,7 @@ idf_component_register(
         "sd_manager_task.cpp"
     INCLUDE_DIRS "."
     REQUIRES
+        esp_ringbuf
         fatfs
         global_config
         logger

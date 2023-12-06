@@ -14,7 +14,7 @@
 const char * const TAG = "CMDsd";
 
 
-static esp_err_t send_to_sd_queue(SDEvent *evt) {
+esp_err_t send_to_sd_queue(SDEvent *evt) {
     SystemManager *sysMgr = get_system_manager();
     QueueHandle_t *queue = sysMgr->get_sd_queue();
     evt->origin = EventOrigin::SYSTEM_MANAGER;
@@ -26,7 +26,7 @@ static esp_err_t send_to_sd_queue(SDEvent *evt) {
     return ESP_OK;
 }
 
-static esp_err_t process_path_cmd(SDEventType e_type, const char *path) {
+esp_err_t process_path_cmd(SDEventType e_type, const char *path) {
     SDEvent evt = {};
     evt.type = e_type;
     SDEventPathArg payload;
