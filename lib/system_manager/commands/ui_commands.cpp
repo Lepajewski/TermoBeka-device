@@ -13,7 +13,7 @@
 const char * const TAG = "CMDui";
 
 
-static esp_err_t send_to_ui_queue(UIEvent *evt) {
+esp_err_t send_to_ui_queue(UIEvent *evt) {
     SystemManager *sysMgr = get_system_manager();
     QueueHandle_t *queue = sysMgr->get_ui_queue();
     evt->origin = EventOrigin::SYSTEM_MANAGER;

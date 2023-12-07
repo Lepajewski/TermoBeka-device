@@ -54,6 +54,7 @@ enum class EventType {
     WIFI_DISCONNECTED,
     WIFI_GOT_IP,
     WIFI_GOT_TIME,
+    WIFI_STRENGTH,
 
     MQTT_CONNECTED,
     MQTT_DISCONNECTED,
@@ -130,6 +131,7 @@ typedef union {
 enum class UIEventType {
     BUZZER_BEEP,
     ERROR_SHOW,
+    WIFI_STRENGTH,
     NONE
 };
 

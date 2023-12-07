@@ -214,3 +214,21 @@ void wifi_ntp_connect() {
         xEventGroupSetBits(wifi_event_group, BIT_WIFI_NTP_GOT_TIME);
     }
 }
+
+wifi_driver_rssi_strength_t wifi_get_rssi_strength() {
+    int rssi;
+    if (esp_wifi_sta_get_rssi(&rssi) != ESP_OK) {
+        return WIFI_NOT_CONNECTED;
+    }
+    
+    if (rssi < -90) {
+        return WIFI_SIGNAL_BAD;
+    }
+    if (rssi < -82) {
+        return WIFI_SIGNAL_WEAK;
+    }
+    if (rssi < -67) {
+        return WIFI_SIGNAL_GOOD;
+    }
+    return WIFI_SIGNAL_STRONG;
+}

@@ -27,6 +27,7 @@ public:
     void button_callback(Button *button, PressType type) override;
 
     void update(float d_time) override;
+    void process_ui_event(UIEvent *evt) override;
 };
 
 #endif

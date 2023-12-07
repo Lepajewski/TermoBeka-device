@@ -42,6 +42,13 @@ typedef struct {
     ntp_driver_config_t ntp_config;
 } wifi_driver_config_t;
 
+typedef enum {
+    WIFI_NOT_CONNECTED = 0,
+    WIFI_SIGNAL_BAD = 1,
+    WIFI_SIGNAL_WEAK = 2,
+    WIFI_SIGNAL_GOOD = 3,
+    WIFI_SIGNAL_STRONG = 4
+} wifi_driver_rssi_strength_t;
 
 void wifi_set_event_group(EventGroupHandle_t *event_group);
 void wifi_setup_timers();
@@ -49,6 +56,7 @@ esp_err_t wifi_begin(wifi_driver_config_t *cfg);
 esp_err_t wifi_end();
 esp_err_t wifi_scan();
 void wifi_ntp_connect();
+wifi_driver_rssi_strength_t wifi_get_rssi_strength(); 
 
 
 #ifdef __cplusplus

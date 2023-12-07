@@ -10,11 +10,13 @@ class StatusBar {
 private:
     int current_hours = 0;
     int current_minutes = 0;
+    int current_wifi_strength = 0;
 
     float timer = 0;
     char current_sep = ':';
 public:
     void set_time(int hours, int minutes);
+    void set_wifi_strength(int strength);
 
     void draw(float d_time);
 };

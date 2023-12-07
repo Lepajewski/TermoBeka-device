@@ -68,6 +68,8 @@
         "semaphore": "cpp",
         "span": "cpp",
         "stop_token": "cpp",
-        "thread": "cpp"
+        "thread": "cpp",
+        "esp_wifi.h": "c",
+        "sd_card_driver.h": "c"
     }
 }

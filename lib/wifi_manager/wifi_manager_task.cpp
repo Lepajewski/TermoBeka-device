@@ -13,6 +13,8 @@ void wifiManagerTask(void *pvParameters) {
 
     while (1) {
         manager.process_events();
+        
+        manager.send_evt_wifi_strength();
 
         vTaskDelay(pdMS_TO_TICKS(10));
     }

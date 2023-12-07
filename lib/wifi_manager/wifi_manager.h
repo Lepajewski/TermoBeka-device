@@ -37,6 +37,7 @@ class WiFiManager {
     void begin();
     void end();
     void process_events();
+    void send_evt_wifi_strength();
 };
 
 

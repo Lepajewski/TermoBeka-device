@@ -5,6 +5,8 @@
 
 #include <memory>
 
+#include "tb_event.h"
+
 enum class SceneEnum { startup, menu, settings, none };
 
 class Scene {
@@ -22,6 +24,7 @@ public:
     virtual void button_callback(Button *button, PressType type) = 0;
 
     virtual void update(float d_time) {}
+    virtual void process_ui_event(UIEvent *evt) {}
 
     static std::unique_ptr<Scene> create_scene(SceneEnum target);
 };
