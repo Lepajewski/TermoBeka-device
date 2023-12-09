@@ -1,0 +1,13 @@
+idf_component_register(
+    SRCS
+        "internal_temperature_sensor.c"
+        "regulator_timer.c"
+        "regulator.cpp"
+        "regulator_manager.cpp"
+        "regulator_manager_task.cpp"
+    REQUIRES
+        esp_driver_tsens
+        global_config
+        logger
+        system_manager
+)

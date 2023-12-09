@@ -15,6 +15,6 @@ void systemManagerTask(void *pvParameters) {
     while (1) {
         sysMgr->poll_event();
 
-        vTaskDelay(pdMS_TO_TICKS(100));
+        vTaskDelay(pdMS_TO_TICKS(10));
     }
 }

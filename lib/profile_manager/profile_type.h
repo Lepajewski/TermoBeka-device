@@ -5,6 +5,10 @@
 #include <memory>
 
 #include "inttypes.h"
+
+#include "freertos/FreeRTOS.h"
+#include "freertos/queue.h"
+
 #include "global_config.h"
 
 
@@ -27,6 +31,7 @@ typedef struct {
     uint32_t min_duration;
     uint32_t max_duration;
     uint32_t update_interval;
+    QueueHandle_t *regulator_queue_handle;
 } profile_config_t;
 
 typedef struct {

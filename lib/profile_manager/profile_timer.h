@@ -38,6 +38,7 @@ void profile_update_timer_setup(uint32_t interval_ms);
 void profile_update_timer_run();
 void profile_update_timer_stop();
 
+
 #ifdef __cplusplus
 }
 #endif

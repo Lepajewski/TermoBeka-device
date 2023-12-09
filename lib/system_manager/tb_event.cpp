@@ -10,8 +10,8 @@ const char *event_origin_to_s(EventOrigin origin) {
         case EventOrigin::WIFI:                             return "WiFi";
         case EventOrigin::SERVER:                           return "Server";
         case EventOrigin::PROFILE:                          return "Profile";
+        case EventOrigin::REGULATOR:                        return "Regulator";
         case EventOrigin::NONE:                             return "none";
-        case EventOrigin::UNKNOWN:                          return "unknown";
         default:                                            return "invalid";
     }
 }
@@ -55,6 +55,10 @@ const char *event_type_to_s(EventType type) {
         case EventType::PROFILE_END:                        return "Profile end";
         case EventType::PROFILE_RESPONSE:                   return "Profile response";
         case EventType::PROFILE_UPDATE:                     return "Profile update";
+
+        case EventType::REGULATOR_START:                    return "Regulator start";
+        case EventType::REGULATOR_STOP:                     return "Regulator stop";
+        case EventType::REGULATOR_UPDATE:                   return "Regulator update";
 
         case EventType::CONSOLE_COMMAND:                    return "console command";
 
@@ -123,6 +127,16 @@ const char *profile_event_type_to_s(ProfileEventType type) {
         case ProfileEventType::END:                         return "end";
         case ProfileEventType::INFO:                        return "info";
         case ProfileEventType::NONE:                        return "none";
+        default:                                            return "invalid";
+    }
+}
+
+const char *regulator_event_type_to_s(RegulatorEventType type) {
+    switch (type) {
+        case RegulatorEventType::START:                     return "regulator start";
+        case RegulatorEventType::STOP:                      return "regulator stop";
+        case RegulatorEventType::TEMPERATURE_UPDATE:        return "temperature update";
+        case RegulatorEventType::NONE:                      return "none";
         default:                                            return "invalid";
     }
 }

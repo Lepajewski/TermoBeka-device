@@ -1,5 +1,6 @@
 idf_component_register(
     SRCS
+        "profile_timer.c"
         "profile.cpp"
         "profile_manager.cpp"
         "profile_manager_task.cpp"

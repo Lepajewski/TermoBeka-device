@@ -2,6 +2,7 @@
 
 #include "global_config.h"
 #include "logger.h"
+#include "tb_event.h"
 #include "profile_timer.h"
 #include "profile.h"
 
@@ -13,7 +14,6 @@ Profile::Profile(profile_config_t config) :
     config(config)
 {
     this->info = {};
-
     this->profile_event_group = xEventGroupCreate();
 
     profile_timer_set_event_group(&this->profile_event_group);
@@ -165,6 +165,7 @@ esp_err_t Profile::process_next_step() {
         return ESP_FAIL;
     }
 
+    send_evt_regulator_update(this->info.current_temperature);
     profile_timer_run(next_step_timeout);
     return ESP_OK;
 }
@@ -179,20 +180,53 @@ esp_err_t Profile::process_stopped() {
     return ESP_OK;
 }
 
-ProfileStatus Profile::get_status() {
+Status Profile::get_status() {
     if (this->info.ended) {
-        return ProfileStatus_ENDED;
+        return Status_ENDED;
     }
 
     if (!this->info.running) {
-        return ProfileStatus_NOT_RUNNING;
+        return Status_NOT_RUNNING;
     }
 
     if (this->info.stopped) {
-        return ProfileStatus_STOPPED;
+        return Status_STOPPED;
     }
     
-    return ProfileStatus_RUNNING;
+    return Status_RUNNING;
+}
+
+void Profile::send_evt_regulator(RegulatorEvent *evt) {
+    if (this->config.regulator_queue_handle == NULL) {
+        TB_LOGE(TAG, "queue not set");
+        return;
+    }
+
+    evt->origin = EventOrigin::PROFILE;
+    if (xQueueSend(*this->config.regulator_queue_handle, &*evt, portMAX_DELAY) != pdTRUE) {
+        TB_LOGE(TAG, "event send fail");
+    }
+}
+
+void Profile::send_evt_regulator_start() {
+    RegulatorEvent evt = {};
+    evt.type = RegulatorEventType::START;
+    this->send_evt_regulator(&evt);
+}
+
+void Profile::send_evt_regulator_stop() {
+    RegulatorEvent evt = {};
+    evt.type = RegulatorEventType::STOP;
+    this->send_evt_regulator(&evt);
+}
+
+void Profile::send_evt_regulator_update(int16_t temperature) {
+    RegulatorEvent evt = {};
+    evt.type = RegulatorEventType::TEMPERATURE_UPDATE;
+    RegulatorEventTemperatureUpdate payload = {};
+    payload.temperature = temperature;
+    memcpy(&evt.payload, &payload.buffer, sizeof(RegulatorEventTemperatureUpdate));
+    this->send_evt_regulator(&evt);
 }
 
 esp_err_t Profile::start() {
@@ -238,6 +272,7 @@ esp_err_t Profile::start() {
 
     xEventGroupSetBits(this->profile_event_group, BIT_PROFILE_START);
 
+    this->send_evt_regulator_start();
     profile_update_timer_run();
 
     return process_next_step();
@@ -309,10 +344,11 @@ esp_err_t Profile::end() {
         this->info.stopped = false;
         this->info.ended = true;
 
-        this->info.absolute_ended_time = get_time_since_startup_ms() - this->info.absolute_start_time;
+        this->info.absolute_ended_time = get_time_since_startup_ms();
 
         this->print_info();
 
+        this->send_evt_regulator_stop();
         profile_update_timer_stop();
 
         xEventGroupSetBits(this->profile_event_group, BIT_PROFILE_END);
@@ -370,6 +406,14 @@ ProfileStatusUpdate Profile::get_profile_run_info() {
         info.step_stopped_time = this->info.step_stopped_time;
         info.profile_stopped_time = this->info.profile_stopped_time;
         info.profile_time_halted = this->info.profile_time_halted + (uint32_t)(get_time_since_startup_ms() - this->info.absolute_time_stopped);
+    }
+
+    if (this->info.ended) {
+        info.current_duration = (uint32_t)(this->info.absolute_ended_time - this->info.absolute_start_time);
+        info.step_time_left = 0;
+        info.profile_time_left = 0;
+        info.current_temperature = (int32_t) this->profile.begin()->temperature;
+        info.progress_percent = (float)info.current_duration / (float)info.total_duration * 100.0f;
     }
 
     return info;

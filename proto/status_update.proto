@@ -1,7 +1,7 @@
 syntax = "proto3";
 
 
-enum ProfileStatus {
+enum Status {
     NOT_RUNNING = 0;
     RUNNING = 1;
     STOPPED = 2;
@@ -10,7 +10,7 @@ enum ProfileStatus {
 
 
 message ProfileStatusUpdate {
-    ProfileStatus status = 1;
+    Status status = 1;
     uint32 current_duration = 2;
     uint32 total_duration = 3;
     uint32 step_start_time = 4;
@@ -22,4 +22,18 @@ message ProfileStatusUpdate {
     uint32 profile_time_halted = 10;
     int32 current_temperature = 11;
     float progress_percent = 12;
-}
+};
+
+message RegulatorStatusUpdate {
+    Status status = 1;
+    int32 uc_temperature = 2;
+    int32 temperature_1 = 3;
+    int32 temperature_2 = 4;
+    int32 temperature_3 = 5;
+    int32 temperature_4 = 6;
+    int32 temperature_5 = 7;
+    uint32 fans_flags = 8;
+    uint32 heaters_flags = 9;
+    int32 ssr_temperature_1 = 10;
+    int32 ssr_temperature_2 = 11;
+};

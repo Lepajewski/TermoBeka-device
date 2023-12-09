@@ -10,6 +10,7 @@
 #include "wifi_manager_task.h"
 #include "server_manager_task.h"
 #include "profile_manager_task.h"
+#include "regulator_manager_task.h"
 
 
 static const char * const TAG = "MAIN";
@@ -39,11 +40,14 @@ void app_main(void)
     // start WiFi Manager Task
     xTaskCreatePinnedToCore(wifiManagerTask, "WiFiMgr", 4096, NULL, 1, NULL, 0);
 
-    // start Server Manager Task
-    xTaskCreatePinnedToCore(serverManagerTask, "ServerMgr", 10240, NULL, 1, NULL, 0);
-
     // start Profile Manager Task
     xTaskCreatePinnedToCore(profileManagerTask, "ProfMgr", 4096, NULL, 1, NULL, 1);
+
+    // start Server Manager Task
+    xTaskCreatePinnedToCore(serverManagerTask, "ServMgr", 10240, NULL, 1, NULL, 0);
+
+    // start Regulator Manager Task
+    xTaskCreatePinnedToCore(regulatorManagerTask, "RegMgr", 4096, NULL, 1, NULL, 1);
 
     // end Main task
     vTaskDelete(NULL);

@@ -29,6 +29,7 @@ class SystemManager {
     QueueHandle_t wifi_queue_handle;
     QueueHandle_t server_queue_handle;
     QueueHandle_t profile_queue_handle;
+    QueueHandle_t regulator_queue_handle;
 
     RingbufHandle_t sd_ring_buf_handle;
 
@@ -55,6 +56,7 @@ class SystemManager {
     void process_sd_load_ca_file();
     void process_profile_response(EventProfileResponse *payload);
     void process_profile_update(EventProfileUpdate *payload);
+    void process_regulator_update(EventRegulatorUpdate *payload);
     void process_command(char *cmd);
     void process_ui_to_sd_profiles_load(uint8_t *payload);
     void process_sd_to_ui_profiles_load();
@@ -84,6 +86,7 @@ class SystemManager {
     QueueHandle_t *get_wifi_queue();
     QueueHandle_t *get_server_queue();
     QueueHandle_t *get_profile_queue();
+    QueueHandle_t *get_regulator_queue();
 
     RingbufHandle_t *get_sd_ring_buf();
 

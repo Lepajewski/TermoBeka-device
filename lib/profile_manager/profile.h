@@ -6,9 +6,10 @@
 #include "esp_err.h"
 
 #include <pb.h>
-#include "profile_status_update.pb.h"
+#include "status_update.pb.h"
 
 #include "freertos/FreeRTOS.h"
+#include "freertos/queue.h"
 #include "freertos/event_groups.h"
 
 #include "profile_type.h"
@@ -18,6 +19,7 @@ class Profile {
  private:
     profile_run_info info;
     profile_config_t config;
+    QueueHandle_t *regulator_queue_handle;
 
     // +1 vetrice due to stop/resume functionality
     etl::list<profile_point, PROFILE_MAX_VERTICES + 1> profile;
@@ -32,7 +34,12 @@ class Profile {
     esp_err_t process_next_step();
     esp_err_t process_stopped();
 
-    ProfileStatus get_status();
+    Status get_status();
+
+    void send_evt_regulator(RegulatorEvent *evt);
+    void send_evt_regulator_start();
+    void send_evt_regulator_stop();
+    void send_evt_regulator_update(int16_t temperature);
  public:
     Profile(profile_config_t config);
     ~Profile();
