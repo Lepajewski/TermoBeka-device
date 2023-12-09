@@ -5,53 +5,12 @@
 #include "profile_timer.h"
 #include "profile_manager.h"
 
+
 const char * const TAG = "ProfMgr";
 
 
 ProfileManager::ProfileManager() {
-    profile_t profile = {};
-    for (uint8_t i = 0; i < PROFILE_MAX_VERTICES; i++) {
-        profile.points[i] = {-1, UINT32_MAX};
-    }
-
-    // profile.points[0] = {2000, 0};
-    // profile.points[1] = {2000, 30000};
-    // profile.points[2] = {5000, 60000};
-    // profile.points[3] = {5000, 90000};
-    // profile.points[4] = {3000, 110000};
-    // profile.points[5] = {3000, 140000};
-
-    // profile.points[0] = {2000, 0};
-    // profile.points[1] = {2000, 10000};
-    // profile.points[2] = {2000, 20000};
-    // profile.points[3] = {2000, 30000};
-    // profile.points[4] = {2000, 40000};
-    // profile.points[5] = {2000, 50000};
-    // profile.points[6] = {2000, 60000};
-    // profile.points[7] = {2000, 70000};
-    // profile.points[8] = {2000, 80000};
-    // profile.points[9] = {2000, 90000};
-
-    // profile.points[0] = {2000,  0};
-    // profile.points[1] = {12000, 2000000};
-    // profile.points[2] = {12000, 12800000};
-    // profile.points[3] = {4000,  14420000};
-
-    profile.points[0] = {2000,  0};
-    profile.points[1] = {2000, 20000};
-    profile.points[2] = {2000, 10000000};
-    profile.points[3] = {2000, 40000000};
-
-
-    this->config.profile = profile;
-    this->config.min_temp = PROFILE_MIN_TEMPERATURE;
-    this->config.max_temp = PROFILE_MAX_TEMPERATURE;
-    this->config.step_time = PROFILE_STEP_TIME_MS;
-    this->config.min_duration = PROFILE_MIN_DURATION_MS;
-    this->config.max_duration = PROFILE_MAX_DURATION_MS;
-    this->config.update_interval = PROFILE_UPDATE_TIMER_INTERVAL_MS;
-
-    this->profile = new Profile(this->config);
+    this->config = {};
 }
 
 ProfileManager::~ProfileManager() {
@@ -62,7 +21,32 @@ void ProfileManager::begin() {
     this->sysMgr = get_system_manager();
     this->event_queue_handle = this->sysMgr->get_event_queue();
     this->profile_queue_handle = this->sysMgr->get_profile_queue();
-    
+
+    profile_t profile = {};
+    for (uint8_t i = 0; i < PROFILE_MAX_VERTICES; i++) {
+        profile.points[i] = {-1, UINT32_MAX};
+    }
+
+    // profile.points[0] = {2000,  0};
+    // profile.points[1] = {2000, 20000};
+    // profile.points[2] = {2000, 10000000};
+    // profile.points[3] = {2000, 40000000};
+
+    profile.points[0] = {2000,  0};
+    profile.points[1] = {12000, 2000000};
+    profile.points[2] = {12000, 12800000};
+    profile.points[3] = {4000,  14420000};
+
+    this->config.profile = profile;
+    this->config.min_temp = PROFILE_MIN_TEMPERATURE;
+    this->config.max_temp = PROFILE_MAX_TEMPERATURE;
+    this->config.step_time = PROFILE_STEP_TIME_MS;
+    this->config.min_duration = PROFILE_MIN_DURATION_MS;
+    this->config.max_duration = PROFILE_MAX_DURATION_MS;
+    this->config.update_interval = PROFILE_UPDATE_TIMER_INTERVAL_MS;
+    this->config.regulator_queue_handle = this->sysMgr->get_regulator_queue();
+
+    this->profile = new Profile(this->config);
     TB_LOGI(TAG, "begin");
 }
 
@@ -168,7 +152,6 @@ profile_event_response ProfileManager::process_new_profile(profile_t *profile) {
     this->profile = new Profile(this->config);
     this->profile->print_raw_profile();
     return PROFILE_LOAD_SUCCESS;
-    
 }
 
 profile_event_response ProfileManager::start_profile() {

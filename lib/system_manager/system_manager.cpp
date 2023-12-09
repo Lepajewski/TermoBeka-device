@@ -127,13 +127,15 @@ void SystemManager::init_queues() {
     this->wifi_queue_handle = xQueueCreate(WIFI_QUEUE_SIZE, sizeof(WiFiEvent));
     this->server_queue_handle = xQueueCreate(SERVER_QUEUE_SIZE, sizeof(ServerEvent));
     this->profile_queue_handle = xQueueCreate(PROFILE_QUEUE_SIZE, sizeof(ProfileEvent));
+    this->regulator_queue_handle = xQueueCreate(REGULATOR_QUEUE_SIZE, sizeof(RegulatorEvent));
 
     if (this->event_queue_handle == NULL ||
         this->ui_queue_handle == NULL ||
         this->sd_queue_handle == NULL ||
         this->wifi_queue_handle == NULL ||
         this->server_queue_handle == NULL ||
-        this->profile_queue_handle == NULL) {
+        this->profile_queue_handle == NULL ||
+        this->regulator_queue_handle == NULL) {
         TB_LOGE(TAG, "queues init fail. Restarting...");
         vTaskDelay(pdMS_TO_TICKS(2000));
         fflush(stdout);
@@ -290,6 +292,11 @@ void SystemManager::poll_event() {
                 this->process_profile_update(reinterpret_cast<EventProfileUpdate*>(evt.payload));
                 break;
             }
+            case EventType::REGULATOR_UPDATE:
+            {
+                this->process_regulator_update(reinterpret_cast<EventRegulatorUpdate*>(evt.payload));
+                break;
+            }
             case EventType::CONSOLE_COMMAND:
             {
                 this->process_command(reinterpret_cast<char *>(evt.payload));
@@ -399,7 +406,28 @@ void SystemManager::process_profile_update(EventProfileUpdate *payload) {
     evt.type = ServerEventType::PUBLISH_PROFILE_UPDATE;
     memcpy(&evt.payload, payload->buffer, SERVER_QUEUE_MAX_PAYLOAD);
     if (send_to_server_queue(&evt) != ESP_OK) {
-        TB_LOGE(TAG, "fail to send load ca file");
+        TB_LOGE(TAG, "fail to send profile update");
+    }
+}
+
+void SystemManager::process_regulator_update(EventRegulatorUpdate *payload) {
+    printf("Status: %d\n", payload->info.status);
+    printf("uC temperature: %" PRIi32 "\n", payload->info.uc_temperature);
+    printf("temperature 1: %" PRIi32 "\n", payload->info.temperature_1);
+    printf("temperature 2: %" PRIi32 "\n", payload->info.temperature_2);
+    printf("temperature 3: %" PRIi32 "\n", payload->info.temperature_3);
+    printf("temperature 4: %" PRIi32 "\n", payload->info.temperature_4);
+    printf("temperature 5: %" PRIi32 "\n", payload->info.temperature_5);
+    printf("Fans: %" PRIu32 "\n", payload->info.fans_flags);
+    printf("Heaters: %" PRIu32 "\n", payload->info.heaters_flags);
+    printf("SSR 1 temperature: %" PRIi32 "\n", payload->info.ssr_temperature_1);
+    printf("SSR 2 temperature: %" PRIi32 "\n", payload->info.ssr_temperature_2);
+
+    ServerEvent evt;
+    evt.type = ServerEventType::PUBLISH_REGULATOR_UPDATE;
+    memcpy(&evt.payload, payload->buffer, SERVER_QUEUE_MAX_PAYLOAD);
+    if (send_to_server_queue(&evt) != ESP_OK) {
+        TB_LOGE(TAG, "fail to send regulator update");
     }
 }
 
@@ -503,6 +531,10 @@ QueueHandle_t *SystemManager::get_server_queue() {
 
 QueueHandle_t *SystemManager::get_profile_queue() {
     return &this->profile_queue_handle;
+}
+
+QueueHandle_t *SystemManager::get_regulator_queue() {
+    return &this->regulator_queue_handle;
 }
 
 RingbufHandle_t *SystemManager::get_sd_ring_buf() {

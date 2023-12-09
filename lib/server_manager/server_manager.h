@@ -9,7 +9,7 @@
 #include "freertos/ringbuf.h"
 
 #include <pb.h>
-#include "profile_status_update.pb.h"
+#include "status_update.pb.h"
 
 #include "mqtt_driver.h"
 #include "system_manager.h"
@@ -41,7 +41,7 @@ class ServerManager {
     void process_mqtt_driver_events();
     void process_server_event(ServerEvent *evt);
     void process_publish_profile_update(ProfileStatusUpdate *info);
-    void process_publish_regulator_update();
+    void process_publish_regulator_update(RegulatorStatusUpdate *info);
     void process_read_ca_file();
     void poll_server_events();
 

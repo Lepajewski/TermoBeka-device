@@ -84,6 +84,14 @@
 #define PROFILE_UPDATE_TIMER_INTERVAL_MS        5000
 
 
+// Regulator configuration
+#define INTERNAL_TEMP_SENS_MIN_RANGE_C          -10
+#define INTERNAL_TEMP_SENS_MAX_RANGE_C          80
+
+#define REGULATOR_SAMPLING_RATE_MS              3000
+#define REGULATOR_UPDATE_TIMER_INTERVAL_MS      5000
+
+
 typedef struct {
     char ssid[WIFI_MAX_SSID_LEN];
     char pass[WIFI_MAX_PASS_LEN];

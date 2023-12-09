@@ -4,7 +4,7 @@
 #include "esp_mac.h"
 #include "mqtt_driver.h"
 
-#include "profile_status_update.pb.h"
+#include "status_update.pb.h"
 #include "pb_encode.h"
 #include "pb_decode.h"
 
@@ -161,14 +161,13 @@ void ServerManager::process_server_event(ServerEvent *evt) {
         case ServerEventType::PUBLISH_PROFILE_UPDATE:
         {
             ServerEventPubProfileUpdate *payload = reinterpret_cast<ServerEventPubProfileUpdate*>(evt->payload);
-            if (this->running && this->connected) {
-                this->process_publish_profile_update(&payload->info);
-            }
+            this->process_publish_profile_update(&payload->info);
             break;
         }
         case ServerEventType::PUBLISH_REGULATOR_UPDATE:
         {
-            this->process_publish_regulator_update();
+            ServerEventPubRegulatorUpdate *payload = reinterpret_cast<ServerEventPubRegulatorUpdate*>(evt->payload);
+            this->process_publish_regulator_update(&payload->info);
             break;
         }
         case ServerEventType::READ_CA_FILE:
@@ -183,32 +182,44 @@ void ServerManager::process_server_event(ServerEvent *evt) {
 }
 
 void ServerManager::process_publish_profile_update(ProfileStatusUpdate *info) {
+    if (!this->running || !this->connected) {
+        return;
+    }
+
     printf("Progress: %.2lf%\n", info->progress_percent);
-    uint8_t buffer[128] = {};
+    uint8_t buffer[SERVER_QUEUE_MAX_PAYLOAD] = {};
     pb_ostream_t ostream;
 
     ostream = pb_ostream_from_buffer(buffer, sizeof(buffer));
     pb_encode(&ostream, &ProfileStatusUpdate_msg, info);
 
     size_t written = ostream.bytes_written;
-    TB_LOGI(TAG, "written: %d", written);
+    TB_LOGI(TAG, "%s written: %d", __func__, written);
 
     esp_err_t err = mqtt_publish(this->topic_profile_update, (const char *) buffer, (uint16_t) written, 1);
     if (err != ESP_OK) {
         TB_LOGE(TAG, "fail to publish");
     }
-
-    // istream = pb_istream_from_buffer(buffer, written);
-    // ProfileStatusUpdate decoded = ProfileStatusUpdate_init_zero;
-
-    // pb_decode(&istream, &ProfileStatusUpdate_msg, &decoded);
-
-    // printf("Current Temperature: %d\n", decoded.current_temperature);
-    // printf("Progress: %.2lf%\n", decoded.progress_percent);
 }
 
-void ServerManager::process_publish_regulator_update() {
-    ;
+void ServerManager::process_publish_regulator_update(RegulatorStatusUpdate *info) {
+    if (!this->running || !this->connected) {
+        return;
+    }
+
+    uint8_t buffer[SERVER_QUEUE_MAX_PAYLOAD] = {};
+    pb_ostream_t ostream;
+
+    ostream = pb_ostream_from_buffer(buffer, sizeof(buffer));
+    pb_encode(&ostream, &RegulatorStatusUpdate_msg, info);
+
+    size_t written = ostream.bytes_written;
+    TB_LOGI(TAG, "%s written: %d", __func__, written);
+
+    esp_err_t err = mqtt_publish(this->topic_regulator_update, (const char *) buffer, (uint16_t) written, 1);
+    if (err != ESP_OK) {
+        TB_LOGE(TAG, "fail to publish");
+    }
 }
 
 void ServerManager::process_read_ca_file() {

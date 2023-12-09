@@ -16,6 +16,7 @@ class ProfileManager {
     SystemManager *sysMgr;
     QueueHandle_t *event_queue_handle;
     QueueHandle_t *profile_queue_handle;
+
     profile_config_t config;
     Profile *profile;
 

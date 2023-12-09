@@ -4,7 +4,7 @@
 #include <inttypes.h>
 
 #include <pb.h>
-#include "profile_status_update.pb.h"
+#include "status_update.pb.h"
 
 #include "global_config.h"
 #include "nvs_config.h"
@@ -32,6 +32,10 @@
 #define PROFILE_QUEUE_MAX_PAYLOAD       256
 
 
+#define REGULATOR_QUEUE_SIZE            EVENT_QUEUE_SIZE
+#define REGULATOR_QUEUE_MAX_PAYLOAD     QUEUE_DEFAULT_PAYLOAD
+
+
 #define MAX_PATH_LENGTH                 64
 #define MAX_RECORD_SIZE                 SD_QUEUE_MAX_PAYLOAD - MAX_PATH_LENGTH
 
@@ -44,7 +48,7 @@ enum class EventOrigin {
     WIFI,
     SERVER,
     PROFILE,
-    UNKNOWN,
+    REGULATOR,
     NONE,
 };
 
@@ -87,6 +91,10 @@ enum class EventType {
     PROFILE_RESPONSE,
     PROFILE_UPDATE,
 
+    REGULATOR_START,
+    REGULATOR_STOP,
+    REGULATOR_UPDATE,
+
     CONSOLE_COMMAND,
 
     NONE,
@@ -120,6 +128,11 @@ typedef union {
     ProfileStatusUpdate info;
     uint8_t buffer[EVENT_QUEUE_MAX_PAYLOAD];
 } EventProfileUpdate;
+
+typedef union {
+    RegulatorStatusUpdate info;
+    uint8_t buffer[EVENT_QUEUE_MAX_PAYLOAD];
+} EventRegulatorUpdate;
 
 
 
@@ -223,6 +236,12 @@ typedef union {
     uint8_t buffer[SERVER_QUEUE_MAX_PAYLOAD];
 } ServerEventPubProfileUpdate;
 
+typedef union {
+    RegulatorStatusUpdate info;
+    uint8_t buffer[SERVER_QUEUE_MAX_PAYLOAD];
+} ServerEventPubRegulatorUpdate;
+
+
 
 enum class ProfileEventType {
     NEW_PROFILE,
@@ -246,6 +265,26 @@ typedef union {
 } ProfileEventNewProfile;
 
 
+
+enum class RegulatorEventType {
+    START,
+    STOP,
+    TEMPERATURE_UPDATE,
+    NONE
+};
+
+typedef struct {
+    EventOrigin origin;
+    RegulatorEventType type;
+    uint8_t payload[REGULATOR_QUEUE_MAX_PAYLOAD];
+} RegulatorEvent;
+
+typedef union {
+    int16_t temperature;
+    uint8_t buffer[REGULATOR_QUEUE_MAX_PAYLOAD];
+} RegulatorEventTemperatureUpdate;
+
+
 const char *event_origin_to_s(EventOrigin origin);
 const char *event_type_to_s(EventType type);
 const char *ui_event_type_to_s(UIEventType type);
@@ -253,5 +292,6 @@ const char *sd_event_type_to_s(SDEventType type);
 const char *wifi_event_type_to_s(WiFiEventType type);
 const char *server_event_type_to_s(ServerEventType type);
 const char *profile_event_type_to_s(ProfileEventType type);
+const char *regulator_event_type_to_s(RegulatorEventType type);
 
 #endif  // LIB_SYSTEM_MANAGER_TB_EVENT_H_
