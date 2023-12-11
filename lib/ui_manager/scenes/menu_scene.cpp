@@ -2,7 +2,6 @@
 
 #include "lcd_controller.h"
 #include "global_config.h"
-#include "wifi_driver.h"
 
 #include "logger.h"
 
@@ -80,9 +79,9 @@ void MenuScene::update(float d_time) {
 
 void MenuScene::process_ui_event(UIEvent *evt) {
     if (evt->type == UIEventType::WIFI_STRENGTH) {
-        wifi_driver_rssi_strength_t strength;
-        memcpy(&strength, evt->payload, sizeof(wifi_driver_rssi_strength_t));
+        int rssi;
+        memcpy(&rssi, evt->payload, sizeof(int));
 
-        this->status.set_wifi_strength(static_cast<int>(strength));
+        this->status.set_wifi_strength(rssi);
     }
 }

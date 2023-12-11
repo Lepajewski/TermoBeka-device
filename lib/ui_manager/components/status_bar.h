@@ -16,7 +16,7 @@ private:
     char current_sep = ':';
 public:
     void set_time(int hours, int minutes);
-    void set_wifi_strength(int strength);
+    void set_wifi_strength(int rssi);
 
     void draw(float d_time);
 };

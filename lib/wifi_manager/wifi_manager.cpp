@@ -202,11 +202,14 @@ void WiFiManager::send_evt_got_time() {
 }
 
 void WiFiManager::send_evt_wifi_strength() {
-    wifi_driver_rssi_strength_t strength = connected ? wifi_get_rssi_strength() : WIFI_NOT_CONNECTED;
+    int rssi;
+    if (!connected || wifi_get_rssi(&rssi) != ESP_OK) {
+        return;
+    }
     
     Event evt = {};
     evt.type = EventType::WIFI_STRENGTH;
-    memcpy(evt.payload, &strength, sizeof(wifi_driver_rssi_strength_t));
+    memcpy(evt.payload, &rssi, sizeof(int));
 
     this->send_evt(&evt);
 }

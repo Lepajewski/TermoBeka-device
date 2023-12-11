@@ -13,7 +13,6 @@
 #include "commands/ui_commands.h"
 #include "commands/commands.h"
 #include "system_manager.h"
-#include "wifi_driver.h"
 
 
 const char * const TAG = "SysMgr";
@@ -230,13 +229,13 @@ void SystemManager::poll_event() {
             }
             case EventType::WIFI_STRENGTH:
             {
-                wifi_driver_rssi_strength_t val;
-                memcpy(&val, evt.payload, sizeof(wifi_driver_rssi_strength_t));
-                TB_LOGI(TAG, "wifi strength: %d", static_cast<int>(val));
+                int rssi;
+                memcpy(&rssi, evt.payload, sizeof(int));
+                TB_LOGI(TAG, "wifi strength: %d", rssi);
                 
                 UIEvent event = {};
                 event.type = UIEventType::WIFI_STRENGTH;
-                memcpy(event.payload, &val, sizeof(wifi_driver_rssi_strength_t));
+                memcpy(event.payload, &rssi, sizeof(int));
 
                 send_to_ui_queue(&event);
 

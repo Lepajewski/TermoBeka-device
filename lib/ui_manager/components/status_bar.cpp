@@ -10,8 +10,22 @@ void StatusBar::set_time(int hours, int minutes) {
     current_minutes = minutes;
 }
 
-void StatusBar::set_wifi_strength(int strength) {
-    current_wifi_strength = strength;
+void StatusBar::set_wifi_strength(int rssi) {
+    if (rssi < -90) {
+        current_wifi_strength = 1;
+    }
+    else if (rssi < -82) {
+        current_wifi_strength = 2;
+    }
+    else if (rssi < -67) {
+        current_wifi_strength = 3;
+    }
+    else if (rssi < 0) {
+        current_wifi_strength = 4;
+    }
+    else {
+        current_wifi_strength = 0;
+    }
 }
 
 void StatusBar::draw(float d_time) {
