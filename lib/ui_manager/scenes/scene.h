@@ -7,7 +7,7 @@
 
 #include "tb_event.h"
 
-enum class SceneEnum { startup, menu, settings, none };
+enum class SceneEnum { startup, menu, settings, start_profile, none };
 
 class Scene {
 protected:
@@ -31,5 +31,6 @@ public:
 
 #include "startup_scene.h"
 #include "menu_scene.h"
+#include "start_profile_scene.h"
 
 #endif

@@ -31,6 +31,10 @@ std::unique_ptr<Scene> Scene::create_scene(SceneEnum target)
 
         }
         break;
+        case SceneEnum::start_profile: {
+            result = std::make_unique<StartProfileScene>();
+        }
+        break;
         default:
         break;
     }
