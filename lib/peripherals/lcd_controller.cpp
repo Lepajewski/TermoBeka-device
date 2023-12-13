@@ -83,21 +83,19 @@ esp_err_t LCDController::init_control_pin() {
 esp_err_t LCDController::init_spi() {
     esp_err_t err = ESP_OK;
 
-    spi_bus_config_t buscfg = {
-        .mosi_io_num = config.spi_pin.mosi_io_num,
-        .miso_io_num = -1,
-        .sclk_io_num = config.spi_pin.sclk_io_num,
-        .quadwp_io_num = -1,
-        .quadhd_io_num = -1,
-    };
+    spi_bus_config_t buscfg = {};
+    buscfg.mosi_io_num = config.spi_pin.mosi_io_num;
+    buscfg.miso_io_num = -1;
+    buscfg.sclk_io_num = config.spi_pin.sclk_io_num;
+    buscfg.quadwp_io_num = -1;
+    buscfg.quadhd_io_num = -1;
 
-    spi_device_interface_config_t devcfg = {
-        .mode = 0,
-        .clock_speed_hz = 4 * 1000 * 1000,
-        .spics_io_num = config.spi_pin.spics_io_num,
-        .queue_size = LCD_CONTROLLER_TRANS_QUEUE_SIZE,
-        .pre_cb = pre_transfer_callback,
-    };
+    spi_device_interface_config_t devcfg = {};
+    devcfg.mode = 0;
+    devcfg.clock_speed_hz = 4 * 1000 * 1000;
+    devcfg.spics_io_num = config.spi_pin.spics_io_num;
+    devcfg.queue_size = LCD_CONTROLLER_TRANS_QUEUE_SIZE;
+    devcfg.pre_cb = pre_transfer_callback;
 
     if ((err = spi_bus_initialize(config.spi_host, &buscfg, config.dma_chan)) != ESP_OK) {
         return err;

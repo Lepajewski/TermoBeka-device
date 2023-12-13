@@ -17,6 +17,8 @@ const char * const TAG = "ServerMgr";
 
 
 ServerManager::ServerManager() :
+    ca_file_loaded(false),
+    credentials_loaded(false),
     running(false),
     connected(false)
 {
@@ -37,6 +39,7 @@ void ServerManager::setup() {
     this->sysMgr = get_system_manager();
     this->event_queue_handle = this->sysMgr->get_event_queue();
     this->server_queue_handle = this->sysMgr->get_server_queue();
+    this->sd_ring_buf_handle = this->sysMgr->get_sd_ring_buf();
 }
 
 void ServerManager::create_topic(mqtt_topic *topic, const char* prefix, const char* postfix) {
@@ -69,7 +72,11 @@ void ServerManager::init_topics() {
 }
 
 void ServerManager::begin() {
-    this->end();
+    if (!this->ca_file_loaded || !this->credentials_loaded) {
+        TB_LOGE(TAG, "no CA file or credentials loaded, aborting");
+        return;
+    }
+
     if (!this->running) {
         esp_err_t err = mqtt_begin(&this->config);
         if (err != ESP_OK) {
@@ -135,6 +142,7 @@ void ServerManager::process_server_event(ServerEvent *evt) {
 
             TB_LOGI(TAG, "NEW: uri: %s uname: %s pass: %s", this->config.credentials.uri, this->config.credentials.username, this->config.credentials.password);
 
+            this->credentials_loaded = true;
             this->begin();
             break;
         }
@@ -158,6 +166,16 @@ void ServerManager::process_server_event(ServerEvent *evt) {
             }
             break;
         }
+        case ServerEventType::PUBLISH_REGULATOR_UPDATE:
+        {
+            this->process_publish_regulator_update();
+            break;
+        }
+        case ServerEventType::READ_CA_FILE:
+        {
+            this->process_read_ca_file();
+            break;
+        }
         case ServerEventType::NONE:
         default:
             break;
@@ -166,7 +184,7 @@ void ServerManager::process_server_event(ServerEvent *evt) {
 
 void ServerManager::process_publish_profile_update(ProfileStatusUpdate *info) {
     printf("Progress: %.2lf%\n", info->progress_percent);
-    uint8_t buffer[256] = {};
+    uint8_t buffer[128] = {};
     pb_ostream_t ostream;
 
     ostream = pb_ostream_from_buffer(buffer, sizeof(buffer));
@@ -187,6 +205,25 @@ void ServerManager::process_publish_profile_update(ProfileStatusUpdate *info) {
 
     // printf("Current Temperature: %d\n", decoded.current_temperature);
     // printf("Progress: %.2lf%\n", decoded.progress_percent);
+}
+
+void ServerManager::process_publish_regulator_update() {
+    ;
+}
+
+void ServerManager::process_read_ca_file() {
+    size_t ca_len;
+    char *ca_cert = (char*) xRingbufferReceive(*this->sd_ring_buf_handle, &ca_len, pdMS_TO_TICKS(10));
+
+    if (ca_cert != NULL) {
+        mqtt_set_ca_cert(ca_cert, ca_len);
+        vRingbufferReturnItem(*this->sd_ring_buf_handle, (void*) ca_cert);
+
+        this->ca_file_loaded = true;
+        this->begin();
+    } else {
+        TB_LOGE(TAG, "fail to set CA cert");
+    }
 }
 
 void ServerManager::poll_server_events() {

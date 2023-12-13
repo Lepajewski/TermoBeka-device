@@ -32,17 +32,17 @@
 #define PIN_SD_MOSI                             GPIO_NUM_13
 #define PIN_SD_MISO                             GPIO_NUM_11
 #define PIN_SD_CS                               GPIO_NUM_14
+#define SD_CARD_MOUNT_POINT                     "/sd"
+#define SD_CARD_DATA_RING_BUFFER_LEN            8192
 
 // Config ini
 #define CONFIG_INI_PATH                         "config.ini"
 
 // wifi & ntp configuration
 #define WIFI_MAX_SSID_LEN                       32
-#define WIFI_DEFAULT_SSID                       "Orange_Swiatlowod_3760"
-// #define WIFI_DEFAULT_SSID                       "Net_gora"
+#define WIFI_DEFAULT_SSID                       "default"
 #define WIFI_MAX_PASS_LEN                       64
-#define WIFI_DEFAULT_PASS                       "2FT752946HF7"
-// #define WIFI_DEFAULT_PASS                       "haslotookon"
+#define WIFI_DEFAULT_PASS                       "default"
 #define WIFI_RECONNECT_RETRY                    10
 #define WIFI_RECONNECT_INTERVAL_MS              60000
 #define NTP_DEFAULT_SERVER_ADDR                 "pool.ntp.org"
@@ -53,17 +53,17 @@
 
 // mqtt configuration
 #define MQTT_MAX_BROKER_URI_LEN                 32
-// #define MQTT_DEFAULT_BROKER_URI                 "mqtts://192.168.1.105:8883"
-#define MQTT_DEFAULT_BROKER_URI                 "mqtts://192.168.1.16:8883"
+#define MQTT_DEFAULT_BROKER_URI                 "localhost"
 #define MQTT_AUTO_RECONNECT_TIMEOUT_MS          3000
 #define MQTT_RECONNECT_RETRY                    3
 #define MQTT_RECONNECT_INTERVAL_MS              30000
 #define MQTT_MAX_USERNAME_LEN                   32
-// #define MQTT_DEFAULT_USERNAME                   "default"
-#define MQTT_DEFAULT_USERNAME                   "termobeka"
+#define MQTT_DEFAULT_USERNAME                   "default"
 #define MQTT_MAX_PASSWORD_LEN                   32
-// #define MQTT_DEFAULT_PASSWORD                   "default"
-#define MQTT_DEFAULT_PASSWORD                   "qwerty"
+#define MQTT_DEFAULT_PASSWORD                   "default"
+
+#define MQTT_CA_CERT_MAX_LEN                    2048
+#define MQTT_TLS_CA_SD_CARD_PATH                "certificates/ca.crt"
 
 #define MQTT_TOPIC_PREFIX                       "termobeka/"
 #define MQTT_TOPIC_PROFILE_UPDATE               "/profile-update"

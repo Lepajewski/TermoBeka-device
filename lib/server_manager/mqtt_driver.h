@@ -36,6 +36,9 @@ typedef char mqtt_topic[50];
 
 void mqtt_set_event_group(EventGroupHandle_t *event_group);
 void mqtt_setup_timer();
+
+void mqtt_set_ca_cert(char *cert, size_t len);
+
 esp_err_t mqtt_begin(mqtt_driver_config_t *cfg);
 esp_err_t mqtt_end();
 
