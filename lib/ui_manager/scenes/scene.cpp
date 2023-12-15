@@ -1,8 +1,21 @@
 #include "scene.h"
 
-Scene::Scene() {
+#include "logger.h"
+
+#define TAG "Scene"
+
+void Scene::send_evt(Event *evt) {
+    evt->origin = EventOrigin::UI;
+    if (xQueueSend(*sys_manager->get_event_queue(), &*evt, portMAX_DELAY) != pdTRUE) {
+        TB_LOGE(TAG, "event send fail");
+    }
+}
+
+Scene::Scene()
+{
     this->should_be_changed = false;
     this->next_scene = SceneEnum::none;
+    this->sys_manager = get_system_manager();
 }
 
 bool Scene::get_should_be_changed()

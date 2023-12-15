@@ -5,9 +5,6 @@
 #include "ui_manager.h"
 #include "lcd_controller.h"
 
-#include "wifi_driver.h"
-
-
 const char * const TAG = "UIMgr";
 
 

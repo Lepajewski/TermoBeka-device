@@ -35,8 +35,9 @@
 #define SD_CARD_MOUNT_POINT                     "/sd"
 #define SD_CARD_DATA_RING_BUFFER_LEN            8192
 
-// Config ini
+// PATHS
 #define CONFIG_INI_PATH                         "config.ini"
+#define PROFILE_FOLDER_PATH                     "profiles"
 
 // wifi & ntp configuration
 #define WIFI_MAX_SSID_LEN                       32

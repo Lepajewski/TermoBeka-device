@@ -34,14 +34,14 @@ void MenuScene::button_callback(Button *button, PressType type) {
                 }
                 break;
 
-                case P0_3: {
+                case P0_3:
+                case P0_4:
+                break;
+
+                case P0_5:  {
                     next_scene = SceneEnum::startup;
                     should_be_changed = true;
                 }
-                break;
-
-                case P0_4:
-                case P0_5:
                 break;
 
                 default:

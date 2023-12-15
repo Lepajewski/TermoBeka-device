@@ -6,14 +6,19 @@
 #include <memory>
 
 #include "tb_event.h"
+#include "system_manager.h"
 
 enum class SceneEnum { startup, menu, settings, start_profile, none };
 
 class Scene {
 protected:
+    SystemManager *sys_manager;
+
     bool should_be_changed;
     SceneEnum next_scene;
 
+    void send_evt(Event *evt);
+    
 public:
     Scene();
 

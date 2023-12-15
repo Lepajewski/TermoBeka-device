@@ -56,6 +56,8 @@ class SystemManager {
     void process_profile_response(EventProfileResponse *payload);
     void process_profile_update(EventProfileUpdate *payload);
     void process_command(char *cmd);
+    void process_ui_to_sd_profiles_load();
+    void process_sd_to_ui_profiles_load();
 
     esp_err_t send_connect_wifi();
     esp_err_t send_disconnect_wifi();

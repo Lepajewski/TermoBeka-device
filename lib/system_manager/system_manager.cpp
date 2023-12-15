@@ -254,7 +254,6 @@ void SystemManager::poll_event() {
             {
                 int rssi;
                 memcpy(&rssi, evt.payload, sizeof(int));
-                TB_LOGI(TAG, "wifi strength: %d", rssi);
                 
                 UIEvent event = {};
                 event.type = UIEventType::WIFI_STRENGTH;
@@ -292,6 +291,16 @@ void SystemManager::poll_event() {
             case EventType::SD_LOAD_CA_FILE:
             {
                 this->process_sd_load_ca_file();
+                break;
+            }
+            case EventType::UI_PROFILES_LOAD:
+            {
+                if (evt.origin == EventOrigin::UI) {
+                    this->process_ui_to_sd_profiles_load();
+                }
+                else if (evt.origin == EventOrigin::SD) {
+                    this->process_sd_to_ui_profiles_load();
+                }
                 break;
             }
             case EventType::PROFILE_RESPONSE:
@@ -436,6 +445,26 @@ void SystemManager::process_command(char *cmd) {
         TB_LOGE(TAG, "Command returned non-zero error code: 0x%x (%s)\n", ret, esp_err_to_name(ret));
     } else if (err != ESP_OK) {
         TB_LOGE(TAG, "Internal error: %s\n", esp_err_to_name(err));
+    }
+}
+
+void SystemManager::process_ui_to_sd_profiles_load() {
+    SDEvent evt;
+    evt.type = SDEventType::UI_PROFILE_LIST;
+    SDEventPathArg arg = {};
+    strcpy(arg.path, PROFILE_FOLDER_PATH);
+    memcpy(evt.payload, arg.buffer, SD_QUEUE_MAX_PAYLOAD);
+
+    if (send_to_sd_queue(&evt) != ESP_OK) {
+        TB_LOGE(TAG, "failed to send PROFILE_LIST event to sd_queue");
+    }
+}
+
+void SystemManager::process_sd_to_ui_profiles_load() {
+    UIEvent evt;
+    evt.type = UIEventType::PROFILES_LOAD;
+    if (send_to_ui_queue(&evt) != ESP_OK) {
+        TB_LOGE(TAG, "failed to send PROFILES_LOAD event to ui_queue");
     }
 }
 

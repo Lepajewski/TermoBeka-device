@@ -128,6 +128,7 @@ enum class UIEventType {
     BUZZER_BEEP,
     ERROR_SHOW,
     WIFI_STRENGTH,
+    PROFILES_LOAD,
     NONE
 };
 
@@ -155,6 +156,7 @@ enum class SDEventType {
     RM_DIR,
     SAVE_TO_FILE,
     LOAD_CA_CERT,
+    UI_PROFILE_LIST,
     NONE
 };
 

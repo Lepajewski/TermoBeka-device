@@ -136,6 +136,18 @@ void SDManager::process_sd_event(SDEvent *evt) {
             delete [] path;
             break;
         }
+        case SDEventType::UI_PROFILE_LIST:
+        {
+            SDEventPathArg *payload = reinterpret_cast<SDEventPathArg*>(evt->payload);
+            char *path = this->make_path(payload->path);
+
+            if (this->process_profile_list(path) == ESP_OK) {
+                this->send_evt_ui_profile_list();
+            }
+
+            delete [] path;
+            break;
+        }
         case SDEventType::NONE:
         default:
             break;
@@ -174,7 +186,9 @@ void SDManager::load_and_send_config_ini() {
     evt.origin = EventOrigin::SD;
     EventSDConfigLoad payload = {};
 
-    bool ret = this->card.load_config_ini(make_path(CONFIG_INI_PATH), &payload.config);
+    char *path = make_path(CONFIG_INI_PATH);
+    bool ret = this->card.load_config_ini(path, &payload.config);
+    delete [] path;
 
     if (!ret) {
         TB_LOGE(TAG, "error loading config ini");
@@ -221,6 +235,12 @@ void SDManager::send_evt_sd_load_ca_file() {
     this->send_evt(&evt);
 }
 
+void SDManager::send_evt_ui_profile_list() {
+    Event evt = {};
+    evt.type = EventType::UI_PROFILES_LOAD;
+    this->send_evt(&evt);
+}
+
 esp_err_t SDManager::process_load_ca_cert(const char *path) {
     if (this->card.cat(path) == ESP_OK) {
         char *buf = this->card.get_sd_buf();
@@ -231,4 +251,17 @@ esp_err_t SDManager::process_load_ca_cert(const char *path) {
         return ESP_OK;
     }
     return ESP_FAIL;
+}
+
+esp_err_t SDManager::process_profile_list(const char *path) {
+    if (this->card.ls(path) != ESP_OK) {
+        return ESP_FAIL;
+    }
+    
+    char *buf = this->card.get_sd_buf();
+    UBaseType_t res = xRingbufferSend(*this->sd_ring_buf_handle, buf, strnlen(buf, SD_OPERATIONS_BUFFER_SIZE), pdMS_TO_TICKS(10000));
+    if (res != pdTRUE) {
+        TB_LOGE(TAG, "fail to send `ls profile_path` to ringbuf");
+    }
+    return ESP_OK;
 }
