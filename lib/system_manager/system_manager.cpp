@@ -296,7 +296,7 @@ void SystemManager::poll_event() {
             case EventType::UI_PROFILES_LOAD:
             {
                 if (evt.origin == EventOrigin::UI) {
-                    this->process_ui_to_sd_profiles_load();
+                    this->process_ui_to_sd_profiles_load(evt.payload);
                 }
                 else if (evt.origin == EventOrigin::SD) {
                     this->process_sd_to_ui_profiles_load();
@@ -448,14 +448,12 @@ void SystemManager::process_command(char *cmd) {
     }
 }
 
-void SystemManager::process_ui_to_sd_profiles_load() {
-    SDEvent evt;
-    evt.type = SDEventType::UI_PROFILE_LIST;
-    SDEventPathArg arg = {};
-    strcpy(arg.path, PROFILE_FOLDER_PATH);
-    memcpy(evt.payload, arg.buffer, SD_QUEUE_MAX_PAYLOAD);
+void SystemManager::process_ui_to_sd_profiles_load(uint8_t *payload) {
+    SDEvent event;
+    event.type = SDEventType::UI_PROFILE_LIST;
+    memcpy(event.payload, payload, SD_QUEUE_MAX_PAYLOAD);
 
-    if (send_to_sd_queue(&evt) != ESP_OK) {
+    if (send_to_sd_queue(&event) != ESP_OK) {
         TB_LOGE(TAG, "failed to send PROFILE_LIST event to sd_queue");
     }
 }

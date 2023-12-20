@@ -3,6 +3,7 @@
 
 #include <string>
 #include <memory>
+#include <vector>
 
 #include "components/ui_components.h"
 #include "scene.h"
@@ -11,8 +12,12 @@
 class StartProfileScene : public Scene {
 private:
     std::unique_ptr<OptionList> option_list;
+    std::vector<std::string> folder_stack;
 
     void setup_options_list(std::string &ls_response);
+    std::string get_current_path();
+    void back_button();
+    void send_load_profiles();
 
     bool profiles_loaded = false;
 public:

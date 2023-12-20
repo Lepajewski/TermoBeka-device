@@ -1,6 +1,7 @@
 #include "start_profile_scene.h"
 
 #include "lcd_controller.h"
+#include "global_config.h"
 #include "logger.h"
 
 #include <vector>
@@ -15,7 +16,7 @@ void StartProfileScene::setup_options_list(std::string &ls_response) {
     if (ls_response.size() == 0) {
         OptionEntry entry;
         entry.option_name = "No profiles";
-        entry.select_callback = [this](){this->next_scene = SceneEnum::menu; this->should_be_changed = true; };
+        entry.select_callback = [this](){ this->back_button(); };
 
         list.push_back(entry);
     }
@@ -25,9 +26,26 @@ void StartProfileScene::setup_options_list(std::string &ls_response) {
             OptionEntry entry;
 
             size_t t_pos = ls_response.find("\t") + 1;
-            entry.option_name = ls_response.substr(t_pos, pos - 1);
+            std::string name = ls_response.substr(t_pos, pos - 1);
+            entry.option_name = name;
 
-            entry.select_callback = [](){};
+            char type = ls_response[t_pos - 2];
+            switch (type)
+            {
+                case 'D': {
+                    entry.select_callback = [this, name]() {
+                        this->folder_stack.push_back(name);
+                        this->send_load_profiles();
+                    };
+                    entry.option_name += "/";
+                }
+                break;
+                
+                default: {
+                    entry.select_callback = [](){};
+                }
+                break;
+            }
 
             list.push_back(entry);
             ls_response.erase(0, pos + 1);
@@ -37,15 +55,44 @@ void StartProfileScene::setup_options_list(std::string &ls_response) {
     option_list = std::make_unique<OptionList>(option_list_rect, list);
 }
 
-StartProfileScene::StartProfileScene() : Scene()
-{
-    LCDController::clear_frame_buf();
+std::string StartProfileScene::get_current_path() {
+    std::string ret = PROFILE_FOLDER_PATH;
+    for (std::string v : folder_stack) {
+        ret += "/" + v;
+    }
+    return ret;
+}
 
+void StartProfileScene::back_button() {
+    if (folder_stack.size() < 1) {
+        this->next_scene = SceneEnum::menu;
+        this->should_be_changed = true;
+        return;
+    }
+
+    folder_stack.pop_back();
+    send_load_profiles();
+}
+
+void StartProfileScene::send_load_profiles() {
     profiles_loaded = false;
 
     Event evt;
     evt.type = EventType::UI_PROFILES_LOAD;
+
+    std::string path = get_current_path();
+    SDEventPathArg arg;
+    strncpy(arg.path, path.c_str(), SD_QUEUE_MAX_PAYLOAD);
+    memcpy(evt.payload, arg.buffer, SD_QUEUE_MAX_PAYLOAD);
+
     send_evt(&evt);
+}
+
+StartProfileScene::StartProfileScene() : Scene()
+{
+    LCDController::clear_frame_buf();
+
+    send_load_profiles();
 }
 
 SceneEnum StartProfileScene::get_scene_enum() {
@@ -85,8 +132,7 @@ void StartProfileScene::button_callback(Button *button, PressType type) {
 
                 case P0_5:{
                     if (profiles_loaded) {
-                        next_scene = SceneEnum::menu;
-                        should_be_changed = true;
+                        back_button();
                     }
                 }
                 break;
@@ -118,7 +164,7 @@ void StartProfileScene::button_callback(Button *button, PressType type) {
 void StartProfileScene::update(float d_time) {
     LCDController::clear_frame_buf();
 
-    if (option_list != NULL) {
+    if (option_list != NULL && profiles_loaded) {
         option_list->draw();
     }
     else {
