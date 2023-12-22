@@ -2,6 +2,7 @@
 
 #include "logger.h"
 
+#include "profile_type.h"
 #include "profile_timer.h"
 #include "profile_manager.h"
 
@@ -32,10 +33,16 @@ void ProfileManager::begin() {
     // profile.points[2] = {2000, 10000000};
     // profile.points[3] = {2000, 40000000};
 
-    profile.points[0] = {2000,  0};
-    profile.points[1] = {12000, 2000000};
-    profile.points[2] = {12000, 12800000};
-    profile.points[3] = {4000,  14420000};
+    // profile.points[0] = {2000,  0};
+    // profile.points[1] = {12000, 2000000};
+    // profile.points[2] = {12000, 12800000};
+    // profile.points[3] = {4000,  14420000};
+
+    profile.points[0] = {2000, 0};
+    profile.points[1] = {2000, 30000};
+    profile.points[2] = {2000, 60000};
+    // profile.points[2] = {2000, 120000};
+    // profile.points[3] = {2000, 180000};
 
     this->config.profile = profile;
     this->config.min_temp = PROFILE_MIN_TEMPERATURE;
@@ -117,20 +124,25 @@ void ProfileManager::poll_running_profile_events() {
     if ((bits & BIT_PROFILE_START) == BIT_PROFILE_START) {
         TB_LOGI(TAG, "profile started");
         this->send_evt_start();
-    } else if ((bits & BIT_PROFILE_STOP) == BIT_PROFILE_STOP) {
+    }
+    
+    if ((bits & BIT_PROFILE_STOP) == BIT_PROFILE_STOP) {
         TB_LOGI(TAG, "profile stopped");
         this->send_evt_stop();
-    } else if ((bits & BIT_PROFILE_RESUME) == BIT_PROFILE_RESUME) {
+    }
+    
+    if ((bits & BIT_PROFILE_RESUME) == BIT_PROFILE_RESUME) {
         TB_LOGI(TAG, "profile resumed");
         this->send_evt_resume();
-    } else if ((bits & BIT_PROFILE_END) == BIT_PROFILE_END) {
+    }
+    
+    if ((bits & BIT_PROFILE_END) == BIT_PROFILE_END) {
         TB_LOGI(TAG, "profile ended");
         this->send_evt_end();
-    } else if ((bits & BIT_PROFILE_UPDATE) == BIT_PROFILE_UPDATE) {
-        TB_LOGI(TAG, "profile update");
     }
-
-    if (bits) {
+    
+    if ((bits & BIT_PROFILE_UPDATE) == BIT_PROFILE_UPDATE) {
+        TB_LOGI(TAG, "profile update");
         this->send_evt_update();
     }
 }
@@ -142,7 +154,7 @@ void ProfileManager::process_events() {
 }
 
 profile_event_response ProfileManager::process_new_profile(profile_t *profile) {
-    if (this->profile->is_running()) {
+    if (this->profile->get_status() == Status_RUNNING) {
         TB_LOGE(TAG, "another profile is running");
         return PROFILE_LOAD_FAIL;
     }

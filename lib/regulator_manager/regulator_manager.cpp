@@ -123,6 +123,7 @@ esp_err_t RegulatorManager::process_temperature_update(int16_t temperature) {
 
     TB_LOGI(TAG, "regulating to: %.2f*C", (float)temperature / 100.0f);
 
+    this->regulator->update_temperature(temperature);
     return ESP_OK;
 }
 
@@ -153,4 +154,3 @@ void RegulatorManager::send_evt_update() {
     memcpy(&evt.payload, &payload.buffer, sizeof(EventRegulatorUpdate));
     this->send_evt(&evt);
 }
-

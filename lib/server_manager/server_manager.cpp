@@ -4,9 +4,8 @@
 #include "esp_mac.h"
 #include "mqtt_driver.h"
 
-#include "status_update.pb.h"
+#include "from_device_msg.pb.h"
 #include "pb_encode.h"
-#include "pb_decode.h"
 
 #include "global_config.h"
 #include "logger.h"
@@ -40,6 +39,8 @@ void ServerManager::setup() {
     this->event_queue_handle = this->sysMgr->get_event_queue();
     this->server_queue_handle = this->sysMgr->get_server_queue();
     this->sd_ring_buf_handle = this->sysMgr->get_sd_ring_buf();
+
+    mqtt_set_queue(this->server_queue_handle);
 }
 
 void ServerManager::create_topic(mqtt_topic *topic, const char* prefix, const char* postfix) {
@@ -62,13 +63,18 @@ void ServerManager::init_topics() {
         this->mac_address[3], this->mac_address[4], this->mac_address[5]
     );
 
-    this->create_topic(&this->topic_profile_update, MQTT_TOPIC_PREFIX, MQTT_TOPIC_PROFILE_UPDATE);
-    this->create_topic(&this->topic_regulator_update, MQTT_TOPIC_PREFIX, MQTT_TOPIC_REGULATOR_UPDATE);
-    this->create_topic(&this->topic_server_commands, MQTT_TOPIC_PREFIX, MQTT_TOPIC_SERVER_COMMANDS);
+    this->create_topic(&this->topic_from_device, MQTT_TOPIC_PREFIX, MQTT_TOPIC_FROM_DEVICE);
+    this->create_topic(&this->topic_to_device, MQTT_TOPIC_PREFIX, MQTT_TOPIC_TO_DEVICE);
 
-    TB_LOGI(TAG, "topic_profile_update: %s", this->topic_profile_update);
-    TB_LOGI(TAG, "topic_regulator_update: %s", this->topic_regulator_update);
-    TB_LOGI(TAG, "topic_server_commands: %s", this->topic_server_commands);
+    TB_LOGI(TAG, "topic_from_device: %s", this->topic_from_device);
+    TB_LOGI(TAG, "topic_to_device: %s", this->topic_to_device);
+}
+
+void ServerManager::subscribe_topic() {
+    esp_err_t err = mqtt_subscribe(this->topic_to_device, 2);
+    if (err == ESP_FAIL) {
+        TB_LOGE(TAG, "%s fail", __func__);
+    }
 }
 
 void ServerManager::begin() {
@@ -123,6 +129,7 @@ void ServerManager::process_mqtt_driver_events() {
     } else if ((bits & BIT_MQTT_CONNECTED) == BIT_MQTT_CONNECTED) {
         TB_LOGI(TAG, "mqtt connected");
         this->connected = true;
+        this->subscribe_topic();
         this->send_evt_connected();
     } else if ((bits & BIT_MQTT_CONNECT_TIMEOUT) == BIT_MQTT_CONNECT_TIMEOUT) {
         TB_LOGI(TAG, "mqtt reconnecting...");
@@ -186,20 +193,13 @@ void ServerManager::process_publish_profile_update(ProfileStatusUpdate *info) {
         return;
     }
 
+    FromDeviceMessage msg = FromDeviceMessage_init_zero;
+    msg.type = MessageType_PROFILE_STATUS_UPDATE;
+    msg.has_profile_status_update = true;
+    memcpy(&msg.profile_status_update, info, sizeof(ProfileStatusUpdate));
+
     printf("Progress: %.2lf%\n", info->progress_percent);
-    uint8_t buffer[SERVER_QUEUE_MAX_PAYLOAD] = {};
-    pb_ostream_t ostream;
-
-    ostream = pb_ostream_from_buffer(buffer, sizeof(buffer));
-    pb_encode(&ostream, &ProfileStatusUpdate_msg, info);
-
-    size_t written = ostream.bytes_written;
-    TB_LOGI(TAG, "%s written: %d", __func__, written);
-
-    esp_err_t err = mqtt_publish(this->topic_profile_update, (const char *) buffer, (uint16_t) written, 1);
-    if (err != ESP_OK) {
-        TB_LOGE(TAG, "fail to publish");
-    }
+    this->publish_from_device(&msg);
 }
 
 void ServerManager::process_publish_regulator_update(RegulatorStatusUpdate *info) {
@@ -207,16 +207,25 @@ void ServerManager::process_publish_regulator_update(RegulatorStatusUpdate *info
         return;
     }
 
+    FromDeviceMessage msg = FromDeviceMessage_init_zero;
+    msg.type = MessageType_REGULATOR_STATUS_UPDATE;
+    msg.has_regulator_status_update = true;
+    memcpy(&msg.regulator_status_update, info, sizeof(RegulatorStatusUpdate));
+
+    this->publish_from_device(&msg);
+}
+
+void ServerManager::publish_from_device(FromDeviceMessage *msg) {
     uint8_t buffer[SERVER_QUEUE_MAX_PAYLOAD] = {};
     pb_ostream_t ostream;
 
     ostream = pb_ostream_from_buffer(buffer, sizeof(buffer));
-    pb_encode(&ostream, &RegulatorStatusUpdate_msg, info);
+    pb_encode(&ostream, &FromDeviceMessage_msg, msg);
 
     size_t written = ostream.bytes_written;
     TB_LOGI(TAG, "%s written: %d", __func__, written);
 
-    esp_err_t err = mqtt_publish(this->topic_regulator_update, (const char *) buffer, (uint16_t) written, 1);
+    esp_err_t err = mqtt_publish(this->topic_from_device, (const char *) buffer, (uint16_t) written, 1);
     if (err != ESP_OK) {
         TB_LOGE(TAG, "fail to publish");
     }

@@ -17,7 +17,9 @@ const char * const TAG = "Regulator";
 
 
 Regulator::Regulator(regulator_config_t config) :
-    config(config)
+    config(config),
+    set_temperature(0),
+    last_sample_time(0)
 {
     this->info = {};
     this->info.status = Status_STOPPED;
@@ -42,8 +44,30 @@ esp_err_t Regulator::process_next_sample() {
     this->info.uc_temperature = (int32_t)(uc_temp * 100.0f);
     TB_LOGI(TAG, "uC temperature: %" PRIi32, this->info.uc_temperature);
 
-    regulator_timer_run(this->config.sampling_rate);
+    this->info.temperature_1 = this->set_temperature;
+    this->info.temperature_2 = this->set_temperature;
+    this->info.temperature_3 = this->set_temperature;
+    this->info.temperature_4 = this->set_temperature;
+    this->info.temperature_5 = this->set_temperature;
+
+    uint32_t preemption_error = (uint32_t)(get_time_since_startup_ms() - this->last_sample_time);
+    this->last_sample_time = get_time_since_startup_ms();
+    if (preemption_error > this->config.sampling_rate) {
+        preemption_error -= this->config.sampling_rate;
+    }
+    uint32_t next_sample_time = this->config.sampling_rate - preemption_error;
+
+    TB_LOGI(TAG, "setting timer to T+%" PRIu32 "ms %" PRIu32, next_sample_time, preemption_error);
+    regulator_timer_run(next_sample_time);
     return err;
+}
+
+int16_t Regulator::get_ambient_temperature() {
+    float temperature = 0.0f;
+    if (get_internal_temperature(&temperature) != ESP_OK) {
+        return this->config.min_temp;
+    }
+    return (int16_t)(temperature * 100.0f);
 }
 
 esp_err_t Regulator::start() {
@@ -67,6 +91,8 @@ esp_err_t Regulator::start() {
     this->info.heaters_flags = 0;
     this->info.ssr_temperature_1 = 0;
     this->info.ssr_temperature_2 = 0;
+
+    this->last_sample_time = get_time_since_startup_ms();
 
     this->info.status = Status_RUNNING;
 
@@ -121,6 +147,27 @@ RegulatorStatusUpdate Regulator::get_regulator_run_info() {
 
 bool Regulator::is_running() {
     return (this->info.status == Status_RUNNING) ? true : false;
+}
+
+int16_t Regulator::get_min_temperature() {
+    return this->config.min_temp;
+}
+
+int16_t Regulator::get_max_temperature() {
+    return this->config.max_temp;
+}
+
+
+void Regulator::update_temperature(int16_t temperature) {
+    if (temperature < this->config.min_temp) {
+        TB_LOGW(TAG, "set T is lower than ambient T");
+        this->set_temperature = this->get_ambient_temperature();
+    } else if (temperature > this->config.max_temp) {
+        TB_LOGW(TAG, "set T is too high");
+        this->set_temperature = this->config.max_temp;
+    } else {
+        this->set_temperature = temperature;
+    }
 }
 
 EventGroupHandle_t *Regulator::get_regulator_event_group() {

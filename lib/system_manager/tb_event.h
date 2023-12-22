@@ -4,7 +4,7 @@
 #include <inttypes.h>
 
 #include <pb.h>
-#include "status_update.pb.h"
+#include "from_device_msg.pb.h"
 
 #include "global_config.h"
 #include "nvs_config.h"

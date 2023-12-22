@@ -1,6 +1,12 @@
 syntax = "proto3";
 
 
+enum MessageType {
+    NONE = 0;
+    PROFILE_STATUS_UPDATE = 1;
+    REGULATOR_STATUS_UPDATE = 2;
+};
+
 enum Status {
     NOT_RUNNING = 0;
     RUNNING = 1;
@@ -36,4 +42,11 @@ message RegulatorStatusUpdate {
     uint32 heaters_flags = 9;
     int32 ssr_temperature_1 = 10;
     int32 ssr_temperature_2 = 11;
+};
+
+
+message FromDeviceMessage {
+    MessageType type = 1;
+    ProfileStatusUpdate profile_status_update = 2;
+    RegulatorStatusUpdate regulator_status_update = 3;
 };
