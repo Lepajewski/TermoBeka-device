@@ -60,21 +60,21 @@ uint32_t profile_timer_get_time_left() {
 
 
 static void profile_update_timer_cb(TimerHandle_t timer) {
-    xEventGroupSetBits(profile_event_group, BIT_PROFILE_UPDATE);
+    xEventGroupSetBits(profile_event_group, BIT_PROFILE_UPDATE_TIMER_TIMEOUT);
 }
 
 void profile_update_timer_setup(uint32_t interval_ms) {
     profile_update_timer = xTimerCreate(
         "profUpdTim",
         pdMS_TO_TICKS(interval_ms),
-        pdTRUE,
+        pdFALSE,
         NULL,
         profile_update_timer_cb
     );
 }
 
-void profile_update_timer_run() {
-    xTimerStart(profile_update_timer, 0);
+void profile_update_timer_run(uint32_t timeout) {
+    xTimerChangePeriod(profile_update_timer, pdMS_TO_TICKS(timeout), 0);
 }
 
 void profile_update_timer_stop() {

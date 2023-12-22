@@ -66,9 +66,8 @@
 #define MQTT_TLS_CA_SD_CARD_PATH                "certificates/ca.crt"
 
 #define MQTT_TOPIC_PREFIX                       "termobeka/"
-#define MQTT_TOPIC_PROFILE_UPDATE               "/profile-update"
-#define MQTT_TOPIC_REGULATOR_UPDATE             "/regulator-update"
-#define MQTT_TOPIC_SERVER_COMMANDS              "/server-commands"
+#define MQTT_TOPIC_FROM_DEVICE                  "/from-device"
+#define MQTT_TOPIC_TO_DEVICE                    "/to-device"
 
 
 // Profile configuration
@@ -81,7 +80,7 @@
 #define PROFILE_STEP_MIN_ABS_SLOPE_TRESHOLD     1e-3
 #define PROFILE_STOPPED_CONST_TIMER_TIMEOUT_MS  UINT32_MAX
 #define PROFILE_LONG_TIMEOUT_INTERVAL_MS        1200000
-#define PROFILE_UPDATE_TIMER_INTERVAL_MS        5000
+#define PROFILE_UPDATE_TIMER_INTERVAL_MS        4000//5000
 
 
 // Regulator configuration

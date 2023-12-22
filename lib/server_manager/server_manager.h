@@ -9,7 +9,7 @@
 #include "freertos/ringbuf.h"
 
 #include <pb.h>
-#include "status_update.pb.h"
+#include "from_device_msg.pb.h"
 
 #include "mqtt_driver.h"
 #include "system_manager.h"
@@ -31,17 +31,18 @@ class ServerManager {
     EventGroupHandle_t server_event_group;
     mqtt_driver_config_t config;
     uint8_t mac_address[6] = {};
-    mqtt_topic topic_profile_update;
-    mqtt_topic topic_regulator_update;
-    mqtt_topic topic_server_commands;
+    mqtt_topic topic_from_device;
+    mqtt_topic topic_to_device;
 
     void setup();
     void create_topic(mqtt_topic *topic, const char* prefix, const char* postfix);
     void init_topics();
+    void subscribe_topic();
     void process_mqtt_driver_events();
     void process_server_event(ServerEvent *evt);
     void process_publish_profile_update(ProfileStatusUpdate *info);
     void process_publish_regulator_update(RegulatorStatusUpdate *info);
+    void publish_from_device(FromDeviceMessage *msg);
     void process_read_ca_file();
     void poll_server_events();
 

@@ -4,7 +4,11 @@
 #include "mqtt_client.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/event_groups.h"
+#include "freertos/queue.h"
 #include "freertos/timers.h"
+
+#include "to_device_msg.pb.h"
+#include "pb_decode.h"
 
 #include "logger.h"
 #include "global_config.h"
@@ -14,6 +18,7 @@
 
 static const char * const TAG = "MQTT";
 static EventGroupHandle_t mqtt_event_group;
+static QueueHandle_t mqtt_queue;
 static TimerHandle_t mqtt_reconnect_timer;
 static esp_mqtt_client_handle_t client;
 static uint16_t connection_retries = 0;
@@ -21,6 +26,17 @@ static uint16_t connection_retries = 0;
 
 static char ca_cert[MQTT_CA_CERT_MAX_LEN];
 static bool ca_cert_is_set = false;
+
+
+static void process_data_received(char *data, int len) {
+    pb_istream_t istream = pb_istream_from_buffer((uint8_t*) data, len);
+
+    ToDeviceMessage decoded = ToDeviceMessage_init_zero;
+
+    pb_decode(&istream, &ToDeviceMessage_msg, &decoded);
+
+    TB_LOGI(TAG, "Server Command: %d user: %s", (int) decoded.command, decoded.username);
+}
 
 
 static void event_handler(void *handler_args, esp_event_base_t base, int32_t event_id, void *event_data) {
@@ -58,7 +74,8 @@ static void event_handler(void *handler_args, esp_event_base_t base, int32_t eve
         }
         case MQTT_EVENT_DATA:
         {
-            TB_LOGI(TAG, "received data");
+            TB_LOGI(TAG, "received %d bytes", evt->data_len);
+            process_data_received(evt->data, evt->data_len);
             break;
         }
         case MQTT_EVENT_ERROR:
@@ -87,6 +104,10 @@ static void stop_timer() {
 
 void mqtt_set_event_group(EventGroupHandle_t *event_group) {
     mqtt_event_group = *event_group;
+}
+
+void mqtt_set_queue(QueueHandle_t *queue) {
+    mqtt_queue = *queue;
 }
 
 void mqtt_setup_timer() {
@@ -123,6 +144,7 @@ esp_err_t mqtt_begin(mqtt_driver_config_t *cfg) {
     mqtt_cfg.broker.address.uri = cfg->credentials.uri;
     mqtt_cfg.broker.verification.certificate = (const char *) ca_cert;
     mqtt_cfg.broker.verification.certificate_len = strnlen(ca_cert, MQTT_CA_CERT_MAX_LEN-1) + 1;
+    mqtt_cfg.credentials.set_null_client_id = true;
     mqtt_cfg.credentials.username = cfg->credentials.username;
     mqtt_cfg.credentials.authentication.password = cfg->credentials.password;
 
@@ -165,6 +187,12 @@ esp_err_t mqtt_end() {
 
 esp_err_t mqtt_publish(const char *topic, const char *buf, uint16_t len, uint8_t qos) {
     int msg_id = esp_mqtt_client_publish(client, topic, buf, (int) len, (int) qos, 0);
+    TB_LOGI(TAG, "%s: %d", __func__, msg_id);
+    return (msg_id == -1) ? ESP_FAIL : ESP_OK;
+}
+
+esp_err_t mqtt_subscribe(const char *topic, uint8_t qos) {
+    int msg_id = esp_mqtt_client_subscribe(client, topic, qos);
     TB_LOGI(TAG, "%s: %d", __func__, msg_id);
     return (msg_id == -1) ? ESP_FAIL : ESP_OK;
 }

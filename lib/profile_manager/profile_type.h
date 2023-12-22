@@ -4,6 +4,9 @@
 
 #include "inttypes.h"
 
+#include <pb.h>
+#include "from_device_msg.pb.h"
+
 #include "freertos/FreeRTOS.h"
 #include "freertos/queue.h"
 
@@ -33,34 +36,14 @@ typedef struct {
 } profile_config_t;
 
 typedef struct {
+    ProfileStatusUpdate status;             // status info
     uint64_t absolute_start_time;           // ms from uC start
-    uint32_t current_duration;              // ms from uC start
-    uint32_t total_duration;                // profile duration in ms
-    uint32_t step_start_time;               // start time of current step in profile (ms)
-    uint32_t step_end_time;                 // end time of current step in profile (ms)
-    
     uint64_t absolute_time_stopped;         // ms from uC start
-    uint32_t step_stopped_time;             // ms from current step start
-    uint32_t profile_stopped_time;          // ms from profile start
-
-    uint32_t step_time_left;                // ms left to stopped step end
-    uint32_t profile_time_left;             // ms left to profile end
-
-    uint32_t profile_time_halted;           // total profile halt duration ms
     uint64_t absolute_time_resumed;         // ms from uC start
     uint32_t profile_resumed_time;          // ms from profile start
-    
     uint64_t absolute_ended_time;           // total profile end time with total halt time
-
-    int16_t current_temperature;            // regulated temperature
     uint8_t current_vertices;               // #vertices left
     uint8_t total_vertices;                 // total #vertices
-
-    float progress_percent;                 // profile progress in %
-
-    bool running;                           // profile is running
-    bool stopped;                           // profile is stopped
-    bool ended;                             // profile is ended/finished
 } profile_run_info;
 
 typedef enum {

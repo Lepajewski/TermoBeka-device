@@ -6,7 +6,7 @@
 #include "esp_err.h"
 
 #include <pb.h>
-#include "status_update.pb.h"
+#include "from_device_msg.pb.h"
 
 #include "freertos/FreeRTOS.h"
 #include "freertos/queue.h"
@@ -21,6 +21,9 @@ class Profile {
     profile_config_t config;
     QueueHandle_t *regulator_queue_handle;
 
+    ProfileStatusUpdate update_info;
+    uint32_t halted_time_during_stopped;
+
     // +1 vetrice due to stop/resume functionality
     etl::list<profile_point, PROFILE_MAX_VERTICES + 1> profile;
     EventGroupHandle_t profile_event_group;
@@ -33,8 +36,8 @@ class Profile {
 
     esp_err_t process_next_step();
     esp_err_t process_stopped();
+    void process_update();
 
-    Status get_status();
 
     void send_evt_regulator(RegulatorEvent *evt);
     void send_evt_regulator_start();
@@ -52,10 +55,7 @@ class Profile {
     void process_profile();
     ProfileStatusUpdate get_profile_run_info();
 
-    bool is_running();
-
-    int16_t get_min_temp();
-    int16_t get_max_temp();
+    Status get_status();
 
     EventGroupHandle_t *get_profile_event_group();
 

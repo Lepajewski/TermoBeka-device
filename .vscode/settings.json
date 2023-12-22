@@ -68,6 +68,9 @@
         "semaphore": "cpp",
         "span": "cpp",
         "stop_token": "cpp",
-        "thread": "cpp"
+        "thread": "cpp",
+        "from_device_msg.pb.h": "c",
+        "pb_decode.h": "c",
+        "to_device_msg.pb.h": "c"
     }
 }
