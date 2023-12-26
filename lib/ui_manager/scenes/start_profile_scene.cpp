@@ -10,7 +10,7 @@
 #define TAG "StartProfileScene"
 
 void StartProfileScene::setup_options_list(std::string &ls_response) {
-    Rect option_list_rect(0, 0, LCD_WIDTH, LCD_HEIGHT);
+    Rect option_list_rect(0, FONT5X7_LINE_HEIGHT, LCD_WIDTH, LCD_HEIGHT - FONT5X7_LINE_HEIGHT);
     std::vector<OptionEntry> list;
 
     if (ls_response.size() == 0) {
@@ -37,7 +37,7 @@ void StartProfileScene::setup_options_list(std::string &ls_response) {
                         this->folder_stack.push_back(name);
                         this->send_load_profiles();
                     };
-                    entry.option_name += "/";
+                    entry.option_name = "/" + entry.option_name;
                 }
                 break;
                 
@@ -55,12 +55,12 @@ void StartProfileScene::setup_options_list(std::string &ls_response) {
     option_list = std::make_unique<OptionList>(option_list_rect, list);
 }
 
-std::string StartProfileScene::get_current_path() {
+void StartProfileScene::update_current_path() {
     std::string ret = PROFILE_FOLDER_PATH;
     for (std::string v : folder_stack) {
         ret += "/" + v;
     }
-    return ret;
+    current_path = ret;
 }
 
 void StartProfileScene::back_button() {
@@ -80,9 +80,9 @@ void StartProfileScene::send_load_profiles() {
     Event evt;
     evt.type = EventType::UI_PROFILES_LOAD;
 
-    std::string path = get_current_path();
+    update_current_path();
     SDEventPathArg arg;
-    strncpy(arg.path, path.c_str(), SD_QUEUE_MAX_PAYLOAD);
+    strncpy(arg.path, current_path.c_str(), SD_QUEUE_MAX_PAYLOAD);
     memcpy(evt.payload, arg.buffer, SD_QUEUE_MAX_PAYLOAD);
 
     send_evt(&evt);
@@ -165,6 +165,7 @@ void StartProfileScene::update(float d_time) {
     LCDController::clear_frame_buf();
 
     if (option_list != NULL && profiles_loaded) {
+        LCDController::draw_string(0, 0, current_path);
         option_list->draw();
     }
     else {

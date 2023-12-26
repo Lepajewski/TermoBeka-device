@@ -13,9 +13,10 @@ class StartProfileScene : public Scene {
 private:
     std::unique_ptr<OptionList> option_list;
     std::vector<std::string> folder_stack;
+    std::string current_path;
 
     void setup_options_list(std::string &ls_response);
-    std::string get_current_path();
+    void update_current_path();
     void back_button();
     void send_load_profiles();
 
