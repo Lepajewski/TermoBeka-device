@@ -10,7 +10,6 @@
 #define TAG "StartProfileScene"
 
 void StartProfileScene::setup_options_list(std::string &ls_response) {
-    Rect option_list_rect(0, FONT5X7_LINE_HEIGHT, LCD_WIDTH, LCD_HEIGHT - FONT5X7_LINE_HEIGHT);
     std::vector<OptionEntry> list;
 
     if (ls_response.size() == 0) {
@@ -26,7 +25,7 @@ void StartProfileScene::setup_options_list(std::string &ls_response) {
             OptionEntry entry;
 
             size_t t_pos = ls_response.find("\t") + 1;
-            std::string name = ls_response.substr(t_pos, pos - 1);
+            std::string name = ls_response.substr(t_pos, pos - 2);
             entry.option_name = name;
 
             char type = ls_response[t_pos - 2];
@@ -61,6 +60,7 @@ void StartProfileScene::update_current_path() {
         ret += "/" + v;
     }
     current_path = ret;
+    scrolling_text.set_text(ret);
 }
 
 void StartProfileScene::back_button() {
@@ -165,7 +165,8 @@ void StartProfileScene::update(float d_time) {
     LCDController::clear_frame_buf();
 
     if (option_list != NULL && profiles_loaded) {
-        LCDController::draw_string(0, 0, current_path);
+        LCDController::draw_string(0, 0, "Dir:");
+        scrolling_text.draw(d_time);
         option_list->draw();
     }
     else {

@@ -70,6 +70,8 @@
         "stop_token": "cpp",
         "thread": "cpp",
         "esp_wifi.h": "c",
-        "sd_card_driver.h": "c"
+        "sd_card_driver.h": "c",
+        "list": "cpp",
+        "fstream": "cpp"
     }
 }

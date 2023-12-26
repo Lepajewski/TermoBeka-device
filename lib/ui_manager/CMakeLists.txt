@@ -9,6 +9,7 @@ idf_component_register(
         "components/option_list.cpp"
         "components/rect.cpp"
         "components/status_bar.cpp"
+        "components/scrolling_text.cpp"
     REQUIRES
         logger
         peripherals

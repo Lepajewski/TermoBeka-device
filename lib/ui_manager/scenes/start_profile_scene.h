@@ -8,9 +8,16 @@
 #include "components/ui_components.h"
 #include "scene.h"
 #include "button.h"
+#include "font5x7.h"
+
+#define START_PROFILE_SCENE_SCROLL_SPEED 2.5f
 
 class StartProfileScene : public Scene {
 private:
+    const Rect scrolling_text_rect = Rect(FONT5X7_WIDTH * 5, 0, LCD_WIDTH, FONT5X7_LINE_HEIGHT);
+    const Rect option_list_rect = Rect(0, FONT5X7_LINE_HEIGHT, LCD_WIDTH, LCD_HEIGHT - FONT5X7_LINE_HEIGHT);
+
+    ScrollingText scrolling_text = ScrollingText(scrolling_text_rect, START_PROFILE_SCENE_SCROLL_SPEED);
     std::unique_ptr<OptionList> option_list;
     std::vector<std::string> folder_stack;
     std::string current_path;
