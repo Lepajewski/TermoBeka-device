@@ -7,9 +7,15 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/event_groups.h"
 
+#include "etl/list.h"
+
 #include <pb.h>
 #include "from_device_msg.pb.h"
 
+#include "global_config.h"
+#include "external_temperature_sensor.h"
+#include "relay_expander.h"
+#include "rtd_controller.h"
 #include "regulator_type.h"
 
 
@@ -18,11 +24,24 @@ class Regulator {
     regulator_config_t config;
     RegulatorStatusUpdate info;
     EventGroupHandle_t regulator_event_group;
-    int16_t set_temperature;
+    float set_temperature;
     uint64_t last_sample_time;
 
+    RelayExpander expander;
+    ExternalTemperatureSensor ds18b20 = ExternalTemperatureSensor(PIN_EXTERNAL_TEMP_SENSORS);
+    RTDController controller;
+
+    void setup_rtds();
+    void setup();
     esp_err_t process_next_sample();
-    int16_t get_ambient_temperature();
+    void get_cpu_temperature();
+    void get_external_temperature();
+    float get_avg_rtd_temperature();
+
+    void heaters_on();
+    void heaters_off();
+    void fans_on();
+    void fans_off();
  public:
     Regulator(regulator_config_t config);
     ~Regulator();

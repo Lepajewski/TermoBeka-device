@@ -165,7 +165,7 @@ esp_err_t Profile::process_next_step() {
         return ESP_FAIL;
     }
 
-    // send_evt_regulator_update((int16_t) this->info.status.current_temperature);
+    send_evt_regulator_update((int16_t) this->info.status.current_temperature);
     profile_timer_run(next_step_timeout);
     return ESP_OK;
 }
@@ -238,6 +238,9 @@ void Profile::process_update() {
         }
         case Status_ENDED:
         {
+            this->update_info.current_duration = this->info.status.current_duration;
+            printf("CURRENT DURATION: %" PRIu32 "\r\n", this->update_info.current_duration);
+            this->update_info.progress_percent = this->info.status.progress_percent;
             next_update_time = 0;
             break;
         }
@@ -323,7 +326,7 @@ esp_err_t Profile::start() {
     }
 
     xEventGroupSetBits(this->profile_event_group, BIT_PROFILE_START);
-    // this->send_evt_regulator_start();
+    this->send_evt_regulator_start();
     this->process_update();
 
     return err;
@@ -397,14 +400,17 @@ esp_err_t Profile::end() {
 
     TB_LOGI(TAG, "ending current profile");
     profile_timer_stop();
+    profile_update_timer_stop();
     this->info.status.status = Status_ENDED;
 
     this->info.absolute_ended_time = get_time_since_startup_ms();
 
+    this->info.status.current_duration = this->info.status.total_duration;
+    this->info.status.progress_percent = (float)this->info.status.current_duration / (float)this->info.status.total_duration * 100.0f;
+
     this->print_info();
 
-    // this->send_evt_regulator_stop();
-    profile_update_timer_stop();
+    this->send_evt_regulator_stop();
     this->process_update();
 
     xEventGroupSetBits(this->profile_event_group, BIT_PROFILE_END);

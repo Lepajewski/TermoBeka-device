@@ -1,17 +1,15 @@
 #include "buzzer.h"
 
 
-Buzzer::Buzzer(gpio_num_t pin) :
+Buzzer::Buzzer(ExpanderController &controller, pca9539_polarity polarity, pca9539_pin_num pin) :
+    controller(controller),
+    polarity(polarity),
     pin(pin)
 {
-    initTimer();
-    buzzer_init(this->pin);
-    off();
+    this->initTimer();
 }
 
-Buzzer::~Buzzer() {
-    buzzer_deinit(this->pin);
-}
+Buzzer::~Buzzer() {}
 
 void Buzzer::initTimer() {
     auto onTimer = [](TimerHandle_t xTimer) {
@@ -28,18 +26,26 @@ void Buzzer::initTimer() {
 }
 
 void Buzzer::on() {
-    buzzer_on(this->pin);
+    this->controller.set_output_pin_state(this->pin, PIN_STATE_HIGH);
 }
 
 void Buzzer::off() {
-    buzzer_off(this->pin);
+    this->controller.set_output_pin_state(this->pin, PIN_STATE_LOW);
+}
+
+esp_err_t Buzzer::setup() {
+    esp_err_t err = ESP_OK;
+
+    if ((err = this->controller.setup_pin(this->polarity, this->pin, PIN_MODE_OUTPUT)) != ESP_OK) {
+        return err;
+    }
+
+    this->off();
+
+    return err;
 }
 
 void Buzzer::beep(uint32_t timeout) {
-    on();
+    this->on();
     xTimerChangePeriod(this->timer, pdMS_TO_TICKS(timeout), 0);
-}
-
-gpio_num_t Buzzer::getPin() {
-    return this->pin;
 }

@@ -1,5 +1,6 @@
 #include "led.h"
 
+
 LED::LED(ExpanderController &controller, pca9539_polarity polarity, led_pins_t pins) :
     controller(controller),
     polarity(polarity),
@@ -7,7 +8,7 @@ LED::LED(ExpanderController &controller, pca9539_polarity polarity, led_pins_t p
     current_color(Color::NONE)
 {}
 
-LED::~LED() {};
+LED::~LED() {}
 
 esp_err_t LED::setup() {
     esp_err_t err = ESP_OK;
@@ -21,6 +22,9 @@ esp_err_t LED::setup() {
     if ((err = this->controller.setup_pin(this->polarity, this->pins.blue, PIN_MODE_OUTPUT))) {
         return err;
     }
+
+    this->set_color(Color::RB);
+
     return err;
 }
 

@@ -19,7 +19,8 @@ ExpanderController::ExpanderController() :
         .i2c_port = I2C_NUM_0,
         .i2c_config = i2c_config,
         .addr = PCA9539_I2C_ADDRESS_LL,
-        .intr_gpio_num = PIN_GPIO_EXPANDER_INTR
+        .intr_gpio_num = PIN_GPIO_EXPANDER_1_INTR,
+        .rst_gpio_num = PIN_GPIO_EXPANDER_1_RESET
     };
 }
 
@@ -35,10 +36,10 @@ ExpanderController::~ExpanderController() {
 
 void ExpanderController::begin() {
     if (!this->initialized) {
-        // start i2c bus
-        ESP_ERROR_CHECK(pca9539_init(&this->config));
+        pca9539_init(&this->config);
 
-        // set expander registers to default value since there is not RST option
+        pca9539_reset(&this->config);
+
         pca9539_set_default_config(&this->config);
 
         this->initialized = true;
@@ -47,7 +48,7 @@ void ExpanderController::begin() {
 
 void ExpanderController::end() {
     if (this->initialized) {
-        ESP_ERROR_CHECK(pca9539_deinit(this->config.i2c_port));
+        pca9539_deinit(this->config.i2c_port);
         this->initialized = false;
     }
 }

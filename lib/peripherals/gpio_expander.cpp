@@ -21,7 +21,8 @@ GPIOExpander::GPIOExpander() {
         .i2c_port = I2C_NUM_0,
         .i2c_config = i2c_config,
         .addr = PCA9539_I2C_ADDRESS_LL,
-        .intr_gpio_num = PIN_GPIO_EXPANDER_INTR
+        .intr_gpio_num = PIN_GPIO_EXPANDER_1_INTR,
+        .rst_gpio_num = PIN_GPIO_EXPANDER_1_RESET
     };
 
     this->intr_task_handle = NULL;
@@ -30,9 +31,9 @@ GPIOExpander::GPIOExpander() {
     this->controller = ExpanderController(this->config);
 
     led_pins_t led_pins = {
-        .red = P1_0,
-        .green = P1_1,
-        .blue = P1_2
+        .red = P1_2,
+        .green = P1_0,
+        .blue = P0_7
     };
     this->leds = new LED(this->controller, PIN_POLARITY_NORMAL, led_pins);
 }
@@ -43,9 +44,9 @@ GPIOExpander::GPIOExpander(pca9539_cfg_t *config) {
     this->intr_evt_queue = NULL;
     this->controller = ExpanderController(this->config);
     led_pins_t led_pins = {
-        .red = P1_0,
-        .green = P1_1,
-        .blue = P1_2
+        .red = P1_2,
+        .green = P1_0,
+        .blue = P0_7
     };
     this->leds = new LED(this->controller, PIN_POLARITY_NORMAL, led_pins);
 }
@@ -62,13 +63,12 @@ void GPIOExpander::begin() {
     // start intr task to handle interrupts
     start_evt_intr_task();
 
-    // start i2c bus
     this->controller.begin();
 
-    // setup buttons
     setup_buttons();
 
-    // setup leds
+    this->setup_buzzer();
+
     setup_leds();
 
     // notify intr task that i2c is configured
@@ -111,6 +111,13 @@ void GPIOExpander::setup_buttons() {
     }
 }
 
+void GPIOExpander::setup_buzzer() {
+    esp_err_t err = this->buzzer.setup();
+    if (err != ESP_OK) {
+        TB_LOGE(TAG, "buzzer setup error: %d", err);
+    }
+}
+
 void GPIOExpander::setup_leds() {
     esp_err_t err = this->leds->setup();
     if (err != ESP_OK) {
@@ -149,4 +156,8 @@ void GPIOExpander::set_callback(std::function<void(Button*, PressType)> cb) {
 
 void GPIOExpander::set_backlight_color(Color color) {
     this->leds->set_color(color);
+}
+
+void GPIOExpander::buzzer_beep(uint32_t timeout) {
+    this->buzzer.beep(timeout);
 }

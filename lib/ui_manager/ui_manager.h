@@ -5,7 +5,6 @@
 #include "tb_event.h"
 #include "gpio_expander.h"
 #include "button.h"
-#include "buzzer.h"
 #include "system_manager.h"
 #include "scenes/scene.h"
 
@@ -19,7 +18,6 @@ class UIManager {
    QueueHandle_t *event_queue_handle;
    QueueHandle_t *ui_queue_handle;
    GPIOExpander *expander;
-   Buzzer buzzer;
 
    std::unique_ptr<Scene> current_scene;
 
@@ -27,8 +25,8 @@ class UIManager {
    void process_ui_event(UIEvent *evt);
    void poll_ui_events();
 
-    void send_evt(Event *evt);
-    void send_evt_button_press(pca9539_pin_num pin_num, PressType type);
+   void send_evt(Event *evt);
+   void send_evt_button_press(pca9539_pin_num pin_num, PressType type);
 
    void switch_scene(SceneEnum target);
    void check_scene_transition();

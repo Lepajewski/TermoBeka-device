@@ -1,3 +1,5 @@
+#include "rom/ets_sys.h"
+
 #include "i2c_wrapper.h"
 
 #include "pca9539_driver.h"
@@ -28,6 +30,17 @@ const char *pca9539_pin_num_to_s(pca9539_pin_num pin) {
 esp_err_t pca9539_init(pca9539_cfg_t *cfg) {
     esp_err_t err = ESP_OK;
 
+    gpio_config_t io_conf = {};
+
+    io_conf.pin_bit_mask = (1ULL << cfg->rst_gpio_num);
+    io_conf.mode = GPIO_MODE_OUTPUT;
+    io_conf.pull_up_en = GPIO_PULLUP_ENABLE;
+    io_conf.pull_down_en = GPIO_PULLDOWN_DISABLE;
+
+    if ((err = gpio_config(&io_conf)) != ESP_OK) {
+        return err;
+    }
+
     if ((err = i2c_master_init(cfg->i2c_port, &cfg->i2c_config)) != ESP_OK) {
         return err;
     }
@@ -43,6 +56,17 @@ esp_err_t pca9539_deinit(i2c_port_t i2c_port) {
     }
 
     return err;
+}
+
+esp_err_t pca9539_reset(pca9539_cfg_t *cfg) {
+    esp_err_t err = ESP_OK;
+    if ((err = gpio_set_level(cfg->rst_gpio_num, 0)) != ESP_OK) {
+        return err;
+    }
+
+    ets_delay_us(1);
+
+    return gpio_set_level(cfg->rst_gpio_num, 1);
 }
 
 esp_err_t pca9539_set_default_config(pca9539_cfg_t *cfg) {
@@ -87,6 +111,8 @@ esp_err_t pca9539_set_port_cfg(pca9539_cfg_t *cfg, pca9539_port_num port, uint8_
         return err;
     }
 
+    // printf("%s %d\n", __func__, (int) current_port_cfg);
+
     // no change in port config
     if (current_port_cfg == port_cfg) {
         return err;
@@ -106,6 +132,8 @@ esp_err_t pca9539_set_port_polarity(pca9539_cfg_t *cfg, pca9539_port_num port, u
     if ((err = pca9539_get_port_polarity(cfg, port, &current_port_polarity)) != ESP_OK) {
         return err;
     }
+
+    // printf("%s %d\n", __func__, (int) current_port_polarity);
 
     // no change
     if (current_port_polarity == port_polarity) {
@@ -139,12 +167,16 @@ esp_err_t pca9539_set_pin_polarity(pca9539_cfg_t *cfg, pca9539_pin_num pin, pca9
 
     uint8_t port_polarity = (current_port_polarity & ~(1 << chosen_pin)) | (polarity << chosen_pin);
 
+    // printf("%s %d -> %d\n", __func__, (int) current_port_polarity, (int) port_polarity);
+
     // no change
     if (current_port_polarity == port_polarity) {
         return ESP_OK;
     }
 
-    return i2c_master_write_reg_8(cfg->i2c_port, cfg->addr, PCA9539_REG_PIP | PCA9539_GET_PORT(chosen_pin), port_polarity);
+    // printf("CHOSEN PIN: %d PORT: %d\n", (int) chosen_pin, PCA9539_GET_PORT(pin));
+
+    return i2c_master_write_reg_8(cfg->i2c_port, cfg->addr, PCA9539_REG_PIP | PCA9539_GET_PORT(pin), port_polarity);
 }
 
 esp_err_t pca9539_get_pin_mode(pca9539_cfg_t *cfg, pca9539_pin_num pin, pca9539_pin_mode *pin_mode) {
@@ -171,6 +203,7 @@ esp_err_t pca9539_set_pin_mode(pca9539_cfg_t *cfg, pca9539_pin_num pin, pca9539_
 
     uint8_t port_cfg = (current_port_cfg & ~(1 << chosen_pin)) | (pin_mode << chosen_pin);
 
+    // printf("%s %d -> %d\n", __func__, (int) current_port_cfg, (int) port_cfg);
     // no change
     if (current_port_cfg == port_cfg) {
         return err;
@@ -194,6 +227,8 @@ esp_err_t pca9539_set_output_port_state(pca9539_cfg_t *cfg, pca9539_port_num por
     if ((err = pca9539_get_output_port_state(cfg, port, &current_state)) != ESP_OK) {
         return err;
     }
+
+    // printf("%s %d -> %d \n", __func__, (int) current_state, (int) state);
 
     // no change
     if (current_state == state) {
@@ -237,6 +272,8 @@ esp_err_t pca9539_set_output_pin_state(pca9539_cfg_t *cfg, pca9539_pin_num pin, 
     }
 
     uint8_t port_cfg = (current_port_cfg & ~(1 << chosen_pin)) | (state << chosen_pin);
+
+    // printf("%s %d -> %d\n", __func__, (int) current_port_cfg, (int) port_cfg);
 
     // no change
     if (current_port_cfg == port_cfg) {

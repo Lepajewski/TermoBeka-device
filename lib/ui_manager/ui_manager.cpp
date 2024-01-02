@@ -33,7 +33,7 @@ void UIManager::setup() {
     this->expander->begin();
 
     // setup LCD
-    LCDController::begin();
+    // LCDController::begin();
 
     switch_scene(SceneEnum::startup);
 }
@@ -45,7 +45,7 @@ void UIManager::process_ui_event(UIEvent *evt) {
             UIEventBuzzerBeep *payload = reinterpret_cast<UIEventBuzzerBeep*> (evt->payload);
 
             TB_LOGI(TAG, "Duration: %u", payload->duration);
-            this->buzzer.beep(payload->duration);
+            this->expander->buzzer_beep(payload->duration);
             break;
         }
         case UIEventType::ERROR_SHOW:

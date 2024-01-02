@@ -6,10 +6,16 @@ idf_component_register(
         "drivers/pca9539_intr_driver.c"
         "buzzer.cpp"
         "button.cpp"
+        "relay.cpp"
+        "led.cpp"
         "expander_controller.cpp"
         "gpio_expander.cpp"
+        "relay_expander.cpp"
         "lcd_controller.cpp"
-        "led.cpp"
+        "Max31865.cpp"
+        "numerics.cpp"
+        "rtd.cpp"
+        "rtd_controller.cpp"
     REQUIRES
         driver/gpio
         driver/i2c

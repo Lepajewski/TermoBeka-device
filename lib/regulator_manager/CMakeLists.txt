@@ -1,6 +1,15 @@
 idf_component_register(
     SRCS
+        "drivers/onewire/ow_init.c" 
+        "drivers/onewire/ow_send.c" 
+        "drivers/onewire/ow_read.c" 
+        "drivers/onewire/ow_reset.c" 
+        "drivers/onewire/ow_romsearch.c"
         "internal_temperature_sensor.c"
+        "external_temperature_sensor.cpp"
+        "drivers/Max31865.cpp"
+        "drivers/numerics.cpp"
+        "rtd.cpp"
         "regulator_timer.c"
         "regulator.cpp"
         "regulator_manager.cpp"
@@ -10,4 +19,5 @@ idf_component_register(
         global_config
         logger
         system_manager
+        peripherals
 )

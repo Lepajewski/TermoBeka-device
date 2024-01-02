@@ -8,6 +8,7 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/queue.h"
 #include "freertos/ringbuf.h"
+#include "freertos/semphr.h"
 
 #include "tb_event.h"
 #include "nvs_manager.h"
@@ -33,6 +34,8 @@ class SystemManager {
 
     RingbufHandle_t sd_ring_buf_handle;
 
+    SemaphoreHandle_t spi_semaphore;
+
     uart_port_t uart_num;
     const char *prompt_str;
     esp_console_config_t esp_console_config;
@@ -42,6 +45,7 @@ class SystemManager {
     void setup_logger();
     void init_queues();
     void init_ring_buffers();
+    void init_spi_semaphore();
     void register_commands();
 
     void process_wifi_connected();
@@ -89,6 +93,8 @@ class SystemManager {
     QueueHandle_t *get_regulator_queue();
 
     RingbufHandle_t *get_sd_ring_buf();
+
+    SemaphoreHandle_t *get_spi_semaphore();
 
     void poll_event();
     void init_console();

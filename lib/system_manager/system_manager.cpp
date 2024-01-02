@@ -48,6 +48,7 @@ SystemManager::SystemManager() {
 
     this->init_queues();
     this->init_ring_buffers();
+    this->init_spi_semaphore();
 }
 
 SystemManager::SystemManager(uart_port_t uart_num, const char *prompt_str) {
@@ -64,6 +65,7 @@ SystemManager::SystemManager(uart_port_t uart_num, const char *prompt_str) {
     
     this->init_queues();
     this->init_ring_buffers();
+    this->init_spi_semaphore();
 }
 
 SystemManager::SystemManager(uart_port_t uart_num, const char *prompt_str, esp_console_config_t config) {
@@ -73,6 +75,7 @@ SystemManager::SystemManager(uart_port_t uart_num, const char *prompt_str, esp_c
 
     this->init_queues();
     this->init_ring_buffers();
+    this->init_spi_semaphore();
 }
 
 SystemManager::~SystemManager() {
@@ -149,6 +152,17 @@ void SystemManager::init_ring_buffers() {
 
     if (this->sd_ring_buf_handle == NULL) {
         TB_LOGE(TAG, "ring buffers init fail. Restarting...");
+        vTaskDelay(pdMS_TO_TICKS(2000));
+        fflush(stdout);
+        esp_restart();
+    }
+}
+
+void SystemManager::init_spi_semaphore() {
+    this->spi_semaphore = xSemaphoreCreateMutex();
+
+    if (this->spi_semaphore == NULL) {
+        TB_LOGE(TAG, "spi semaphore init fail. Restarting...");
         vTaskDelay(pdMS_TO_TICKS(2000));
         fflush(stdout);
         esp_restart();
@@ -436,16 +450,16 @@ void SystemManager::process_profile_update(EventProfileUpdate *payload) {
 
 void SystemManager::process_regulator_update(EventRegulatorUpdate *payload) {
     printf("Status: %d\n", payload->info.status);
-    printf("uC temperature: %" PRIi32 "\n", payload->info.uc_temperature);
-    printf("temperature 1: %" PRIi32 "\n", payload->info.temperature_1);
-    printf("temperature 2: %" PRIi32 "\n", payload->info.temperature_2);
-    printf("temperature 3: %" PRIi32 "\n", payload->info.temperature_3);
-    printf("temperature 4: %" PRIi32 "\n", payload->info.temperature_4);
-    printf("temperature 5: %" PRIi32 "\n", payload->info.temperature_5);
-    printf("Fans: %" PRIu32 "\n", payload->info.fans_flags);
-    printf("Heaters: %" PRIu32 "\n", payload->info.heaters_flags);
-    printf("SSR 1 temperature: %" PRIi32 "\n", payload->info.ssr_temperature_1);
-    printf("SSR 2 temperature: %" PRIi32 "\n", payload->info.ssr_temperature_2);
+    printf("uC temperature: %f\n", payload->info.uc_temperature);
+    printf("temperature 0: %f\n", payload->info.temperature_0);
+    printf("temperature 1: %f\n", payload->info.temperature_1);
+    printf("temperature 2: %f\n", payload->info.temperature_2);
+    printf("temperature 3: %f\n", payload->info.temperature_3);
+    printf("temperature 4: %f\n", payload->info.temperature_4);
+    printf("Relays states: %" PRIu32 "\n", payload->info.relays_states);
+    printf("SSR 1 temperature: %f\n", payload->info.ssr_temperature_1);
+    printf("SSR 2 temperature: %f\n", payload->info.ssr_temperature_2);
+    printf("External temperature: %f\n", payload->info.external_temperature);
 
     ServerEvent evt;
     evt.type = ServerEventType::PUBLISH_REGULATOR_UPDATE;
@@ -581,6 +595,10 @@ QueueHandle_t *SystemManager::get_regulator_queue() {
 
 RingbufHandle_t *SystemManager::get_sd_ring_buf() {
     return &this->sd_ring_buf_handle;
+}
+
+SemaphoreHandle_t *SystemManager::get_spi_semaphore() {
+    return &this->spi_semaphore;
 }
 
 const char *SystemManager::get_wifi_ssid() {

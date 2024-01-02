@@ -6,6 +6,7 @@
 #include "drivers/pca9539_intr_driver.h"
 #include "expander_controller.h"
 #include "button.h"
+#include "buzzer.h"
 #include "led.h"
 
 
@@ -25,13 +26,14 @@ class GPIOExpander {
 
     ExpanderController controller;
     Button buttons[USED_BUTTONS] = {
-        Button(controller, PIN_POLARITY_INVERSE, P0_0),
-        Button(controller, PIN_POLARITY_INVERSE, P0_1),
+        Button(controller, PIN_POLARITY_INVERSE, P1_4),
         Button(controller, PIN_POLARITY_INVERSE, P0_2),
-        Button(controller, PIN_POLARITY_INVERSE, P0_3),
-        Button(controller, PIN_POLARITY_INVERSE, P0_4),
-        Button(controller, PIN_POLARITY_INVERSE, P0_5),
+        Button(controller, PIN_POLARITY_INVERSE, P1_5),
+        Button(controller, PIN_POLARITY_INVERSE, P0_1),
+        Button(controller, PIN_POLARITY_INVERSE, P1_6),
+        Button(controller, PIN_POLARITY_INVERSE, P0_0),
     };
+    Buzzer buzzer = Buzzer(controller, PIN_POLARITY_NORMAL, P1_7);
     LED *leds;
 
     esp_err_t init_evt_intr_queue();
@@ -39,6 +41,7 @@ class GPIOExpander {
     void start_evt_intr_task();
     void process_intr_event(pca9539_intr_evt_t *intr_evt);
     void setup_buttons();
+    void setup_buzzer();
     void setup_leds();
     Button *lookup_button(pca9539_pin_num num);
 
@@ -54,6 +57,7 @@ class GPIOExpander {
     void poll_intr_events();
     void set_callback(std::function<void(Button*, PressType)> cb);
     void set_backlight_color(Color color);
+    void buzzer_beep(uint32_t timeout);
 };
 
 #endif  // LIB_PERIPHERALS_GPIO_EXPANDER_H_

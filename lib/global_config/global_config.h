@@ -11,27 +11,35 @@
 #define DEFAULT_LOG_LEVEL                       ESP_LOG_ERROR
 #endif
 
-// Buzzer configuration
-#define PIN_BUZZER                              GPIO_NUM_1
+// Shared SPI configuration
+#define PIN_SPI_MOSI                            GPIO_NUM_35
+#define PIN_SPI_CLK                             GPIO_NUM_36
+#define PIN_SPI_MISO                            GPIO_NUM_37
+
+// I2C configuration
+#define PIN_I2C_SDA                             GPIO_NUM_16
+#define PIN_I2C_SCL                             GPIO_NUM_17
 
 // GPIO Expander configuration
-#define PIN_GPIO_EXPANDER_SDA                   GPIO_NUM_9
-#define PIN_GPIO_EXPANDER_SCL                   GPIO_NUM_10
-#define PIN_GPIO_EXPANDER_INTR                  GPIO_NUM_3  // GPIO_NUM_46
+#define PIN_GPIO_EXPANDER_SDA                   PIN_I2C_SDA
+#define PIN_GPIO_EXPANDER_SCL                   PIN_I2C_SCL
+#define PIN_GPIO_EXPANDER_1_INTR                GPIO_NUM_3
+#define PIN_GPIO_EXPANDER_1_RESET               GPIO_NUM_20
+#define PIN_GPIO_EXPANDER_2_RESET               GPIO_NUM_15
 #define GPIO_EXPANDER_FREQ_HZ                   400000
 
 // LCD configuration
-#define PIN_LCD_SCLK                            GPIO_NUM_38  // CLK
-#define PIN_LCD_DIN                             GPIO_NUM_39  // DIN/MOSI
-#define PIN_LCD_DC                              GPIO_NUM_40  // DC - Data/Command
-#define PIN_LCD_CS                              GPIO_NUM_41  // CE - Chip Select
-#define PIN_LCD_RST                             GPIO_NUM_42  // RST - RESET
+#define PIN_LCD_SCLK                            PIN_SPI_CLK  // CLK
+#define PIN_LCD_DIN                             PIN_SPI_MOSI // DIN/MOSI
+#define PIN_LCD_DC                              GPIO_NUM_19  // DC - Data/Command
+#define PIN_LCD_CS                              GPIO_NUM_18  // CE - Chip Select
+#define PIN_LCD_RST                             GPIO_NUM_8   // RST - RESET
 
 // SD configuration
 #define PIN_SD_SCLK                             GPIO_NUM_12
-#define PIN_SD_MOSI                             GPIO_NUM_13
-#define PIN_SD_MISO                             GPIO_NUM_11
-#define PIN_SD_CS                               GPIO_NUM_14
+#define PIN_SD_MOSI                             GPIO_NUM_11
+#define PIN_SD_MISO                             GPIO_NUM_13
+#define PIN_SD_CS                               GPIO_NUM_10
 #define SD_CARD_MOUNT_POINT                     "/sd"
 #define SD_CARD_DATA_RING_BUFFER_LEN            8192
 
@@ -81,15 +89,38 @@
 #define PROFILE_STEP_MIN_ABS_SLOPE_TRESHOLD     1e-3
 #define PROFILE_STOPPED_CONST_TIMER_TIMEOUT_MS  UINT32_MAX
 #define PROFILE_LONG_TIMEOUT_INTERVAL_MS        1200000
-#define PROFILE_UPDATE_TIMER_INTERVAL_MS        4000//5000
+#define PROFILE_UPDATE_TIMER_INTERVAL_MS        10000
 
 
 // Regulator configuration
 #define INTERNAL_TEMP_SENS_MIN_RANGE_C          -10
 #define INTERNAL_TEMP_SENS_MAX_RANGE_C          80
 
-#define REGULATOR_SAMPLING_RATE_MS              3000
-#define REGULATOR_UPDATE_TIMER_INTERVAL_MS      5000
+#define REGULATOR_SAMPLING_RATE_MS              10000
+#define REGULATOR_UPDATE_TIMER_INTERVAL_MS      10000
+
+#define NUMBER_OF_EXTERNAL_TEMP_SENSORS         3
+#define NUMBER_OF_RTDS                          5
+
+#define DS18B20_ADDRESS_1                       0x6a01191ee2ef3428
+#define DS18B20_ADDRESS_2                       0x701191f0a97c228
+#define DS18B20_ADDRESS_3                       0x8e01191b0c925e28
+
+#define PIN_EXTERNAL_TEMP_SENSORS               GPIO_NUM_7
+#define PIN_RTD_MOSI                            PIN_SPI_MOSI
+#define PIN_RTD_MISO                            PIN_SPI_MISO
+#define PIN_RTD_CLK                             PIN_SPI_CLK
+#define PIN_RTD_CS_0                            GPIO_NUM_14
+#define PIN_RTD_CS_1                            GPIO_NUM_47
+#define PIN_RTD_CS_2                            GPIO_NUM_38
+#define PIN_RTD_CS_3                            GPIO_NUM_40
+#define PIN_RTD_CS_4                            GPIO_NUM_42
+#define PIN_RTD_DRDY_0                          GPIO_NUM_9
+#define PIN_RTD_DRDY_1                          GPIO_NUM_21
+#define PIN_RTD_DRDY_2                          GPIO_NUM_48
+#define PIN_RTD_DRDY_3                          GPIO_NUM_39
+#define PIN_RTD_DRDY_4                          GPIO_NUM_41
+
 
 
 typedef struct {

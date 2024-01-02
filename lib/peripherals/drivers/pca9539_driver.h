@@ -60,6 +60,7 @@ typedef struct {
     i2c_config_t i2c_config;
     uint8_t addr;
     gpio_num_t intr_gpio_num;
+    gpio_num_t rst_gpio_num;
 } pca9539_cfg_t;
 
 
@@ -72,6 +73,8 @@ const char *pca9539_pin_num_to_s(pca9539_pin_num pin);
 
 esp_err_t pca9539_init(pca9539_cfg_t *cfg);
 esp_err_t pca9539_deinit(i2c_port_t i2c_port);
+
+esp_err_t pca9539_reset(pca9539_cfg_t *cfg);
 
 esp_err_t pca9539_set_default_config(pca9539_cfg_t *cfg);
 

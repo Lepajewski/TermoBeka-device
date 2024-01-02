@@ -39,8 +39,8 @@ void ProfileManager::begin() {
     // profile.points[3] = {4000,  14420000};
 
     profile.points[0] = {2000, 0};
-    profile.points[1] = {2000, 30000};
-    profile.points[2] = {2000, 60000};
+    profile.points[1] = {2000, 120000};
+    // profile.points[2] = {2000, 60000};
     // profile.points[2] = {2000, 120000};
     // profile.points[3] = {2000, 180000};
 

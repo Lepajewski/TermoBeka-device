@@ -75,6 +75,7 @@
         "fstream": "cpp",
         "from_device_msg.pb.h": "c",
         "pb_decode.h": "c",
-        "to_device_msg.pb.h": "c"
+        "to_device_msg.pb.h": "c",
+        "list": "cpp"
     }
 }
