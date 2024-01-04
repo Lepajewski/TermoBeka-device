@@ -1,6 +1,8 @@
 #ifndef LIB_PROFILE_MANAGER_PROFILE_TYPE_H_
 #define LIB_PROFILE_MANAGER_PROFILE_TYPE_H_
 
+#include <string>
+#include <memory>
 
 #include "inttypes.h"
 #include "global_config.h"
@@ -72,5 +74,7 @@ typedef enum {
     PROFILE_EVENT_NONE
 } profile_event_response;
 
+std::string profile_to_string(profile_t *profile);
+profile_t string_to_profile(std::string string);
 
 #endif  // LIB_PROFILE_MANAGER_PROFILE_TYPE_H_

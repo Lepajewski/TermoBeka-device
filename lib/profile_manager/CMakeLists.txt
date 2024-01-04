@@ -3,6 +3,7 @@ idf_component_register(
         "profile.cpp"
         "profile_manager.cpp"
         "profile_manager_task.cpp"
+        "profile_type.cpp"
     REQUIRES
         global_config
         logger
