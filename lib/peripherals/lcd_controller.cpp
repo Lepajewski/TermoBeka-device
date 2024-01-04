@@ -4,6 +4,7 @@
 
 #include "logger.h"
 #include "global_config.h"
+#include "system_manager.h"
 #include "font5x7.h"
 
 #include <cstring>
@@ -83,26 +84,28 @@ esp_err_t LCDController::init_control_pin() {
 esp_err_t LCDController::init_spi() {
     esp_err_t err = ESP_OK;
 
-    spi_bus_config_t buscfg = {};
-    buscfg.mosi_io_num = config.spi_pin.mosi_io_num;
-    buscfg.miso_io_num = -1;
-    buscfg.sclk_io_num = config.spi_pin.sclk_io_num;
-    buscfg.quadwp_io_num = -1;
-    buscfg.quadhd_io_num = -1;
+    // spi_bus_config_t buscfg = {};
+    // buscfg.mosi_io_num = config.spi_pin.mosi_io_num;
+    // buscfg.miso_io_num = -1;
+    // buscfg.sclk_io_num = config.spi_pin.sclk_io_num;
+    // buscfg.quadwp_io_num = -1;
+    // buscfg.quadhd_io_num = -1;
 
     spi_device_interface_config_t devcfg = {};
-    devcfg.mode = 0;
+    devcfg.mode = 3;
     devcfg.clock_speed_hz = 4 * 1000 * 1000;
     devcfg.spics_io_num = config.spi_pin.spics_io_num;
     devcfg.queue_size = LCD_CONTROLLER_TRANS_QUEUE_SIZE;
     devcfg.pre_cb = pre_transfer_callback;
 
-    if ((err = spi_bus_initialize(config.spi_host, &buscfg, config.dma_chan)) != ESP_OK) {
-        return err;
-    }
-    if ((err = spi_bus_add_device(config.spi_host, &devcfg, &spi)) != ESP_OK) {
-        return err;
-    }
+    // if ((err = spi_bus_initialize(config.spi_host, &buscfg, config.dma_chan)) != ESP_OK) {
+    //     return err;
+    // }
+
+    xSemaphoreTake(*get_system_manager()->get_spi_semaphore(), portMAX_DELAY);
+    err = spi_bus_add_device(config.spi_host, &devcfg, &spi);
+    xSemaphoreGive(*get_system_manager()->get_spi_semaphore());
+
     return err;
 }
 
@@ -143,7 +146,11 @@ void LCDController::queue_trans(const uint8_t *cmds_or_data, int len, bool dc) {
             t->user = reinterpret_cast<void*>(dc ? 1 : 0);
             t->flags = 0;
             check_queue_size();
-            ESP_ERROR_CHECK( spi_device_queue_trans(spi, t, portMAX_DELAY) );
+
+            xSemaphoreTake(*get_system_manager()->get_spi_semaphore(), portMAX_DELAY);
+            ESP_ERROR_CHECK(spi_device_queue_trans(spi, t, portMAX_DELAY));
+            xSemaphoreGive(*get_system_manager()->get_spi_semaphore());
+            
             trans_queue_size++;
             p = (static_cast<char*>(p) + length / 8);
             length_left -= length;
@@ -156,7 +163,11 @@ void LCDController::queue_trans(const uint8_t *cmds_or_data, int len, bool dc) {
         t->user = reinterpret_cast<void*>(dc ? 1 : 0);
         t->flags = 0;
         check_queue_size();
-        ESP_ERROR_CHECK( spi_device_queue_trans(spi, t, portMAX_DELAY) );
+
+        xSemaphoreTake(*get_system_manager()->get_spi_semaphore(), portMAX_DELAY);
+        ESP_ERROR_CHECK(spi_device_queue_trans(spi, t, portMAX_DELAY));
+        xSemaphoreGive(*get_system_manager()->get_spi_semaphore());
+
         trans_queue_size++;
     }
 }
@@ -193,7 +204,10 @@ void LCDController::gc_finished_trans_data() {
 void LCDController::sync_and_gc() {
     spi_transaction_t *rtrans;
     while(trans_queue_size) {
+        xSemaphoreTake(*get_system_manager()->get_spi_semaphore(), portMAX_DELAY);
         ESP_ERROR_CHECK(spi_device_get_trans_result(spi, &rtrans, portMAX_DELAY));
+        xSemaphoreGive(*get_system_manager()->get_spi_semaphore());
+
         free(rtrans);
         trans_queue_size--;
     }
@@ -232,7 +246,7 @@ void LCDController::begin() {
 
     begin({
         .spi_host = SPI3_HOST,
-        .dma_chan = SPI_DMA_CH_AUTO,
+        .dma_chan = 0, // SPI_DMA_CH_AUTO,
         .spi_pin = spi_config,
         .control_pin = control_config
     });
@@ -240,6 +254,8 @@ void LCDController::begin() {
 
 void LCDController::begin(Config cfg) {
     if (!initialized) {
+        while (get_system_manager()->get_spi_semaphore() == NULL) {};
+
         config = cfg;
         ESP_ERROR_CHECK(init());
         initialized = true;

@@ -2,7 +2,7 @@
 #include "wifi_manager.h"
 #include "wifi_manager_task.h"
 
-#define SEND_WIFI_STRENGTH_ITERATIONS_COOLDOWN 50
+#define SEND_WIFI_STRENGTH_ITERATIONS_COOLDOWN 500
 
 const char * const TAG = "WiFiMgrTask";
 

@@ -22,12 +22,12 @@ enum class PressType {
 };
 
 enum class ButtonType {
-   L_UP = P0_2,
-   L_MID = P0_1,
-   L_BOT = P0_0,
-   R_UP = P0_3,
-   R_MID = P0_4,
-   R_BOT = P0_5
+   L_UP = P1_4,
+   L_MID = P1_5,
+   L_BOT = P1_6,
+   R_UP = P0_2,
+   R_MID = P0_1,
+   R_BOT = P0_0
 };
 
 class ExpanderController;

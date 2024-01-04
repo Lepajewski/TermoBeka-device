@@ -22,6 +22,7 @@ const char *event_type_to_s(EventType type) {
         case EventType::WIFI_CONNECTED:                     return "wifi connected";
         case EventType::WIFI_DISCONNECTED:                  return "wifi disconnected";
         case EventType::WIFI_GOT_TIME:                      return "wifi got time";
+        case EventType::WIFI_STRENGTH:                      return "wifi strength";
 
         case EventType::SERVER_CONNECTED:                   return "server connected";
         case EventType::SERVER_DISCONNECTED:                return "server disconnected";

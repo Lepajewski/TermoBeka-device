@@ -1,6 +1,8 @@
 #include <unistd.h>
 #include "esp_vfs_dev.h"
 #include "driver/uart.h"
+#include <driver/spi_common.h>
+#include <driver/spi_master.h>
 #include "linenoise/linenoise.h"
 #include "argtable3/argtable3.h"
 #include "esp_intr_alloc.h"
@@ -167,6 +169,27 @@ void SystemManager::init_spi_semaphore() {
         fflush(stdout);
         esp_restart();
     }
+
+    xSemaphoreTake(this->spi_semaphore, portMAX_DELAY);
+
+    spi_bus_config_t busConfig = {};
+    busConfig.miso_io_num = PIN_SPI_MISO;
+    busConfig.mosi_io_num = PIN_SPI_MOSI;
+    busConfig.sclk_io_num = PIN_SPI_CLK;
+    busConfig.quadhd_io_num = -1;
+    busConfig.quadwp_io_num = -1;
+
+    esp_err_t err = spi_bus_initialize(SPI3_HOST, &busConfig, 0);
+    if (err == ESP_ERR_INVALID_STATE) {
+        ESP_LOGD(TAG, "SPI bus already initialized");
+    } else if (err != ESP_OK) {
+        ESP_LOGE(TAG, "Error initialising SPI bus: %s, restarting...", esp_err_to_name(err));
+        vTaskDelay(pdMS_TO_TICKS(2000));
+        fflush(stdout);
+        esp_restart();
+    }
+
+    xSemaphoreGive(this->spi_semaphore);
 }
 
 void SystemManager::init_console() {

@@ -33,7 +33,7 @@ void UIManager::setup() {
     this->expander->begin();
 
     // setup LCD
-    // LCDController::begin();
+    LCDController::begin();
 
     switch_scene(SceneEnum::startup);
 }
