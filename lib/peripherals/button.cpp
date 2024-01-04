@@ -20,6 +20,10 @@ pca9539_pin_state Button::get_pin_state() {
     return this->controller.get_input_pin_state(this->num);
 }
 
+ButtonType Button::get_button_type() {
+    return static_cast<ButtonType>(get_pin_num());
+}
+
 esp_err_t Button::setup() {
     return this->controller.setup_pin(this->polarity, this->num, PIN_MODE_INPUT);
 }

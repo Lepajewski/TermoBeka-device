@@ -100,62 +100,41 @@ SceneEnum StartProfileScene::get_scene_enum() {
 }
 
 void StartProfileScene::button_callback(Button *button, PressType type) {
-    pca9539_pin_num pin_num = button->get_pin_num();
+    ButtonType button_type = button->get_button_type();
 
-    switch (type) {
-        case PressType::SHORT_PRESS: {
-            switch (pin_num) {
-                case P0_0: {
-                    if (option_list != NULL) {
-                        this->option_list->select();
-                    }
-                }
-                break;
-
-                case P0_1: {
-                    if (option_list != NULL) {
-                        this->option_list->move_down();
-                    }
-                }
-                break;
-
-                case P0_2: {
-                    if (option_list != NULL) {
-                        this->option_list->move_up();
-                    }
-                }
-                break;
-
-                case P0_3:
-                case P0_4:
-                break;
-
-                case P0_5:{
-                    if (profiles_loaded) {
-                        back_button();
-                    }
-                }
-                break;
-
-                default:
-                break;
+    switch (button_type) {
+        case ButtonType::L_BOT: {
+            if (option_list != NULL) {
+                this->option_list->select();
             }
         }
         break;
-        case PressType::LONG_PRESS: {
-            switch (pin_num) {
-                case P0_0:
-                case P0_1:
-                case P0_2:
-                case P0_3:
-                case P0_4:
-                case P0_5:
-                break;
 
-                default:
-                break;
+        case ButtonType::L_MID: {
+            if (option_list != NULL) {
+                this->option_list->move_down();
             }
         }
+        break;
+
+        case ButtonType::L_UP: {
+            if (option_list != NULL) {
+                this->option_list->move_up();
+            }
+        }
+        break;
+
+        case ButtonType::R_UP:
+        case ButtonType::R_MID:
+        break;
+
+        case ButtonType::R_BOT: {
+            if (profiles_loaded) {
+                back_button();
+            }
+        }
+        break;
+
         default:
         break;
     }

@@ -21,6 +21,15 @@ enum class PressType {
    INVALID_PRESS
 };
 
+enum class ButtonType {
+   L_UP = P0_2,
+   L_MID = P0_1,
+   L_BOT = P0_0,
+   R_UP = P0_3,
+   R_MID = P0_4,
+   R_BOT = P0_5
+};
+
 class ExpanderController;
     
 class Button {
@@ -45,6 +54,8 @@ class Button {
 
     pca9539_pin_num get_pin_num();
     pca9539_pin_state get_pin_state();
+
+    ButtonType get_button_type();
 
     void process_event(pin_change_type change, uint64_t timestamp);
     void set_callback(std::function<void(Button*, PressType)> cb);

@@ -14,55 +14,34 @@ SceneEnum MenuScene::get_scene_enum() {
 }
 
 void MenuScene::button_callback(Button *button, PressType type) {
-    pca9539_pin_num pin_num = button->get_pin_num();
+    ButtonType button_type = button->get_button_type();
 
-    switch (type) {
-        case PressType::SHORT_PRESS: {
-            switch (pin_num) {
-                case P0_0: {
-                    this->list.select();
-                }
-                break;
-
-                case P0_1: {
-                    this->list.move_down();
-                }
-                break;
-
-                case P0_2: {
-                    this->list.move_up();
-                }
-                break;
-
-                case P0_3:
-                case P0_4:
-                break;
-
-                case P0_5:  {
-                    next_scene = SceneEnum::startup;
-                    should_be_changed = true;
-                }
-                break;
-
-                default:
-                break;
-            }
+    switch (button_type) {
+        case ButtonType::L_BOT: {
+            this->list.select();
         }
         break;
-        case PressType::LONG_PRESS: {
-            switch (pin_num) {
-                case P0_0:
-                case P0_1:
-                case P0_2:
-                case P0_3:
-                case P0_4:
-                case P0_5:
-                break;
 
-                default:
-                break;
-            }
+        case ButtonType::L_MID: {
+            this->list.move_down();
         }
+        break;
+
+        case ButtonType::L_UP: {
+            this->list.move_up();
+        }
+        break;
+
+        case ButtonType::R_UP:
+        case ButtonType::R_MID:
+        break;
+
+        case ButtonType::R_BOT:  {
+            next_scene = SceneEnum::startup;
+            should_be_changed = true;
+        }
+        break;
+
         default:
         break;
     }
