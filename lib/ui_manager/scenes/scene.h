@@ -7,12 +7,14 @@
 
 #include "tb_event.h"
 #include "system_manager.h"
+#include "ui_system_state.h"
 
 enum class SceneEnum { startup, menu, settings, start_profile, none };
 
 class Scene {
 protected:
     SystemManager *sys_manager;
+    std::shared_ptr<UISystemState> system_state;
 
     bool should_be_changed;
     SceneEnum next_scene;
@@ -20,7 +22,7 @@ protected:
     void send_evt(Event *evt);
     
 public:
-    Scene();
+    Scene(std::shared_ptr<UISystemState> system_state);
 
     bool get_should_be_changed();
     SceneEnum get_next_scene();
@@ -31,7 +33,7 @@ public:
     virtual void update(float d_time) {}
     virtual void process_ui_event(UIEvent *evt) {}
 
-    static std::unique_ptr<Scene> create_scene(SceneEnum target);
+    static std::unique_ptr<Scene> create_scene(SceneEnum target, std::shared_ptr<UISystemState> system_state);
 };
 
 #include "startup_scene.h"

@@ -7,6 +7,7 @@
 #include "button.h"
 #include "system_manager.h"
 #include "scenes/scene.h"
+#include "ui_system_state.h"
 
 #include <memory>
 
@@ -17,9 +18,10 @@ class UIManager {
    SystemManager *sysMgr;
    QueueHandle_t *event_queue_handle;
    QueueHandle_t *ui_queue_handle;
-   GPIOExpander *expander;
+   std::unique_ptr<GPIOExpander> expander;
 
    std::unique_ptr<Scene> current_scene;
+   std::shared_ptr<UISystemState> state;
 
    void button_callback(Button* button, PressType type);
    void process_ui_event(UIEvent *evt);
@@ -32,7 +34,6 @@ class UIManager {
    void check_scene_transition();
  public:
    UIManager();
-   ~UIManager();
 
    void setup();
    void process_events();

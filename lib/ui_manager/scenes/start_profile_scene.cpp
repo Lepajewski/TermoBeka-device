@@ -88,7 +88,7 @@ void StartProfileScene::send_load_profiles() {
     send_evt(&evt);
 }
 
-StartProfileScene::StartProfileScene() : Scene()
+StartProfileScene::StartProfileScene(std::shared_ptr<UISystemState> system_state) : Scene(system_state)
 {
     LCDController::clear_frame_buf();
 

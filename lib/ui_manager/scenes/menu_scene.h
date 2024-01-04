@@ -20,13 +20,12 @@ private:
     });
 
 public:
-    MenuScene();
+    MenuScene(std::shared_ptr<UISystemState> system_state);
 
     SceneEnum get_scene_enum() override;
     void button_callback(Button *button, PressType type) override;
 
     void update(float d_time) override;
-    void process_ui_event(UIEvent *evt) override;
 };
 
 #endif

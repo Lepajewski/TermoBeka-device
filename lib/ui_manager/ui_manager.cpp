@@ -9,11 +9,8 @@ const char * const TAG = "UIMgr";
 
 
 UIManager::UIManager() {
-    this->expander = new GPIOExpander();
-}
-
-UIManager::~UIManager() {
-    delete this->expander;
+    this->expander = std::make_unique<GPIOExpander>();
+    this->state = std::make_shared<UISystemState>();
 }
 
 void UIManager::button_callback(Button *button, PressType type) {
@@ -67,6 +64,10 @@ void UIManager::poll_ui_events() {
         if (xQueueReceive(*this->ui_queue_handle, &evt, pdMS_TO_TICKS(10)) == pdPASS) {
             TB_LOGI(TAG, "new event, type: %d", evt.type);
             process_ui_event(&evt);
+
+            if (evt.type == UIEventType::WIFI_STRENGTH) {
+                memcpy(&state->wifi_rssi, evt.payload, sizeof(int));
+            }
         }
     }
 }
@@ -91,7 +92,7 @@ void UIManager::send_evt_button_press(pca9539_pin_num pin_num, PressType type) {
 }
 
 void UIManager::switch_scene(SceneEnum target) {
-    this->current_scene = Scene::create_scene(target);
+    this->current_scene = Scene::create_scene(target, state);
 }
 
 void UIManager::check_scene_transition() {

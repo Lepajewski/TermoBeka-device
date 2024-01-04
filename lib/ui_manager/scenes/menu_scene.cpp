@@ -5,7 +5,7 @@
 
 #include "logger.h"
 
-MenuScene::MenuScene() : Scene() {
+MenuScene::MenuScene(std::shared_ptr<UISystemState> system_state) : Scene(system_state) {
     LCDController::clear_frame_buf();
 }
 
@@ -55,17 +55,10 @@ void MenuScene::update(float d_time) {
     std::string time = std::string(timestamp);
     time = time.substr(time.find('T') + 1, 5);
     status.set_time(std::stoi(time.substr(0, 2)), std::stoi(time.substr(3, 2)));
+
+    this->status.set_wifi_strength(system_state->wifi_rssi);
     
     this->status.draw(d_time);
     this->list.draw();
     LCDController::display_frame_buf();
-}
-
-void MenuScene::process_ui_event(UIEvent *evt) {
-    if (evt->type == UIEventType::WIFI_STRENGTH) {
-        int rssi;
-        memcpy(&rssi, evt->payload, sizeof(int));
-
-        this->status.set_wifi_strength(rssi);
-    }
 }

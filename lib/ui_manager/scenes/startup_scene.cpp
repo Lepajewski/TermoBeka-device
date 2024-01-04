@@ -3,7 +3,7 @@
 #include "icons/icons.h"
 #include "lcd_controller.h"
 
-StartupScene::StartupScene() : Scene() {
+StartupScene::StartupScene(std::shared_ptr<UISystemState> system_state) : Scene(system_state) {
     LCDController::clear_frame_buf();
     LCDController::draw_bitmap(0, 0, logo_width, logo_height, logo_bitmap);
     LCDController::display_frame_buf();
