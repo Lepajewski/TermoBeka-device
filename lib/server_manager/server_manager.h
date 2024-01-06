@@ -40,9 +40,8 @@ class ServerManager {
     void subscribe_topic();
     void process_mqtt_driver_events();
     void process_server_event(ServerEvent *evt);
-    void process_publish_profile_update(ProfileStatusUpdate *info);
     void process_publish_regulator_update(RegulatorStatusUpdate *info);
-    void publish_from_device(FromDeviceMessage *msg);
+    void publish_from_device(RegulatorStatusUpdate *msg);
     void process_read_ca_file();
     void poll_server_events();
 

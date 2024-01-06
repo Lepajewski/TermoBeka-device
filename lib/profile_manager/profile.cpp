@@ -14,12 +14,11 @@ Profile::Profile(profile_config_t config) :
     config(config)
 {
     this->info = {};
-    this->info.status.status = Status_NOT_RUNNING;
+    this->info.running = false;
     this->profile_event_group = xEventGroupCreate();
 
     profile_timer_set_event_group(&this->profile_event_group);
     profile_timer_setup(this->config.step_time);
-    profile_update_timer_setup(this->config.update_interval);
 }
 
 Profile::~Profile() {
@@ -60,7 +59,7 @@ esp_err_t Profile::calculate_duration() {
     uint32_t duration = this->profile.back().time_ms;
     if (duration >= this->config.min_duration &&
         duration <= this->config.max_duration) {
-        this->info.status.total_duration = duration;
+        this->info.total_duration = duration;
         return ESP_OK;
     }
     return ESP_FAIL;
@@ -85,7 +84,7 @@ esp_err_t Profile::prepare() {
         return err;
     }
 
-    TB_LOGI(TAG, "vertices: %" PRIu8 ", total duration: %" PRIu32 "s", this->info.current_vertices, this->info.status.total_duration);
+    TB_LOGI(TAG, "vertices: %" PRIu8 ", total duration: %" PRIu32 "s", this->info.current_vertices, this->info.total_duration);
 
     return err;
 }
@@ -104,10 +103,10 @@ esp_err_t Profile::process_next_step() {
         this->info.absolute_start_time = get_time_since_startup_ms();
     }
 
-    this->info.status.current_duration = (uint32_t)(get_time_since_startup_ms() - this->info.absolute_start_time) - this->info.status.profile_time_halted + this->halted_time_during_stopped;
-    this->info.status.profile_time_left = this->info.status.total_duration - this->info.status.current_duration;
-    this->info.status.step_start_time = p1.time_ms;
-    this->info.status.step_end_time = p2.time_ms;
+    this->info.current_duration = (uint32_t)(get_time_since_startup_ms() - this->info.absolute_start_time);
+    this->info.profile_time_left = this->info.total_duration - this->info.current_duration;
+    this->info.step_start_time = p1.time_ms;
+    this->info.step_end_time = p2.time_ms;
     this->info.current_vertices--;
 
     // invalid time
@@ -116,17 +115,17 @@ esp_err_t Profile::process_next_step() {
         return ESP_FAIL;
     }
 
-    uint32_t preemption_error = this->info.status.current_duration - this->info.status.step_start_time;
+    uint32_t preemption_error = this->info.current_duration - this->info.step_start_time;
 
-    uint32_t next_step_timeout = this->info.status.step_end_time - this->info.status.step_start_time - preemption_error;
+    uint32_t next_step_timeout = this->info.step_end_time - this->info.step_start_time - preemption_error;
 
     if ((p1.temperature == p2.temperature) &&
         (p1.time_ms < p2.time_ms) &&
         (p2.time_ms - p1.time_ms >= PROFILE_LONG_TIMEOUT_INTERVAL_MS)) {
         next_step_timeout = PROFILE_LONG_TIMEOUT_INTERVAL_MS - preemption_error;
-        this->info.status.step_end_time = this->info.status.step_start_time + next_step_timeout + preemption_error;
-        if (this->info.status.step_end_time < p2.time_ms) {
-            this->profile.push_front({p1.temperature, this->info.status.step_end_time});
+        this->info.step_end_time = this->info.step_start_time + next_step_timeout + preemption_error;
+        if (this->info.step_end_time < p2.time_ms) {
+            this->profile.push_front({p1.temperature, this->info.step_end_time});
             this->info.current_vertices++;
         }
     }
@@ -147,36 +146,26 @@ esp_err_t Profile::process_next_step() {
                 preemption_error -= this->config.step_time;
             }
             next_step_timeout = this->config.step_time - preemption_error;
-            this->info.status.step_end_time = this->info.status.step_start_time + next_step_timeout + preemption_error;
+            this->info.step_end_time = this->info.step_start_time + next_step_timeout + preemption_error;
             
-            if (this->info.status.step_end_time < p2.time_ms) {
-                int16_t next_step_temperature = a * (this->info.status.step_start_time + this->config.step_time) + b;
-                this->profile.push_front({next_step_temperature, this->info.status.step_end_time});
+            if (this->info.step_end_time < p2.time_ms) {
+                int16_t next_step_temperature = a * (this->info.step_start_time + this->config.step_time) + b;
+                this->profile.push_front({next_step_temperature, this->info.step_end_time});
                 this->info.current_vertices++;
             }
         }
     }
 
-    this->info.status.current_temperature = (int32_t) p1.temperature;
-    this->info.status.step_time_left = next_step_timeout;
+    this->info.current_temperature = (int32_t) p1.temperature;
+    this->info.step_time_left = next_step_timeout;
 
     if (next_step_timeout == 0) {
         TB_LOGE(TAG, "invalid next step timeout");
         return ESP_FAIL;
     }
 
-    send_evt_regulator_update((int16_t) this->info.status.current_temperature);
+    send_evt_regulator_update((int16_t) this->info.current_temperature);
     profile_timer_run(next_step_timeout);
-    return ESP_OK;
-}
-
-esp_err_t Profile::process_stopped() {
-    if (this->info.status.status != Status_STOPPED) {
-        return ESP_FAIL;
-    }
-
-    TB_LOGI(TAG, "stopped, current temp: %" PRIi16, (int16_t) this->info.status.current_temperature);
-    profile_timer_run(PROFILE_STOPPED_CONST_TIMER_TIMEOUT_MS);
     return ESP_OK;
 }
 
@@ -190,70 +179,6 @@ void Profile::send_evt_regulator(RegulatorEvent *evt) {
     if (xQueueSend(*this->config.regulator_queue_handle, &*evt, portMAX_DELAY) != pdTRUE) {
         TB_LOGE(TAG, "event send fail");
     }
-}
-
-void Profile::process_update() {
-    this->print_info();
-    uint32_t preemption_error = 0;
-    uint32_t next_update_time = this->config.update_interval;
-
-    this->update_info.status = this->info.status.status;
-    this->update_info.current_temperature = this->info.status.current_temperature;
-
-    this->update_info.step_start_time = this->info.status.step_start_time;
-    this->update_info.step_end_time = this->info.status.step_end_time;
-
-    switch (this->update_info.status) {
-        case Status_RUNNING:
-        {
-            this->update_info.current_duration = (uint32_t)(get_time_since_startup_ms() - this->info.absolute_start_time) - this->update_info.profile_time_halted;
-            preemption_error = this->update_info.current_duration % this->config.update_interval;
-            this->update_info.current_duration -= preemption_error;
-            printf("CURRENT DURATION: %" PRIu32 "\r\n", this->update_info.current_duration);
-            printf("PREEMPTION ERROR: %" PRIu32 "\r\n", preemption_error);
-
-            this->update_info.step_time_left = this->info.status.step_end_time - this->update_info.current_duration;
-            this->update_info.profile_time_left = this->info.status.total_duration - this->update_info.current_duration;
-            this->update_info.progress_percent = (float)this->update_info.current_duration / (float)this->info.status.total_duration * 100.0f;
-
-
-            if (preemption_error < next_update_time) {
-                next_update_time -= preemption_error;
-            } else {
-                next_update_time = preemption_error - next_update_time;
-            }
-            break;
-        }
-        case Status_STOPPED:
-        {
-            this->update_info.step_stopped_time = this->info.status.step_stopped_time;
-            this->update_info.profile_stopped_time = this->info.status.profile_stopped_time;
-            this->update_info.profile_time_halted = (uint32_t)(get_time_since_startup_ms() - this->info.absolute_time_stopped);
-
-            this->update_info.current_duration = (uint32_t)(get_time_since_startup_ms() - this->info.absolute_start_time) - this->update_info.profile_time_halted;
-            printf("CURRENT DURATION: %" PRIu32 "\r\n", this->update_info.current_duration);
-            this->update_info.progress_percent = this->info.status.progress_percent;
-
-            break;
-        }
-        case Status_ENDED:
-        {
-            this->update_info.current_duration = this->info.status.current_duration;
-            printf("CURRENT DURATION: %" PRIu32 "\r\n", this->update_info.current_duration);
-            this->update_info.progress_percent = this->info.status.progress_percent;
-            next_update_time = 0;
-            break;
-        }
-        default:
-            break;
-    }
-
-    if (next_update_time > 0) {
-        TB_LOGI(TAG, "set update timer to T+%" PRIu32, next_update_time);
-        profile_update_timer_run(next_update_time);
-    }
-
-    xEventGroupSetBits(this->profile_event_group, BIT_PROFILE_UPDATE);
 }
 
 void Profile::send_evt_regulator_start() {
@@ -280,7 +205,7 @@ void Profile::send_evt_regulator_update(int16_t temperature) {
 esp_err_t Profile::start() {
     esp_err_t err = ESP_OK;
 
-    if (this->info.status.status == Status_RUNNING || this->info.status.status == Status_STOPPED) {
+    if (this->info.running) {
         TB_LOGW(TAG, "profile already running");
         return ESP_FAIL;
     }
@@ -290,128 +215,55 @@ esp_err_t Profile::start() {
         return err;
     }
 
-    this->halted_time_during_stopped = 0;
-    this->update_info = {};
-    this->update_info.total_duration = this->info.status.total_duration;
-
     this->info.absolute_start_time = get_time_since_startup_ms();
-    this->info.status.current_duration = 0;
+    this->info.current_duration = 0;
 
-    this->info.status.step_start_time = 0;
-    this->info.status.step_end_time = 0;
+    this->info.step_start_time = 0;
+    this->info.step_end_time = 0;
 
-    this->info.absolute_time_stopped = 0;
-    this->info.status.step_stopped_time = 0;
-    this->info.status.profile_stopped_time = 0;
-
-    this->info.status.step_time_left = 0;
-    this->info.status.profile_time_left = 0;
-
-    this->info.status.profile_time_halted = 0;
-    this->info.absolute_time_resumed = 0;
-    this->info.profile_resumed_time = 0;
+    this->info.step_time_left = 0;
+    this->info.profile_time_left = 0;
 
     this->info.absolute_ended_time = 0;
 
-    this->info.status.current_temperature = 0;
+    this->info.current_temperature = 0;
     this->info.current_vertices = this->info.total_vertices;
 
-    this->info.status.progress_percent = 0.0f;
+    this->info.progress_percent = 0.0f;
 
-    this->info.status.status = Status_RUNNING;
+    this->info.running = true;
     
     if ((err = process_next_step()) != ESP_OK) {
         TB_LOGE(TAG, "fail to start profile");
+        this->info.running = false;
         return err;
     }
 
     xEventGroupSetBits(this->profile_event_group, BIT_PROFILE_START);
     this->send_evt_regulator_start();
-    this->process_update();
+    // this->send_evt_regulator_update((int16_t) this->info.current_temperature);
 
     return err;
 }
 
-esp_err_t Profile::stop() {
-    if (this->info.status.status != Status_RUNNING) {
-        return ESP_FAIL;
-    }
-
-    this->info.absolute_time_stopped = get_time_since_startup_ms();
-    this->info.status.current_duration = (uint32_t)(this->info.absolute_time_stopped - this->info.absolute_start_time - this->info.status.profile_time_halted);
-
-    if ((profile_timer_get_time_left() < (this->info.status.current_duration - this->info.status.step_end_time + profile_timer_get_time_left())) ||
-        profile_timer_is_expired()) {
-        esp_err_t err = this->process_next_step();
-        if (err != ESP_OK) {
-            TB_LOGE(TAG, "fail to calculate next step");
-        }
-    }
-
-    profile_timer_stop();
-
-    this->halted_time_during_stopped = 0;
-
-    this->info.status.status = Status_STOPPED;
-    this->info.absolute_time_stopped = get_time_since_startup_ms();
-    this->info.status.current_duration = (uint32_t)(this->info.absolute_time_stopped - this->info.absolute_start_time - this->info.status.profile_time_halted);
-    this->info.status.profile_stopped_time = this->info.status.current_duration;
-    this->info.status.step_stopped_time = this->info.status.profile_stopped_time - this->info.status.step_start_time;
-    this->info.status.step_time_left = this->info.status.step_end_time - this->info.status.current_duration;
-    this->info.status.profile_time_left = this->info.status.total_duration - this->info.status.current_duration;
-
-    this->info.status.progress_percent = (float)this->info.status.current_duration / (float)this->info.status.total_duration * 100.0f;
-
-    this->profile.push_front({(int16_t) this->info.status.current_temperature, this->info.status.profile_stopped_time});
-    this->info.current_vertices++;
-
-    esp_err_t err = this->process_stopped();
-    if (err != ESP_OK) {
-        TB_LOGE(TAG, "fail to process stopped");
-    }
-    xEventGroupSetBits(this->profile_event_group, BIT_PROFILE_STOP);
-    return ESP_OK;
-}
-
-esp_err_t Profile::resume() {
-    if (this->info.status.status != Status_STOPPED) {
-        return ESP_FAIL;
-    }
-
-    this->info.status.status = Status_RUNNING;
-    profile_timer_stop();
-
-    this->info.absolute_time_resumed = get_time_since_startup_ms();
-    this->info.profile_resumed_time = this->info.status.profile_stopped_time;
-    this->info.status.profile_time_halted += (uint32_t)(this->info.absolute_time_resumed - this->info.absolute_time_stopped + this->halted_time_during_stopped);
-
-    if (this->process_next_step() != ESP_OK) {
-        TB_LOGE(TAG, "fail to calculate next step");
-    }
-    xEventGroupSetBits(this->profile_event_group, BIT_PROFILE_RESUME);
-    return ESP_OK;
-}
-
 esp_err_t Profile::end() {
-    if (this->info.status.status == Status_NOT_RUNNING || this->info.status.status == Status_ENDED) {
+    if (!this->info.running) {
         TB_LOGW(TAG, "no profile is running");
         return ESP_FAIL;
     }
 
     TB_LOGI(TAG, "ending current profile");
     profile_timer_stop();
-    profile_update_timer_stop();
-    this->info.status.status = Status_ENDED;
+    this->info.running = false;
 
     this->info.absolute_ended_time = get_time_since_startup_ms();
 
-    this->info.status.current_duration = this->info.status.total_duration;
-    this->info.status.progress_percent = (float)this->info.status.current_duration / (float)this->info.status.total_duration * 100.0f;
+    this->info.current_duration = this->info.total_duration;
+    this->info.progress_percent = (float)this->info.current_duration / (float)this->info.total_duration * 100.0f;
 
     this->print_info();
 
     this->send_evt_regulator_stop();
-    this->process_update();
 
     xEventGroupSetBits(this->profile_event_group, BIT_PROFILE_END);
     return ESP_OK;
@@ -428,29 +280,17 @@ void Profile::process_profile() {
 
     if ((bits & BIT_PROFILE_TIMER_TIMEOUT) == BIT_PROFILE_TIMER_TIMEOUT) {
         esp_err_t err = ESP_OK;
-        if (this->info.status.status == Status_STOPPED) {
-            if ((err = this->process_stopped()) != ESP_OK) {
-                TB_LOGE(TAG, "fail to process stopped: %d", err);
-            }
-        } else if (this->info.status.status == Status_RUNNING) {
+        if (this->info.running) {
             TB_LOGI(TAG, "next step");
             if ((err = this->process_next_step()) != ESP_OK) {
                 TB_LOGE(TAG, "fail to calculate next step %d", err);
             }
         }
     }
-    
-    if ((bits & BIT_PROFILE_UPDATE_TIMER_TIMEOUT) == BIT_PROFILE_UPDATE_TIMER_TIMEOUT) {
-        this->process_update();
-    }
 }
 
-ProfileStatusUpdate Profile::get_profile_run_info() {
-    return this->update_info;
-}
-
-Status Profile::get_status() {
-    return this->info.status.status;
+bool Profile::is_running() {
+    return this->info.running;
 }
 
 EventGroupHandle_t *Profile::get_profile_event_group() {
@@ -474,29 +314,21 @@ void Profile::print_profile() {
 
 void Profile::print_info() {
     printf("Absolute Start Time: %llu ms\n", this->info.absolute_start_time);
-    printf("Current Duration: %u ms\n", this->info.status.current_duration);
-    printf("Total Duration: %u ms\n", this->info.status.total_duration);
-    printf("Step Start Time: %u ms\n", this->info.status.step_start_time);
-    printf("Step End Time: %u ms\n", this->info.status.step_end_time);
-    
-    printf("Absolute Time Stopped: %llu ms\n", this->info.absolute_time_stopped);
-    printf("Step Stopped Time: %u ms\n", this->info.status.step_stopped_time);
-    printf("Profile Stopped Time: %u ms\n", this->info.status.profile_stopped_time);
+    printf("Current Duration: %u ms\n", this->info.current_duration);
+    printf("Total Duration: %u ms\n", this->info.total_duration);
+    printf("Step Start Time: %u ms\n", this->info.step_start_time);
+    printf("Step End Time: %u ms\n", this->info.step_end_time);
 
-    printf("Step Time Left: %u ms\n", this->info.status.step_time_left);
-    printf("Profile Time Left: %u ms\n", this->info.status.profile_time_left);
-
-    printf("Profile Time Halted: %" PRIu32 " ms\n", this->info.status.profile_time_halted);
-    printf("Absolute Time Resumed: %llu m\ns", this->info.absolute_time_resumed);
-    printf("Profile Resumed Time: %u ms\n", this->info.profile_resumed_time);
+    printf("Step Time Left: %u ms\n", this->info.step_time_left);
+    printf("Profile Time Left: %u ms\n", this->info.profile_time_left);
 
     printf("Absolute Ended Time: %" PRIu64 " ms\n", this->info.absolute_ended_time);
 
-    printf("Current Temperature: %d\n", this->info.status.current_temperature);
+    printf("Current Temperature: %d\n", this->info.current_temperature);
     printf("Current Vertices: %u\n", this->info.current_vertices);
     printf("Total Vertices: %u\n", this->info.total_vertices);
 
-    printf("Progress: %.2lf%\n", this->info.status.progress_percent);
+    printf("Progress: %.2lf%\n", this->info.progress_percent);
 
-    printf("Running: %d\n", this->info.status.status);
+    printf("Running: %d\n", this->info.running);
 }

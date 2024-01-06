@@ -22,10 +22,16 @@
 class Regulator {
  private:
     regulator_config_t config;
+    bool running;
     RegulatorStatusUpdate info;
     EventGroupHandle_t regulator_event_group;
     float set_temperature;
     uint64_t last_sample_time;
+    uint64_t start_time;
+
+    float uc_temperature;
+    float ambient_temperature;
+    uint32_t relays_states;
 
     RelayExpander expander;
     ExternalTemperatureSensor ds18b20 = ExternalTemperatureSensor(PIN_EXTERNAL_TEMP_SENSORS);
@@ -36,7 +42,7 @@ class Regulator {
     esp_err_t process_next_sample();
     void get_cpu_temperature();
     void get_external_temperature();
-    float get_avg_rtd_temperature();
+    void get_avg_chamber_temperature();
 
     void heaters_on();
     void heaters_off();
@@ -57,8 +63,6 @@ class Regulator {
     void update_temperature(int16_t temperature);
 
     EventGroupHandle_t *get_regulator_event_group();
-
-    void print_info();
 };
 
 

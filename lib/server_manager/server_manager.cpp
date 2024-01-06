@@ -165,12 +165,6 @@ void ServerManager::process_server_event(ServerEvent *evt) {
             TB_LOGI(TAG, "connected: %s", this->connected ? "true" : "false");
             break;
         }
-        case ServerEventType::PUBLISH_PROFILE_UPDATE:
-        {
-            ServerEventPubProfileUpdate *payload = reinterpret_cast<ServerEventPubProfileUpdate*>(evt->payload);
-            this->process_publish_profile_update(&payload->info);
-            break;
-        }
         case ServerEventType::PUBLISH_REGULATOR_UPDATE:
         {
             ServerEventPubRegulatorUpdate *payload = reinterpret_cast<ServerEventPubRegulatorUpdate*>(evt->payload);
@@ -188,39 +182,20 @@ void ServerManager::process_server_event(ServerEvent *evt) {
     }
 }
 
-void ServerManager::process_publish_profile_update(ProfileStatusUpdate *info) {
-    if (!this->running || !this->connected) {
-        return;
-    }
-
-    FromDeviceMessage msg = FromDeviceMessage_init_zero;
-    msg.type = MessageType_PROFILE_STATUS_UPDATE;
-    msg.has_profile_status_update = true;
-    memcpy(&msg.profile_status_update, info, sizeof(ProfileStatusUpdate));
-
-    printf("Progress: %.2lf%\n", info->progress_percent);
-    this->publish_from_device(&msg);
-}
-
 void ServerManager::process_publish_regulator_update(RegulatorStatusUpdate *info) {
     if (!this->running || !this->connected) {
         return;
     }
 
-    FromDeviceMessage msg = FromDeviceMessage_init_zero;
-    msg.type = MessageType_REGULATOR_STATUS_UPDATE;
-    msg.has_regulator_status_update = true;
-    memcpy(&msg.regulator_status_update, info, sizeof(RegulatorStatusUpdate));
-
-    this->publish_from_device(&msg);
+    this->publish_from_device(info);
 }
 
-void ServerManager::publish_from_device(FromDeviceMessage *msg) {
+void ServerManager::publish_from_device(RegulatorStatusUpdate *msg) {
     uint8_t buffer[SERVER_QUEUE_MAX_PAYLOAD] = {};
     pb_ostream_t ostream;
 
     ostream = pb_ostream_from_buffer(buffer, sizeof(buffer));
-    pb_encode(&ostream, &FromDeviceMessage_msg, msg);
+    pb_encode(&ostream, &RegulatorStatusUpdate_msg, msg);
 
     size_t written = ostream.bytes_written;
     TB_LOGI(TAG, "%s written: %d", __func__, written);

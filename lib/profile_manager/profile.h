@@ -21,9 +21,6 @@ class Profile {
     profile_config_t config;
     QueueHandle_t *regulator_queue_handle;
 
-    ProfileStatusUpdate update_info;
-    uint32_t halted_time_during_stopped;
-
     // +1 vetrice due to stop/resume functionality
     etl::list<profile_point, PROFILE_MAX_VERTICES + 1> profile;
     EventGroupHandle_t profile_event_group;
@@ -36,7 +33,6 @@ class Profile {
 
     esp_err_t process_next_step();
     esp_err_t process_stopped();
-    void process_update();
 
 
     void send_evt_regulator(RegulatorEvent *evt);
@@ -48,14 +44,11 @@ class Profile {
     ~Profile();
 
     esp_err_t start();
-    esp_err_t stop();
-    esp_err_t resume();
     esp_err_t end();
 
     void process_profile();
-    ProfileStatusUpdate get_profile_run_info();
 
-    Status get_status();
+    bool is_running();
 
     EventGroupHandle_t *get_profile_event_group();
 

@@ -86,8 +86,6 @@ enum class EventType {
     SD_LOG,
 
     PROFILE_START,
-    PROFILE_STOP,
-    PROFILE_RESUME,
     PROFILE_END,
     PROFILE_RESPONSE,
     PROFILE_UPDATE,
@@ -124,11 +122,6 @@ typedef union {
     profile_event_response response;
     uint8_t buffer[EVENT_QUEUE_MAX_PAYLOAD];
 } EventProfileResponse;
-
-typedef union {
-    ProfileStatusUpdate info;
-    uint8_t buffer[EVENT_QUEUE_MAX_PAYLOAD];
-} EventProfileUpdate;
 
 typedef union {
     RegulatorStatusUpdate info;
@@ -236,11 +229,6 @@ typedef union {
 } ServerEventCredentials;
 
 typedef union {
-    ProfileStatusUpdate info;
-    uint8_t buffer[SERVER_QUEUE_MAX_PAYLOAD];
-} ServerEventPubProfileUpdate;
-
-typedef union {
     RegulatorStatusUpdate info;
     uint8_t buffer[SERVER_QUEUE_MAX_PAYLOAD];
 } ServerEventPubRegulatorUpdate;
@@ -250,8 +238,6 @@ typedef union {
 enum class ProfileEventType {
     NEW_PROFILE,
     START,
-    STOP,
-    RESUME,
     END,
     INFO,
     NONE

@@ -181,9 +181,9 @@ void SystemManager::init_spi_semaphore() {
 
     esp_err_t err = spi_bus_initialize(SPI3_HOST, &busConfig, 0);
     if (err == ESP_ERR_INVALID_STATE) {
-        ESP_LOGD(TAG, "SPI bus already initialized");
+        TB_LOGD(TAG, "SPI bus already initialized");
     } else if (err != ESP_OK) {
-        ESP_LOGE(TAG, "Error initialising SPI bus: %s, restarting...", esp_err_to_name(err));
+        TB_LOGE(TAG, "Error initialising SPI bus: %s, restarting...", esp_err_to_name(err));
         vTaskDelay(pdMS_TO_TICKS(2000));
         fflush(stdout);
         esp_restart();
@@ -348,11 +348,6 @@ void SystemManager::poll_event() {
                 this->process_profile_response(payload);
                 break;
             }
-            case EventType::PROFILE_UPDATE:
-            {
-                this->process_profile_update(reinterpret_cast<EventProfileUpdate*>(evt.payload));
-                break;
-            }
             case EventType::REGULATOR_UPDATE:
             {
                 this->process_regulator_update(reinterpret_cast<EventRegulatorUpdate*>(evt.payload));
@@ -449,40 +444,9 @@ void SystemManager::process_profile_response(EventProfileResponse *payload) {
     TB_LOGI(TAG, "profile response: %d", payload->response);
 }
 
-void SystemManager::process_profile_update(EventProfileUpdate *payload) {
-    printf("Status: %d\n", payload->info.status);
-    printf("Current Duration: %u ms\n", payload->info.current_duration);
-    printf("Total Duration: %u ms\n", payload->info.total_duration);
-    printf("Step Start Time: %u ms\n", payload->info.step_start_time);
-    printf("Step Stopped Time: %u ms\n", payload->info.step_stopped_time);
-    printf("Profile Stopped Time: %u ms\n", payload->info.profile_stopped_time);
-    printf("Step End Time: %u ms\n", payload->info.step_end_time);
-    printf("Step Time Left: %u ms\n", payload->info.step_time_left);
-    printf("Profile Time Halted: %" PRIu32 " ms\n", payload->info.profile_time_halted);
-    printf("Profile Time Left: %u ms\n", payload->info.profile_time_left);
-    printf("Current Temperature: %d\n", payload->info.current_temperature);
-    printf("Progress: %.2lf%\n", payload->info.progress_percent);
-
-    ServerEvent evt;
-    evt.type = ServerEventType::PUBLISH_PROFILE_UPDATE;
-    memcpy(&evt.payload, payload->buffer, SERVER_QUEUE_MAX_PAYLOAD);
-    if (send_to_server_queue(&evt) != ESP_OK) {
-        TB_LOGE(TAG, "fail to send profile update");
-    }
-}
-
 void SystemManager::process_regulator_update(EventRegulatorUpdate *payload) {
-    printf("Status: %d\n", payload->info.status);
-    printf("uC temperature: %f\n", payload->info.uc_temperature);
-    printf("temperature 0: %f\n", payload->info.temperature_0);
-    printf("temperature 1: %f\n", payload->info.temperature_1);
-    printf("temperature 2: %f\n", payload->info.temperature_2);
-    printf("temperature 3: %f\n", payload->info.temperature_3);
-    printf("temperature 4: %f\n", payload->info.temperature_4);
-    printf("Relays states: %" PRIu32 "\n", payload->info.relays_states);
-    printf("SSR 1 temperature: %f\n", payload->info.ssr_temperature_1);
-    printf("SSR 2 temperature: %f\n", payload->info.ssr_temperature_2);
-    printf("External temperature: %f\n", payload->info.external_temperature);
+    printf("Time: %" PRIu32 "\n", payload->info.time);
+    printf("avg_chamber_temperature: %" PRIi32 "\n", payload->info.avg_chamber_temperature);
 
     ServerEvent evt;
     evt.type = ServerEventType::PUBLISH_REGULATOR_UPDATE;

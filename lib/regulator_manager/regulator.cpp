@@ -18,11 +18,16 @@ const char * const TAG = "Regulator";
 
 Regulator::Regulator(regulator_config_t config) :
     config(config),
+    running(false),
     set_temperature(0),
-    last_sample_time(0)
+    last_sample_time(0),
+    start_time(0)
 {
     this->info = {};
-    this->info.status = Status_STOPPED;
+    this->uc_temperature = 0.0f;
+    this->ambient_temperature = 0.0f;
+    this->relays_states = 0;
+
     this->regulator_event_group = xEventGroupCreate();
 
     regulator_timer_set_event_group(&this->regulator_event_group);
@@ -41,6 +46,11 @@ void Regulator::setup_rtds() {
 }
 
 void Regulator::setup() {
+    if (install_internal_temperature_sensor(INTERNAL_TEMP_SENS_MIN_RANGE_C, INTERNAL_TEMP_SENS_MAX_RANGE_C) != ESP_OK) {
+        TB_LOGE(TAG, "uC temp sens setup fail");
+    }
+
+
     this->expander.begin();
 
     if (this->ds18b20.setup() != ESP_OK) {
@@ -62,16 +72,18 @@ void Regulator::setup() {
 esp_err_t Regulator::process_next_sample() {
     esp_err_t err = ESP_OK;
 
-    this->get_cpu_temperature();
-    this->get_external_temperature();
-    float chamber_temperature = this->get_avg_rtd_temperature();
-    TB_LOGI(TAG, "avg chamber temperature: %f", chamber_temperature);
+    this->get_avg_chamber_temperature();
+    TB_LOGI(TAG, "avg chamber temperature: %" PRIi32, this->info.avg_chamber_temperature);
 
     uint32_t preemption_error = (uint32_t)(get_time_since_startup_ms() - this->last_sample_time);
     this->last_sample_time = get_time_since_startup_ms();
     if (preemption_error > this->config.sampling_rate) {
         preemption_error -= this->config.sampling_rate;
+    } else if (preemption_error == this->config.sampling_rate) {
+        preemption_error = 0;
     }
+
+
     uint32_t next_sample_time = this->config.sampling_rate - preemption_error;
 
     TB_LOGI(TAG, "setting timer to T+%" PRIu32 "ms %" PRIu32, next_sample_time, preemption_error);
@@ -80,11 +92,11 @@ esp_err_t Regulator::process_next_sample() {
 }
 
 void Regulator::get_cpu_temperature() {
-    if (get_internal_temperature(&this->info.uc_temperature) != ESP_OK) {
-        this->info.uc_temperature = 0.0f;
+    if (get_internal_temperature(&this->uc_temperature) != ESP_OK) {
+        this->uc_temperature = 0.0f;
     }
 
-    // TB_LOGI(TAG, "uC temperature: %f", this->info.uc_temperature);
+    // TB_LOGI(TAG, "uC temperature: %f", this->uc_temperature);
 }
 
 void Regulator::get_external_temperature() {
@@ -94,134 +106,66 @@ void Regulator::get_external_temperature() {
         temperature = {};
     }
 
-    this->info.ssr_temperature_1 = temperature.temperature[0];
-    this->info.ssr_temperature_2 = temperature.temperature[1];
-    this->info.external_temperature = temperature.temperature[2];
-
-    // TB_LOGI(TAG, "ssr_temperature_1: %f", temperature.temperature[0]);
-    // TB_LOGI(TAG, "ssr_temperature_2: %f", temperature.temperature[1]);
-    // TB_LOGI(TAG, "external_temperature: %f", temperature.temperature[2]);
+    this->ambient_temperature = temperature.temperature[0];
 }
 
-float Regulator::get_avg_rtd_temperature() {
-    float sum = 0.0f;
-    uint8_t working_sensors = 0;
-
-    rtd_temperature t = {};
-    if (this->controller.get_temperatures(&t) != ESP_OK) {
-        TB_LOGE(TAG, "fail to read RTD temperature");
+void Regulator::get_avg_chamber_temperature() {
+    float t = 0.0f;
+    
+    if (this->controller.get_avg_temperature(&t) == ESP_OK) {
+        this->info.avg_chamber_temperature = (int32_t) (t * 100.0f);
+    } else {
+        TB_LOGE(TAG, "fail to read AVG chamber temperature");
     }
-
-    if (t.fault[0] == Max31865Error::NoError) {
-        this->info.temperature_0 = t.temperature[0];
-        sum += this->info.temperature_0;
-        working_sensors++;
-    }
-
-    if (t.fault[1] == Max31865Error::NoError) {
-        this->info.temperature_1 = t.temperature[1];
-        sum += this->info.temperature_1;
-        working_sensors++;
-    }
-
-    if (t.fault[2] == Max31865Error::NoError) {
-        this->info.temperature_2 = t.temperature[2];
-        sum += this->info.temperature_2;
-        working_sensors++;
-    }
-
-    if (t.fault[3] == Max31865Error::NoError) {
-        this->info.temperature_3 = t.temperature[3];
-        sum += this->info.temperature_3;
-        working_sensors++;
-    }
-
-    if (t.fault[4] == Max31865Error::NoError) {
-        this->info.temperature_4 = t.temperature[4];
-        sum += this->info.temperature_4;
-        working_sensors++;
-    }
-
-    // TB_LOGI(TAG, "RTD 0: %f", this->info.temperature_0);
-    // TB_LOGI(TAG, "RTD 1: %f", this->info.temperature_1);
-    // TB_LOGI(TAG, "RTD 2: %f", this->info.temperature_2);
-    // TB_LOGI(TAG, "RTD 3: %f", this->info.temperature_3);
-    // TB_LOGI(TAG, "RTD 4: %f", this->info.temperature_4);
-
-    return sum / (float)working_sensors;
 }
 
 void Regulator::heaters_on() {
     this->expander.relay_on(RelayType::RELAY_HEATER_1);
     this->expander.relay_on(RelayType::RELAY_HEATER_2);
-    this->info.relays_states |= (1U << static_cast<uint32_t>(RelayType::RELAY_HEATER_1));
-    this->info.relays_states |= (1U << static_cast<uint32_t>(RelayType::RELAY_HEATER_2));
 }
 
 void Regulator::heaters_off() {
     this->expander.relay_off(RelayType::RELAY_HEATER_1);
     this->expander.relay_off(RelayType::RELAY_HEATER_2);
-    this->info.relays_states &= ~(1U << static_cast<uint32_t>(RelayType::RELAY_HEATER_1));
-    this->info.relays_states &= ~(1U << static_cast<uint32_t>(RelayType::RELAY_HEATER_2));
 }
 
 void Regulator::fans_on() {
     this->expander.relay_on(RelayType::RELAY_FAN_1);
     this->expander.relay_on(RelayType::RELAY_FAN_2);
-    this->info.relays_states |= (1U << static_cast<uint32_t>(RelayType::RELAY_FAN_1));
-    this->info.relays_states |= (1U << static_cast<uint32_t>(RelayType::RELAY_FAN_2));
 }
 
 void Regulator::fans_off() {
     this->expander.relay_off(RelayType::RELAY_FAN_1);
     this->expander.relay_off(RelayType::RELAY_FAN_2);
-    this->info.relays_states &= ~(1U << (int)RelayType::RELAY_FAN_1);
-    this->info.relays_states &= ~(1U << (int)RelayType::RELAY_FAN_2);
 }
 
 esp_err_t Regulator::start() {
-    if (this->info.status == Status_RUNNING) {
+    if (this->running) {
         TB_LOGI(TAG, "already running");
         return ESP_FAIL;
     }
 
-    if (install_internal_temperature_sensor(INTERNAL_TEMP_SENS_MIN_RANGE_C, INTERNAL_TEMP_SENS_MAX_RANGE_C) != ESP_OK) {
-        TB_LOGE(TAG, "uC temp sens setup fail");
-        return ESP_FAIL;
-    }
-
-    this->info.uc_temperature = 0.0f;
-    this->info.temperature_0 = 0.0f;
-    this->info.temperature_1 = 0.0f;
-    this->info.temperature_2 = 0.0f;
-    this->info.temperature_3 = 0.0f;
-    this->info.temperature_4 = 0.0f;
-    this->info.relays_states = 0;
-    this->info.ssr_temperature_1 = 0.0f;
-    this->info.ssr_temperature_2 = 0.0f;
-    this->info.external_temperature = 0.0f;
+    this->get_avg_chamber_temperature();
+    this->update_temperature(0);
+    this->info.time = 0;
 
     this->last_sample_time = get_time_since_startup_ms();
-
-    this->info.status = Status_RUNNING;
+    this->start_time = get_time_since_startup_ms();
 
     this->fans_on();
 
-    xEventGroupSetBits(this->regulator_event_group, BIT_REGULATOR_START);
+    this->running = true;
+
+    xEventGroupSetBits(this->regulator_event_group, BIT_REGULATOR_START | BIT_REGULATOR_UPDATE);
     regulator_update_timer_run();
 
     return process_next_sample();
 }
 
 esp_err_t Regulator::stop() {
-    if (this->info.status == Status_STOPPED) {
+    if (!this->running) {
         TB_LOGI(TAG, "already stopped");
         return ESP_FAIL;
-    }
-
-    esp_err_t err = ESP_OK;
-    if ((err = uninstall_internal_temperature_sensor()) != ESP_OK) {
-        return err;
     }
 
     regulator_update_timer_stop();
@@ -229,12 +173,12 @@ esp_err_t Regulator::stop() {
 
     this->fans_off();
 
-    this->info.status = Status_STOPPED;
-    return err;
+    this->running = false;
+    return ESP_OK;
 }
 
 void Regulator::process_regulator() {
-    if (this->info.status != Status_RUNNING) {
+    if (!this->running) {
         return;
     }
 
@@ -255,11 +199,12 @@ void Regulator::process_regulator() {
 }
 
 RegulatorStatusUpdate Regulator::get_regulator_run_info() {
+    this->info.time = (uint32_t)(get_time_since_startup_ms() - this->start_time);
     return this->info;
 }
 
 bool Regulator::is_running() {
-    return (this->info.status == Status_RUNNING) ? true : false;
+    return this->running;
 }
 
 int16_t Regulator::get_min_temperature() {
@@ -272,24 +217,27 @@ int16_t Regulator::get_max_temperature() {
 
 
 void Regulator::update_temperature(int16_t temperature) {
-    if (temperature < this->config.min_temp) {
-        TB_LOGW(TAG, "set T is lower than ambient T");
-        this->get_external_temperature();
-        this->set_temperature = this->info.external_temperature;
-    } else if (temperature > this->config.max_temp) {
-        TB_LOGW(TAG, "set T is too high");
-        this->set_temperature = (float)this->config.max_temp;
-    } else {
-        this->set_temperature = (float)temperature;
+    this->get_external_temperature();
+
+    if (temperature < this->ambient_temperature) {
+        TB_LOGW(TAG, "set T is lower than ambient T, setting to ambient T");
+        this->set_temperature = this->ambient_temperature;
     }
 
-    TB_LOGI(TAG, "set temperature to %f*C", this->set_temperature);
+    if (temperature < this->config.min_temp) {
+        TB_LOGW(TAG, "set T is lower than min T, setting to min T"); 
+        this->set_temperature = this->config.min_temp;
+    } else if (temperature > this->config.max_temp) {
+        TB_LOGW(TAG, "set T is highet than max T, setting to max T");
+        this->set_temperature = (float)this->config.max_temp;
+        this->set_temperature = this->config.max_temp;
+    } else {
+        this->set_temperature = (float)temperature;
+    }    
+
+    TB_LOGI(TAG, "set temperature to %f*C", this->set_temperature / 100.0f);
 }
 
 EventGroupHandle_t *Regulator::get_regulator_event_group() {
     return &this->regulator_event_group;
-}
-
-void Regulator::print_info() {
-    ;
 }

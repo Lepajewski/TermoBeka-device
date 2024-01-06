@@ -90,14 +90,15 @@ void RegulatorManager::poll_running_regulator_events() {
     if ((bits & BIT_REGULATOR_START) == BIT_REGULATOR_START) {
         TB_LOGI(TAG, "regulator started");
         this->send_evt_start();
-    } else if ((bits & BIT_REGULATOR_STOP) == BIT_REGULATOR_STOP) {
+    }
+    
+    if ((bits & BIT_REGULATOR_STOP) == BIT_REGULATOR_STOP) {
         TB_LOGI(TAG, "regulator stopped");
         this->send_evt_stop();
-    } else if ((bits & BIT_REGULATOR_UPDATE) == BIT_REGULATOR_UPDATE) {
-        TB_LOGI(TAG, "regulator update");
     }
-
-    if (bits) {
+    
+    if ((bits & BIT_REGULATOR_UPDATE) == BIT_REGULATOR_UPDATE) {
+        TB_LOGI(TAG, "regulator update");
         this->send_evt_update();
     }
 }
@@ -117,10 +118,6 @@ esp_err_t RegulatorManager::stop_regulator() {
 }
 
 esp_err_t RegulatorManager::process_temperature_update(int16_t temperature) {
-    if (!this->regulator->is_running()) {
-        return ESP_FAIL;
-    }
-
     TB_LOGI(TAG, "regulating to: %.2f*C", (float)temperature / 100.0f);
 
     this->regulator->update_temperature(temperature);

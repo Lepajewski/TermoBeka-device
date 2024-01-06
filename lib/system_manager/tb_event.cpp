@@ -51,8 +51,6 @@ const char *event_type_to_s(EventType type) {
         case EventType::SD_LOG:                             return "SD log";
 
         case EventType::PROFILE_START:                      return "Profile start";
-        case EventType::PROFILE_STOP:                       return "Profile stop";
-        case EventType::PROFILE_RESUME:                     return "Profile resume";
         case EventType::PROFILE_END:                        return "Profile end";
         case EventType::PROFILE_RESPONSE:                   return "Profile response";
         case EventType::PROFILE_UPDATE:                     return "Profile update";
@@ -123,8 +121,6 @@ const char *profile_event_type_to_s(ProfileEventType type) {
     switch (type) {
         case ProfileEventType::NEW_PROFILE:                 return "new profile";
         case ProfileEventType::START:                       return "start";
-        case ProfileEventType::STOP:                        return "stop";
-        case ProfileEventType::RESUME:                      return "resume";
         case ProfileEventType::END:                         return "end";
         case ProfileEventType::INFO:                        return "info";
         case ProfileEventType::NONE:                        return "none";

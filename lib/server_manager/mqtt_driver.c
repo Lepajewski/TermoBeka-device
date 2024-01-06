@@ -35,7 +35,7 @@ static void process_data_received(char *data, int len) {
 
     pb_decode(&istream, &ToDeviceMessage_msg, &decoded);
 
-    TB_LOGI(TAG, "Server Command: %d user: %s", (int) decoded.command, decoded.username);
+    TB_LOGI(TAG, "Server Command: %d", (int) decoded.command);
 }
 
 

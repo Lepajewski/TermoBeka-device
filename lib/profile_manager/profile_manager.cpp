@@ -75,16 +75,6 @@ void ProfileManager::process_profile_queue_event(ProfileEvent *evt) {
             this->send_evt_response(this->start_profile());
             break;
         }
-        case ProfileEventType::STOP:
-        {
-            this->send_evt_response(this->stop_profile());
-            break;
-        }
-        case ProfileEventType::RESUME:
-        {
-            this->send_evt_response(this->resume_profile());
-            break;
-        }
         case ProfileEventType::END:
         {
             this->send_evt_response(this->end_profile());
@@ -126,24 +116,9 @@ void ProfileManager::poll_running_profile_events() {
         this->send_evt_start();
     }
     
-    if ((bits & BIT_PROFILE_STOP) == BIT_PROFILE_STOP) {
-        TB_LOGI(TAG, "profile stopped");
-        this->send_evt_stop();
-    }
-    
-    if ((bits & BIT_PROFILE_RESUME) == BIT_PROFILE_RESUME) {
-        TB_LOGI(TAG, "profile resumed");
-        this->send_evt_resume();
-    }
-    
     if ((bits & BIT_PROFILE_END) == BIT_PROFILE_END) {
         TB_LOGI(TAG, "profile ended");
         this->send_evt_end();
-    }
-    
-    if ((bits & BIT_PROFILE_UPDATE) == BIT_PROFILE_UPDATE) {
-        TB_LOGI(TAG, "profile update");
-        this->send_evt_update();
     }
 }
 
@@ -154,7 +129,7 @@ void ProfileManager::process_events() {
 }
 
 profile_event_response ProfileManager::process_new_profile(profile_t *profile) {
-    if (this->profile->get_status() == Status_RUNNING) {
+    if (this->profile->is_running()) {
         TB_LOGE(TAG, "another profile is running");
         return PROFILE_LOAD_FAIL;
     }
@@ -175,28 +150,6 @@ profile_event_response ProfileManager::start_profile() {
 
     TB_LOGI(TAG, "started profile");
     return PROFILE_START_SUCCESS;
-}
-
-profile_event_response ProfileManager::stop_profile() {
-    esp_err_t err = this->profile->stop();
-    if (err != ESP_OK) {
-        TB_LOGE(TAG, "fail to stop profile");
-        return PROFILE_STOP_FAIL;
-    }
-
-    TB_LOGI(TAG, "stopped profile");
-    return PROFILE_STOP_SUCCESS;
-}
-
-profile_event_response ProfileManager::resume_profile() {
-    esp_err_t err = this->profile->resume();
-    if (err != ESP_OK) {
-        TB_LOGE(TAG, "fail to resume profile");
-        return PROFILE_RESUME_FAIL;
-    }
-
-    TB_LOGI(TAG, "resumed profile");
-    return PROFILE_RESUME_SUCCESS;
 }
 
 profile_event_response ProfileManager::end_profile() {
@@ -227,18 +180,6 @@ void ProfileManager::send_evt_start() {
     this->send_evt(&evt);
 }
 
-void ProfileManager::send_evt_stop() {
-    Event evt = {};
-    evt.type = EventType::PROFILE_STOP;
-    this->send_evt(&evt);
-}
-
-void ProfileManager::send_evt_resume() {
-    Event evt = {};
-    evt.type = EventType::PROFILE_RESUME;
-    this->send_evt(&evt);
-}
-
 void ProfileManager::send_evt_end() {
     Event evt = {};
     evt.type = EventType::PROFILE_END;
@@ -251,14 +192,5 @@ void ProfileManager::send_evt_response(profile_event_response response) {
     EventProfileResponse payload = {};
     payload.response = response;
     memcpy(&evt.payload, &payload.buffer, sizeof(EventProfileResponse));
-    this->send_evt(&evt);
-}
-
-void ProfileManager::send_evt_update() {
-    Event evt = {};
-    evt.type = EventType::PROFILE_UPDATE;
-    EventProfileUpdate payload = {};
-    payload.info = this->profile->get_profile_run_info();
-    memcpy(&evt.payload, &payload.buffer, sizeof(EventProfileUpdate));
     this->send_evt(&evt);
 }

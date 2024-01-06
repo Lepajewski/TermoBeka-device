@@ -1,52 +1,7 @@
 syntax = "proto3";
 
 
-enum MessageType {
-    NONE = 0;
-    PROFILE_STATUS_UPDATE = 1;
-    REGULATOR_STATUS_UPDATE = 2;
-};
-
-enum Status {
-    NOT_RUNNING = 0;
-    RUNNING = 1;
-    STOPPED = 2;
-    ENDED = 3;
-};
-
-
-message ProfileStatusUpdate {
-    Status status = 1;
-    uint32 current_duration = 2;
-    uint32 total_duration = 3;
-    uint32 step_start_time = 4;
-    uint32 step_end_time = 5;
-    uint32 step_stopped_time = 6;
-    uint32 profile_stopped_time = 7;
-    uint32 step_time_left = 8;
-    uint32 profile_time_left = 9;
-    uint32 profile_time_halted = 10;
-    int32 current_temperature = 11;
-    float progress_percent = 12;
-};
-
 message RegulatorStatusUpdate {
-    Status status = 1;
-    float uc_temperature = 2;
-    float temperature_0 = 3;
-    float temperature_1 = 4;
-    float temperature_2 = 5;
-    float temperature_3 = 6;
-    float temperature_4 = 7;
-    uint32 relays_states = 8;
-    float ssr_temperature_1 = 10;
-    float ssr_temperature_2 = 11;
-    float external_temperature = 12;
-};
-
-
-message FromDeviceMessage {
-    MessageType type = 1;
-    ProfileStatusUpdate profile_status_update = 2;
-    RegulatorStatusUpdate regulator_status_update = 3;
+    uint32 time = 1;
+    int32 avg_chamber_temperature = 2;
 };

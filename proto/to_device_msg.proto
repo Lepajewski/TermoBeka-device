@@ -1,18 +1,13 @@
 syntax = "proto3";
-import "nanopb.proto";
-
 
 enum Command {
     NONE = 0;
     NEW_PROFILE = 1;
     START_PROFILE = 2;
-    STOP_PROFILE = 3;
-    RESUME_PROFILE = 4;
-    END_PROFILE = 5;
+    END_PROFILE = 3;
 };
 
 
 message ToDeviceMessage {
     Command command = 1;
-    string username = 2 [(nanopb).max_length = 32];
 };
