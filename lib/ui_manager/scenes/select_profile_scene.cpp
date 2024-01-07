@@ -37,16 +37,26 @@ void SelectProfileScene::setup_options_list(std::string &ls_response) {
                         this->send_load_profiles();
                     };
                     entry.option_name = "/" + entry.option_name;
+                    list.push_back(entry);
                 }
                 break;
-                
-                default: {
-                    entry.select_callback = [](){};
+
+                case 'F': {
+                    size_t length = entry.option_name.size();
+                    std::string extension = ".csv";
+                    if (entry.option_name.substr(length - extension.size()).compare(extension) == 0) {
+                        entry.select_callback = [this, name]() {
+                            this->send_profile_chosen(name);
+                        };
+
+                        list.push_back(entry);
+                    }
                 }
+                
+                default:
                 break;
             }
 
-            list.push_back(entry);
             ls_response.erase(0, pos + 1);
         }
     }
@@ -77,12 +87,25 @@ void SelectProfileScene::back_button() {
 void SelectProfileScene::send_load_profiles() {
     profiles_loaded = false;
 
-    Event evt;
+    Event evt = {};
     evt.type = EventType::UI_PROFILES_LOAD;
 
     update_current_path();
-    SDEventPathArg arg;
+    SDEventPathArg arg = {};
     strncpy(arg.path, current_path.c_str(), SD_QUEUE_MAX_PAYLOAD);
+    memcpy(evt.payload, arg.buffer, SD_QUEUE_MAX_PAYLOAD);
+
+    send_evt(&evt);
+}
+
+void SelectProfileScene::send_profile_chosen(std::string filename) {
+    Event evt = {};
+    evt.type = EventType::UI_PROFILE_CHOSEN;
+
+    update_current_path();
+    SDEventPathArg arg = {};
+    std::string filepath = current_path + "/" + filename;
+    strncpy(arg.path, filepath.c_str(), SD_QUEUE_MAX_PAYLOAD);
     memcpy(evt.payload, arg.buffer, SD_QUEUE_MAX_PAYLOAD);
 
     send_evt(&evt);

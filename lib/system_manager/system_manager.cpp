@@ -19,7 +19,9 @@
 #include "commands/server_commands.h"
 #include "commands/ui_commands.h"
 #include "commands/commands.h"
+#include "commands/profile_commands.h"
 #include "system_manager.h"
+#include "profile_type.h"
 
 
 const char * const TAG = "SysMgr";
@@ -332,6 +334,11 @@ void SystemManager::poll_event() {
                 this->process_sd_load_ca_file();
                 break;
             }
+            case EventType::SD_PROFILE_LOAD:
+            {
+                this->process_sd_profile_load();
+                break;
+            }
             case EventType::UI_PROFILES_LOAD:
             {
                 if (evt.origin == EventOrigin::UI) {
@@ -340,6 +347,11 @@ void SystemManager::poll_event() {
                 else if (evt.origin == EventOrigin::SD) {
                     this->process_sd_to_ui_profiles_load();
                 }
+                break;
+            }
+            case EventType::UI_PROFILE_CHOSEN:
+            {
+                this->process_ui_profile_chosen(evt.payload);
                 break;
             }
             case EventType::PROFILE_RESPONSE:
@@ -398,6 +410,15 @@ void SystemManager::process_ui_button_press(uint8_t num) {
     TB_LOGI(TAG, "button: %" PRIu8 " press\n", num);
 }
 
+void SystemManager::process_ui_profile_chosen(uint8_t *payload) {
+    SDEvent evt = {};
+    evt.type = SDEventType::CAT_PROFILE;
+    memcpy(evt.payload, payload, SD_QUEUE_MAX_PAYLOAD);
+    if (send_to_sd_queue(&evt) != ESP_OK) {
+        TB_LOGE(TAG, "fail to send cat profile evt");
+    }
+}
+
 void SystemManager::process_sd_mounted() {
     TB_LOGI(TAG, "SD mounted");
     if (this->send_load_ca_cert() != ESP_OK) {
@@ -407,6 +428,28 @@ void SystemManager::process_sd_mounted() {
 
 void SystemManager::process_sd_unmounted() {
     TB_LOGI(TAG, "SD unmounted");
+}
+
+void SystemManager::process_sd_profile_load() {
+    RingbufHandle_t *ring_buf = this->get_sd_ring_buf();
+
+    size_t len;
+    char *ls_profiles = (char*) xRingbufferReceive(*ring_buf, &len, pdMS_TO_TICKS(10));
+    if (ls_profiles != NULL) {
+        std::string profile_str = std::string(ls_profiles, len);
+        vRingbufferReturnItem(*ring_buf, (void*) ls_profiles);
+
+        ProfileEventNewProfile arg = {};
+        arg.profile = string_to_profile(profile_str);
+
+        ProfileEvent evt = {};
+        evt.type = ProfileEventType::NEW_PROFILE;
+        memcpy(evt.payload, arg.buffer, PROFILE_QUEUE_MAX_PAYLOAD);
+
+        if (send_to_profile_queue(&evt) != ESP_OK) {
+            TB_LOGE(TAG, "fail to send new profile evt");
+        }
+    }
 }
 
 void SystemManager::process_sd_config_load(EventSDConfigLoad *payload) {

@@ -26,6 +26,7 @@ private:
     void update_current_path();
     void back_button();
     void send_load_profiles();
+    void send_profile_chosen(std::string filename);
 
     bool profiles_loaded = false;
 public:

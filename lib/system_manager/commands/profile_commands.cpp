@@ -14,7 +14,7 @@
 const char * const TAG = "CMDprof";
 
 
-static esp_err_t send_to_profile_queue(ProfileEvent *evt) {
+esp_err_t send_to_profile_queue(ProfileEvent *evt) {
     SystemManager *sysMgr = get_system_manager();
     QueueHandle_t *queue = sysMgr->get_profile_queue();
     evt->origin = EventOrigin::SYSTEM_MANAGER;

@@ -148,6 +148,18 @@ void SDManager::process_sd_event(SDEvent *evt) {
             delete [] path;
             break;
         }
+        case SDEventType::CAT_PROFILE:
+        {
+            SDEventPathArg *payload = reinterpret_cast<SDEventPathArg*>(evt->payload);
+            char *path = this->make_path(payload->path);
+
+            if (this->process_profile_cat(path) == ESP_OK) {
+                this->send_evt_sd_profile_load();
+            }
+
+            delete [] path;
+            break;
+        }
         case SDEventType::NONE:
         default:
             break;
@@ -241,6 +253,12 @@ void SDManager::send_evt_ui_profile_list() {
     this->send_evt(&evt);
 }
 
+void SDManager::send_evt_sd_profile_load() {
+    Event evt = {};
+    evt.type = EventType::SD_PROFILE_LOAD;
+    this->send_evt(&evt);
+}
+
 esp_err_t SDManager::process_load_ca_cert(const char *path) {
     if (this->card.cat(path) == ESP_OK) {
         char *buf = this->card.get_sd_buf();
@@ -262,6 +280,20 @@ esp_err_t SDManager::process_profile_list(const char *path) {
     UBaseType_t res = xRingbufferSend(*this->sd_ring_buf_handle, buf, strnlen(buf, SD_OPERATIONS_BUFFER_SIZE), pdMS_TO_TICKS(10000));
     if (res != pdTRUE) {
         TB_LOGE(TAG, "fail to send `ls profile_path` to ringbuf");
+    }
+    return ESP_OK;
+}
+
+esp_err_t SDManager::process_profile_cat(const char *path)
+{
+    if (this->card.cat(path) != ESP_OK) {
+        return ESP_FAIL;
+    }
+
+    char *buf = this->card.get_sd_buf();
+    UBaseType_t res = xRingbufferSend(*this->sd_ring_buf_handle, buf, strnlen(buf, SD_OPERATIONS_BUFFER_SIZE), pdMS_TO_TICKS(10000));
+    if (res != pdTRUE) {
+        TB_LOGE(TAG, "fail to send `cat profile_path` to ringbuf");
     }
     return ESP_OK;
 }

@@ -163,6 +163,7 @@ enum class SDEventType {
     SAVE_TO_FILE,
     LOAD_CA_CERT,
     UI_PROFILE_LIST,
+    CAT_PROFILE,
     NONE
 };
 

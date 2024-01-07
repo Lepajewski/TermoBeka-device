@@ -54,8 +54,10 @@ class SystemManager {
     void process_server_connected();
     void process_server_disconnected();
     void process_ui_button_press(uint8_t num);
+    void process_ui_profile_chosen(uint8_t *payload);
     void process_sd_mounted();
     void process_sd_unmounted();
+    void process_sd_profile_load();
     void process_sd_config_load(EventSDConfigLoad *payload);
     void process_sd_load_ca_file();
     void process_profile_response(EventProfileResponse *payload);
