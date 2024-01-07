@@ -41,8 +41,8 @@ std::unique_ptr<Scene> Scene::create_scene(SceneEnum target, std::shared_ptr<UIS
             result = std::make_unique<MenuScene>(system_state);
         }
         break;
-        case SceneEnum::settings: {
-
+        case SceneEnum::profile_selected: {
+            result = std::make_unique<ProfileSelectedScene>(system_state);
         }
         break;
         case SceneEnum::select_profile: {
