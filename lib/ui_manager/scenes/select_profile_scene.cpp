@@ -1,4 +1,4 @@
-#include "start_profile_scene.h"
+#include "select_profile_scene.h"
 
 #include "lcd_controller.h"
 #include "global_config.h"
@@ -9,7 +9,7 @@
 
 #define TAG "StartProfileScene"
 
-void StartProfileScene::setup_options_list(std::string &ls_response) {
+void SelectProfileScene::setup_options_list(std::string &ls_response) {
     std::vector<OptionEntry> list;
 
     if (ls_response.size() == 0) {
@@ -54,7 +54,7 @@ void StartProfileScene::setup_options_list(std::string &ls_response) {
     option_list = std::make_unique<OptionList>(option_list_rect, list);
 }
 
-void StartProfileScene::update_current_path() {
+void SelectProfileScene::update_current_path() {
     std::string ret = PROFILE_FOLDER_PATH;
     for (std::string v : folder_stack) {
         ret += "/" + v;
@@ -63,7 +63,7 @@ void StartProfileScene::update_current_path() {
     scrolling_text.set_text(ret);
 }
 
-void StartProfileScene::back_button() {
+void SelectProfileScene::back_button() {
     if (folder_stack.size() < 1) {
         this->next_scene = SceneEnum::menu;
         this->should_be_changed = true;
@@ -74,7 +74,7 @@ void StartProfileScene::back_button() {
     send_load_profiles();
 }
 
-void StartProfileScene::send_load_profiles() {
+void SelectProfileScene::send_load_profiles() {
     profiles_loaded = false;
 
     Event evt;
@@ -88,18 +88,18 @@ void StartProfileScene::send_load_profiles() {
     send_evt(&evt);
 }
 
-StartProfileScene::StartProfileScene(std::shared_ptr<UISystemState> system_state) : Scene(system_state)
+SelectProfileScene::SelectProfileScene(std::shared_ptr<UISystemState> system_state) : Scene(system_state)
 {
     LCDController::clear_frame_buf();
 
     send_load_profiles();
 }
 
-SceneEnum StartProfileScene::get_scene_enum() {
-    return SceneEnum::start_profile;
+SceneEnum SelectProfileScene::get_scene_enum() {
+    return SceneEnum::select_profile;
 }
 
-void StartProfileScene::button_callback(Button *button, PressType type) {
+void SelectProfileScene::button_callback(Button *button, PressType type) {
     ButtonType button_type = button->get_button_type();
 
     switch (button_type) {
@@ -140,7 +140,7 @@ void StartProfileScene::button_callback(Button *button, PressType type) {
     }
 }
 
-void StartProfileScene::update(float d_time) {
+void SelectProfileScene::update(float d_time) {
     LCDController::clear_frame_buf();
 
     if (option_list != NULL && profiles_loaded) {
@@ -156,7 +156,7 @@ void StartProfileScene::update(float d_time) {
     LCDController::display_frame_buf();
 }
 
-void StartProfileScene::process_ui_event(UIEvent *evt) {
+void SelectProfileScene::process_ui_event(UIEvent *evt) {
     if (evt->type == UIEventType::PROFILES_LOAD) {
         RingbufHandle_t *ring_buf = sys_manager->get_sd_ring_buf();
 

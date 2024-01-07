@@ -45,8 +45,8 @@ std::unique_ptr<Scene> Scene::create_scene(SceneEnum target, std::shared_ptr<UIS
 
         }
         break;
-        case SceneEnum::start_profile: {
-            result = std::make_unique<StartProfileScene>(system_state);
+        case SceneEnum::select_profile: {
+            result = std::make_unique<SelectProfileScene>(system_state);
         }
         break;
         default:

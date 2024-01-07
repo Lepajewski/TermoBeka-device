@@ -12,7 +12,7 @@
 
 #define START_PROFILE_SCENE_SCROLL_SPEED 2.5f
 
-class StartProfileScene : public Scene {
+class SelectProfileScene : public Scene {
 private:
     const Rect scrolling_text_rect = Rect(FONT5X7_WIDTH * 5, 0, LCD_WIDTH, FONT5X7_LINE_HEIGHT);
     const Rect option_list_rect = Rect(0, FONT5X7_LINE_HEIGHT, LCD_WIDTH, LCD_HEIGHT - FONT5X7_LINE_HEIGHT);
@@ -29,7 +29,7 @@ private:
 
     bool profiles_loaded = false;
 public:
-    StartProfileScene(std::shared_ptr<UISystemState> system_state);
+    SelectProfileScene(std::shared_ptr<UISystemState> system_state);
 
     SceneEnum get_scene_enum() override;
     void button_callback(Button *button, PressType type) override;

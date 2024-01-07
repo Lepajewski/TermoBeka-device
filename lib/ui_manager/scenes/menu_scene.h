@@ -10,13 +10,8 @@ private:
     StatusBar status;
 
     OptionList list = OptionList(Rect(0, 8, LCD_WIDTH, LCD_HEIGHT - 8), {
-        {"Start profile", [this](){this->next_scene = SceneEnum::start_profile; this->should_be_changed = true;}},
+        {"Select profile", [this](){this->next_scene = SceneEnum::select_profile; this->should_be_changed = true;}},
         {"Settings", [this](){/* this->next_scene = SceneEnum::settings; this->should_be_changed = true; */}},
-        {"Option 4", [](){}},
-        {"Option 5", [](){}},
-        {"Option 6", [](){}},
-        {"Option 7", [](){}},
-        {"Option 8", [](){}}
     });
 
 public:
