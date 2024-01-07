@@ -135,6 +135,7 @@ enum class UIEventType {
     ERROR_SHOW,
     WIFI_STRENGTH,
     PROFILES_LOAD,
+    PROFILE_RESPONSE,
     NONE
 };
 

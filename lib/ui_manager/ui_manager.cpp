@@ -39,7 +39,7 @@ void UIManager::process_ui_event(UIEvent *evt) {
     switch (evt->type) {
         case UIEventType::BUZZER_BEEP:
         {
-            UIEventBuzzerBeep *payload = reinterpret_cast<UIEventBuzzerBeep*> (evt->payload);
+            UIEventBuzzerBeep *payload = reinterpret_cast<UIEventBuzzerBeep*>(evt->payload);
 
             TB_LOGI(TAG, "Duration: %u", payload->duration);
             this->expander->buzzer_beep(payload->duration);
@@ -47,6 +47,13 @@ void UIManager::process_ui_event(UIEvent *evt) {
         }
         case UIEventType::ERROR_SHOW:
         {
+            break;
+        }
+        case UIEventType::PROFILE_RESPONSE:
+        {
+            EventProfileResponse *payload = reinterpret_cast<EventProfileResponse*>(evt->payload);
+
+            process_profile_response(payload->response);
             break;
         }
         case UIEventType::NONE:
@@ -69,6 +76,36 @@ void UIManager::poll_ui_events() {
                 memcpy(&state->wifi_rssi, evt.payload, sizeof(int));
             }
         }
+    }
+}
+
+void UIManager::process_profile_response(profile_event_response response) {
+    switch (response) {
+        case PROFILE_LOAD_SUCCESS: {
+            state->profile_state = ProfileState::loaded;
+        }
+        break;
+
+        case PROFILE_LOAD_FAIL: {
+            state->profile_state = ProfileState::unloaded;
+            state->selected_profile = "";
+        }
+        break;
+
+        case PROFILE_START_SUCCESS: {
+            state->profile_state = ProfileState::running;
+        }
+        break;
+
+        case PROFILE_START_FAIL:
+        case PROFILE_END_SUCCESS: {
+            state->profile_state = ProfileState::loaded;
+        }
+        break;
+
+        case PROFILE_END_FAIL:
+        default:
+        break;
     }
 }
 

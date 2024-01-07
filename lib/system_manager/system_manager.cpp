@@ -485,6 +485,11 @@ void SystemManager::process_sd_load_ca_file() {
 
 void SystemManager::process_profile_response(EventProfileResponse *payload) {
     TB_LOGI(TAG, "profile response: %d", payload->response);
+
+    UIEvent evt = {};
+    evt.type = UIEventType::PROFILE_RESPONSE;
+    memcpy(evt.payload, payload->buffer, EVENT_QUEUE_MAX_PAYLOAD);
+    send_to_ui_queue(&evt);
 }
 
 void SystemManager::process_regulator_update(EventRegulatorUpdate *payload) {

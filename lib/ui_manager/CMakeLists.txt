@@ -7,6 +7,7 @@ idf_component_register(
         "scenes/menu_scene.cpp"
         "scenes/select_profile_scene.cpp"
         "scenes/profile_selected_scene.cpp"
+        "scenes/start_profile_scene.cpp"
         "components/option_list.cpp"
         "components/rect.cpp"
         "components/status_bar.cpp"
