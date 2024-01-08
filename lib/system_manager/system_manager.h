@@ -65,6 +65,8 @@ class SystemManager {
     void process_command(char *cmd);
     void process_ui_to_sd_profiles_load(uint8_t *payload);
     void process_sd_to_ui_profiles_load();
+    void process_ui_profile_start();
+    void process_ui_profile_stop();
 
     esp_err_t send_connect_wifi();
     esp_err_t send_disconnect_wifi();

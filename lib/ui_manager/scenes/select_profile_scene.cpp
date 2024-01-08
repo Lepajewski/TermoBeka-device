@@ -8,6 +8,7 @@
 #include <tuple>
 
 #define TAG "StartProfileScene"
+#define ERROR_DISPLAY_DURATION 2
 
 void SelectProfileScene::setup_options_list(std::string &ls_response) {
     std::vector<OptionEntry> list;
@@ -49,7 +50,12 @@ void SelectProfileScene::setup_options_list(std::string &ls_response) {
                             this->system_state->selected_profile = name;
                             this->system_state->profile_state = ProfileState::loading;
                             this->send_profile_chosen(name);
-                            this->next_scene = SceneEnum::profile_selected;
+
+                            this->system_state->waiting_message_args.type = MessageType::profile_selected;
+                            std::shared_ptr<UISystemState> state = system_state;
+                            this->system_state->waiting_message_args.waiting_function = [state](){ return state->profile_state == ProfileState::loading; };
+                            this->system_state->waiting_message_args.success_function = [state](){ return state->profile_state == ProfileState::loaded; };
+                            this->next_scene = SceneEnum::waiting_message;
                             this->should_be_changed = true;
                         };
 
@@ -117,9 +123,22 @@ void SelectProfileScene::send_profile_chosen(std::string filename) {
 
 SelectProfileScene::SelectProfileScene(std::shared_ptr<UISystemState> system_state) : Scene(system_state)
 {
+    display_err = system_state->profile_state == ProfileState::running  ||
+                  system_state->profile_state == ProfileState::starting ||
+                  system_state->profile_state == ProfileState::stopping;
+
     LCDController::clear_frame_buf();
 
-    send_load_profiles();
+    if (display_err) {
+        LCDController::draw_string(0, (LCD_HEIGHT / 2) - FONT5X7_LINE_HEIGHT, "Cant select");
+        LCDController::draw_string(0, LCD_HEIGHT / 2                        , "when profile");
+        LCDController::draw_string(0, (LCD_HEIGHT / 2) + FONT5X7_LINE_HEIGHT, "is running");
+
+        LCDController::display_frame_buf();
+    }
+    else {
+        send_load_profiles();
+    }
 }
 
 SceneEnum SelectProfileScene::get_scene_enum() {
@@ -168,6 +187,15 @@ void SelectProfileScene::button_callback(Button *button, PressType type) {
 }
 
 void SelectProfileScene::update(float d_time) {
+    if (display_err) {
+        counter += d_time;
+        if (counter >= ERROR_DISPLAY_DURATION) {
+            this->next_scene = SceneEnum::menu;
+            this->should_be_changed = true;
+        }
+        return;
+    }
+
     LCDController::clear_frame_buf();
 
     if (option_list != NULL && profiles_loaded) {

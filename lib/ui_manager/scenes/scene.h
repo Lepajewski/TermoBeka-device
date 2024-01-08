@@ -9,7 +9,7 @@
 #include "system_manager.h"
 #include "ui_system_state.h"
 
-enum class SceneEnum { startup, menu, profile_selected, select_profile, start_profile, none };
+enum class SceneEnum { startup, menu, waiting_message, select_profile, start_profile, none };
 
 class Scene {
 protected:
@@ -39,7 +39,7 @@ public:
 #include "startup_scene.h"
 #include "menu_scene.h"
 #include "select_profile_scene.h"
-#include "profile_selected_scene.h"
+#include "waiting_message_scene.h"
 #include "start_profile_scene.h"
 
 #endif

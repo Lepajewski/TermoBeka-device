@@ -43,9 +43,33 @@ void StartProfileScene::construct_option_list() {
 }
 
 void StartProfileScene::start_profile() {
+    this->system_state->profile_state = ProfileState::starting;
+    
+    Event evt = {};
+    evt.type = EventType::UI_PROFILE_START;
+    this->send_evt(&evt);
+
+    this->system_state->waiting_message_args.type = MessageType::profile_started;
+    std::shared_ptr<UISystemState> state = system_state;
+    this->system_state->waiting_message_args.waiting_function = [state](){ return state->profile_state == ProfileState::starting; };
+    this->system_state->waiting_message_args.success_function = [state](){ return state->profile_state == ProfileState::running; };
+    this->next_scene = SceneEnum::waiting_message;
+    this->should_be_changed = true;
 }
 
 void StartProfileScene::stop_profile() {
+    this->system_state->profile_state = ProfileState::stopping;
+
+    Event evt = {};
+    evt.type = EventType::UI_PROFILE_STOP;
+    this->send_evt(&evt);
+
+    this->system_state->waiting_message_args.type = MessageType::profile_stopped;
+    std::shared_ptr<UISystemState> state = system_state;
+    this->system_state->waiting_message_args.waiting_function = [state](){ return state->profile_state == ProfileState::stopping; };
+    this->system_state->waiting_message_args.success_function = [state](){ return state->profile_state == ProfileState::loaded; };
+    this->next_scene = SceneEnum::waiting_message;
+    this->should_be_changed = true;
 }
 
 SceneEnum StartProfileScene::get_scene_enum() {

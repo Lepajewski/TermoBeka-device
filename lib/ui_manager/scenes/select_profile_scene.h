@@ -29,6 +29,10 @@ private:
     void send_profile_chosen(std::string filename);
 
     bool profiles_loaded = false;
+
+    bool display_err = false;
+    float counter = 0;
+    
 public:
     SelectProfileScene(std::shared_ptr<UISystemState> system_state);
 

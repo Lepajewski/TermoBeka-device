@@ -354,6 +354,16 @@ void SystemManager::poll_event() {
                 this->process_ui_profile_chosen(evt.payload);
                 break;
             }
+            case EventType::UI_PROFILE_START: 
+            {
+                this->process_ui_profile_start();
+                break;
+            }
+            case EventType::UI_PROFILE_STOP:
+            {
+                this->process_ui_profile_stop();
+                break;
+            }
             case EventType::PROFILE_RESPONSE:
             {
                 EventProfileResponse *payload = reinterpret_cast<EventProfileResponse*>(evt.payload);
@@ -598,6 +608,22 @@ esp_err_t SystemManager::send_unmount_card() {
 
 esp_err_t SystemManager::send_load_ca_cert() {
     return process_path_cmd(SDEventType::LOAD_CA_CERT, MQTT_TLS_CA_SD_CARD_PATH);
+}
+
+void SystemManager::process_ui_profile_start() {
+    ProfileEvent evt = {};
+    evt.type = ProfileEventType::START;
+    if (send_to_profile_queue(&evt) != ESP_OK) {
+        TB_LOGE(TAG, "failed to send profile start event to ui_queue");
+    }
+}
+
+void SystemManager::process_ui_profile_stop() {
+    ProfileEvent evt = {};
+    evt.type = ProfileEventType::END;
+    if (send_to_profile_queue(&evt) != ESP_OK) {
+        TB_LOGE(TAG, "failed to send profile stop event to ui_queue");
+    }
 }
 
 QueueHandle_t *SystemManager::get_event_queue() {
