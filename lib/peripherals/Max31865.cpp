@@ -250,7 +250,7 @@ esp_err_t Max31865::getRTD(rtd_conv_result *result) {
     result->rtd[i] |= rtd_data[1];
   }
 
-  err = setVbias(true);
+  err = setVbias(false);
   if (err != ESP_OK) {
     return err;
   }
