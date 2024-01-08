@@ -1,0 +1,118 @@
+<mxfile host="app.diagrams.net" modified="2024-01-07T23:30:32.180Z" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36" etag="VSASBPgdGd4dL44yKKTy" version="22.1.17" type="device">
+  <diagram name="Strona-1" id="hlwGKANcUzKCWohh3n2a">
+    <mxGraphModel dx="977" dy="496" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="3600" pageHeight="4800" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="q6NVtPdProWI0FNGWXbx-1" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="1">
+          <mxGeometry x="249" y="16" width="230" height="394" as="geometry" />
+        </mxCell>
+        <mxCell id="q6NVtPdProWI0FNGWXbx-2" value="Server Manager Task" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="240" y="-2.0961010704922955e-13" width="120" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="q6NVtPdProWI0FNGWXbx-3" value="subscribe to server topics" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="279" y="144.90999999999985" width="160" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="q6NVtPdProWI0FNGWXbx-4" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;exitX=0.5;exitY=1;exitDx=0;exitDy=0;" edge="1" parent="1" source="q6NVtPdProWI0FNGWXbx-3" target="q6NVtPdProWI0FNGWXbx-11">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="359" y="223.93999999999983" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="q6NVtPdProWI0FNGWXbx-5" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=1;entryY=0.5;entryDx=0;entryDy=0;exitX=0.5;exitY=1;exitDx=0;exitDy=0;" edge="1" parent="1" source="q6NVtPdProWI0FNGWXbx-12" target="q6NVtPdProWI0FNGWXbx-11">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="359" y="300" />
+              <mxPoint x="459" y="300" />
+              <mxPoint x="459" y="210" />
+            </Array>
+            <mxPoint x="359" y="419.20000000000005" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="q6NVtPdProWI0FNGWXbx-6" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="q6NVtPdProWI0FNGWXbx-7" target="q6NVtPdProWI0FNGWXbx-9">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="q6NVtPdProWI0FNGWXbx-7" value="load credentials,&lt;br&gt;setup MQTT client" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="279" y="43.909999999999854" width="160" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="q6NVtPdProWI0FNGWXbx-8" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="q6NVtPdProWI0FNGWXbx-9" target="q6NVtPdProWI0FNGWXbx-3">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="q6NVtPdProWI0FNGWXbx-9" value="connect to MQTT broker" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="279" y="93.90999999999985" width="160" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="q6NVtPdProWI0FNGWXbx-10" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="q6NVtPdProWI0FNGWXbx-11" target="q6NVtPdProWI0FNGWXbx-12">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="q6NVtPdProWI0FNGWXbx-11" value="receive data from&lt;br&gt;Server Queue" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="279" y="194.90999999999983" width="160" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="q6NVtPdProWI0FNGWXbx-12" value="send data to broker" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="279" y="244.90999999999983" width="160" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="q6NVtPdProWI0FNGWXbx-13" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="q6NVtPdProWI0FNGWXbx-14" target="q6NVtPdProWI0FNGWXbx-15">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="q6NVtPdProWI0FNGWXbx-14" value="MQTT events callback" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="279" y="309.72999999999996" width="160" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="q6NVtPdProWI0FNGWXbx-15" value="send event to Event Queue" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="279" y="367.64" width="160" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="q6NVtPdProWI0FNGWXbx-16" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="1">
+          <mxGeometry x="10" y="16" width="210" height="394" as="geometry" />
+        </mxCell>
+        <mxCell id="q6NVtPdProWI0FNGWXbx-17" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="q6NVtPdProWI0FNGWXbx-18" target="q6NVtPdProWI0FNGWXbx-30">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="q6NVtPdProWI0FNGWXbx-18" value="initialize WiFi &amp;amp; NTP driver" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="30" y="43.90999999999988" width="160" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="q6NVtPdProWI0FNGWXbx-19" value="synchronize time with NTP server" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="30" y="194.91" width="160" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="q6NVtPdProWI0FNGWXbx-20" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;exitX=0.5;exitY=1;exitDx=0;exitDy=0;" edge="1" parent="1" source="q6NVtPdProWI0FNGWXbx-19" target="q6NVtPdProWI0FNGWXbx-21">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="110" y="234.91000000000003" as="sourcePoint" />
+            <mxPoint x="110" y="246.16000000000003" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="q6NVtPdProWI0FNGWXbx-21" value="receive from WiFi Queue &amp;amp; send to Event Queue" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="30" y="244.91000000000003" width="160" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="q6NVtPdProWI0FNGWXbx-22" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="q6NVtPdProWI0FNGWXbx-23" target="q6NVtPdProWI0FNGWXbx-19">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="q6NVtPdProWI0FNGWXbx-23" value="connect to WiFi" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="30" y="144.91" width="160" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="q6NVtPdProWI0FNGWXbx-24" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="q6NVtPdProWI0FNGWXbx-25" target="q6NVtPdProWI0FNGWXbx-26">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="q6NVtPdProWI0FNGWXbx-25" value="WiFi events callback" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="35" y="309.73" width="160" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="q6NVtPdProWI0FNGWXbx-26" value="send event to Event Queue" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="35" y="367.64000000000004" width="160" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="q6NVtPdProWI0FNGWXbx-27" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=1;entryDx=0;entryDy=0;exitX=1;exitY=0.75;exitDx=0;exitDy=0;" edge="1" parent="1" source="q6NVtPdProWI0FNGWXbx-21" target="q6NVtPdProWI0FNGWXbx-21">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="210" y="267" />
+              <mxPoint x="210" y="300" />
+              <mxPoint x="110" y="300" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="q6NVtPdProWI0FNGWXbx-28" value="WiFi Manager Task" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry y="-1.1368683772161603e-13" width="120" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="q6NVtPdProWI0FNGWXbx-29" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="q6NVtPdProWI0FNGWXbx-30" target="q6NVtPdProWI0FNGWXbx-23">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="q6NVtPdProWI0FNGWXbx-30" value="wait for WiFi credentials" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="30" y="93.91" width="160" height="30" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

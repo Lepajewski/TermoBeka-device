@@ -1,0 +1,141 @@
+<mxfile host="app.diagrams.net" modified="2024-01-07T23:24:03.311Z" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36" etag="GSq_9IhblDe_DOBJvGbJ" version="22.1.17" type="device">
+  <diagram name="Strona-1" id="QGczORv0UqKZ5apIK8_u">
+    <mxGraphModel dx="1018" dy="517" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="3600" pageHeight="4800" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="wlZTuIflVcCgHiDRNBI7-1" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="8.5" y="10.97" width="201.5" height="449.03" as="geometry" />
+        </mxCell>
+        <mxCell id="wlZTuIflVcCgHiDRNBI7-2" value="MAIN" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry y="0.97" width="78.5" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="wlZTuIflVcCgHiDRNBI7-3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="wlZTuIflVcCgHiDRNBI7-4" target="wlZTuIflVcCgHiDRNBI7-8">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="wlZTuIflVcCgHiDRNBI7-4" value="start UI Manager Task" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="29.25" y="119.03" width="160" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="wlZTuIflVcCgHiDRNBI7-5" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="wlZTuIflVcCgHiDRNBI7-6" target="wlZTuIflVcCgHiDRNBI7-4">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="wlZTuIflVcCgHiDRNBI7-6" value="start System Manager Task" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="29.25" y="50" width="160" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="wlZTuIflVcCgHiDRNBI7-7" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="wlZTuIflVcCgHiDRNBI7-8" target="wlZTuIflVcCgHiDRNBI7-10">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="wlZTuIflVcCgHiDRNBI7-8" value="start SD Manager Task" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="29.25" y="189" width="160" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="wlZTuIflVcCgHiDRNBI7-9" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="wlZTuIflVcCgHiDRNBI7-10" target="wlZTuIflVcCgHiDRNBI7-12">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="wlZTuIflVcCgHiDRNBI7-10" value="start WiFi Manager Task" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="29.25" y="259.03" width="160" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="wlZTuIflVcCgHiDRNBI7-11" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="wlZTuIflVcCgHiDRNBI7-12" target="wlZTuIflVcCgHiDRNBI7-13">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="wlZTuIflVcCgHiDRNBI7-12" value="start Server Manager Task" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="29.25" y="329.03" width="160" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="wlZTuIflVcCgHiDRNBI7-13" value="start Profile Manager Task" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="29.25" y="399" width="160" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="wlZTuIflVcCgHiDRNBI7-14" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="1">
+          <mxGeometry x="240" y="10" width="390" height="449.03" as="geometry" />
+        </mxCell>
+        <mxCell id="wlZTuIflVcCgHiDRNBI7-15" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="wlZTuIflVcCgHiDRNBI7-16" target="wlZTuIflVcCgHiDRNBI7-35">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="wlZTuIflVcCgHiDRNBI7-16" value="load default config" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="254.60000000000002" y="94.97000000000006" width="160" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="wlZTuIflVcCgHiDRNBI7-17" value="System Manager Task" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="230" y="2.731148640577885e-14" width="129.11" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="wlZTuIflVcCgHiDRNBI7-18" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="wlZTuIflVcCgHiDRNBI7-19" target="wlZTuIflVcCgHiDRNBI7-16">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="wlZTuIflVcCgHiDRNBI7-19" value="create all Events Queues" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="254.60000000000002" y="40.00000000000003" width="160" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="wlZTuIflVcCgHiDRNBI7-20" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="wlZTuIflVcCgHiDRNBI7-38" target="wlZTuIflVcCgHiDRNBI7-22">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="wlZTuIflVcCgHiDRNBI7-21" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="wlZTuIflVcCgHiDRNBI7-22" target="wlZTuIflVcCgHiDRNBI7-28">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="335" y="450.03" />
+              <mxPoint x="430" y="450.03" />
+              <mxPoint x="430" y="325.03" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="wlZTuIflVcCgHiDRNBI7-22" value="send response to appropriate task" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="254.60000000000002" y="409.94000000000005" width="160" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="wlZTuIflVcCgHiDRNBI7-23" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="wlZTuIflVcCgHiDRNBI7-24" target="wlZTuIflVcCgHiDRNBI7-26">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="wlZTuIflVcCgHiDRNBI7-24" value="receive command" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="464.73" y="259.97" width="160" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="wlZTuIflVcCgHiDRNBI7-25" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="wlZTuIflVcCgHiDRNBI7-26" target="wlZTuIflVcCgHiDRNBI7-24">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="544.98" y="349.97" />
+              <mxPoint x="449.98" y="349.97" />
+              <mxPoint x="449.98" y="274.97" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="wlZTuIflVcCgHiDRNBI7-26" value="send command event to Event Queue" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="464.73" y="309.97" width="160" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="wlZTuIflVcCgHiDRNBI7-27" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="wlZTuIflVcCgHiDRNBI7-28" target="wlZTuIflVcCgHiDRNBI7-38">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="wlZTuIflVcCgHiDRNBI7-28" value="poll event from Event Queue&amp;nbsp;" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="254.60000000000002" y="309.97" width="160" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="wlZTuIflVcCgHiDRNBI7-29" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="wlZTuIflVcCgHiDRNBI7-31" target="wlZTuIflVcCgHiDRNBI7-37">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="wlZTuIflVcCgHiDRNBI7-30" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="wlZTuIflVcCgHiDRNBI7-31" target="wlZTuIflVcCgHiDRNBI7-33">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="450" y="225.03" />
+              <mxPoint x="450" y="225.03" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="wlZTuIflVcCgHiDRNBI7-31" value="init console, start Console Task" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="254.60000000000002" y="209.97000000000006" width="160" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="wlZTuIflVcCgHiDRNBI7-32" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="wlZTuIflVcCgHiDRNBI7-33" target="wlZTuIflVcCgHiDRNBI7-24">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="wlZTuIflVcCgHiDRNBI7-33" value="Console Task" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="464.98" y="209.97000000000003" width="160" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="wlZTuIflVcCgHiDRNBI7-34" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="wlZTuIflVcCgHiDRNBI7-35" target="wlZTuIflVcCgHiDRNBI7-31">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="wlZTuIflVcCgHiDRNBI7-35" value="load configuration from SD &lt;br&gt;or default from NVS" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="254.60000000000002" y="148.97000000000006" width="160" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="wlZTuIflVcCgHiDRNBI7-36" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="wlZTuIflVcCgHiDRNBI7-37" target="wlZTuIflVcCgHiDRNBI7-28">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="wlZTuIflVcCgHiDRNBI7-37" value="send WiFi credentials to WiFi Manager Task" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="254.60000000000002" y="261.97" width="160" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="wlZTuIflVcCgHiDRNBI7-38" value="process event" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="254.60000000000002" y="359.97" width="160" height="30" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
