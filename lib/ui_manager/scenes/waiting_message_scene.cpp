@@ -9,11 +9,11 @@ WaitingMessageScene::WaitingMessageScene(std::shared_ptr<UISystemState> system_s
     switch (system_state->waiting_message_args.type) {
         case MessageType::profile_selected: {
             waiting_str[0] = "Loading:";
-            waiting_str[1] = system_state->selected_profile;
+            waiting_str[1] = system_state->profile_info.selected_profile;
             success_str[0] = "Load success";
-            success_str[1] = system_state->selected_profile;
+            success_str[1] = system_state->profile_info.selected_profile;
             fail_str[0] = "Load failed";
-            fail_str[1] = system_state->selected_profile;
+            fail_str[1] = system_state->profile_info.selected_profile;
             waiting_function = system_state->waiting_message_args.waiting_function;
             success_function = system_state->waiting_message_args.success_function;
         }
@@ -21,11 +21,11 @@ WaitingMessageScene::WaitingMessageScene(std::shared_ptr<UISystemState> system_s
 
         case MessageType::profile_started: {
             waiting_str[0] = "Starting:";
-            waiting_str[1] = system_state->selected_profile;
+            waiting_str[1] = system_state->profile_info.selected_profile;
             success_str[0] = "Start success";
-            success_str[1] = system_state->selected_profile;
+            success_str[1] = system_state->profile_info.selected_profile;
             fail_str[0] = "Start failed";
-            fail_str[1] = system_state->selected_profile;
+            fail_str[1] = system_state->profile_info.selected_profile;
             waiting_function = system_state->waiting_message_args.waiting_function;
             success_function = system_state->waiting_message_args.success_function;
         }
@@ -33,11 +33,11 @@ WaitingMessageScene::WaitingMessageScene(std::shared_ptr<UISystemState> system_s
 
         case MessageType::profile_stopped: {
             waiting_str[0] = "Stopping:";
-            waiting_str[1] = system_state->selected_profile;
+            waiting_str[1] = system_state->profile_info.selected_profile;
             success_str[0] = "Stop success";
-            success_str[1] = system_state->selected_profile;
+            success_str[1] = system_state->profile_info.selected_profile;
             fail_str[0] = "Stop failed";
-            fail_str[1] = system_state->selected_profile;
+            fail_str[1] = system_state->profile_info.selected_profile;
             waiting_function = system_state->waiting_message_args.waiting_function;
             success_function = system_state->waiting_message_args.success_function;
         }

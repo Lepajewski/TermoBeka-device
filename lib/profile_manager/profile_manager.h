@@ -33,7 +33,7 @@ class ProfileManager {
     void send_evt_start();
     void send_evt_end();
     void send_evt_response(profile_event_response response);
-    void send_evt_update();
+    void send_evt_new_profile_info();
  public:
     ProfileManager();
     ~ProfileManager();

@@ -47,14 +47,14 @@ void SelectProfileScene::setup_options_list(std::string &ls_response) {
                     std::string extension = ".csv";
                     if (entry.option_name.substr(length - extension.size()).compare(extension) == 0) {
                         entry.select_callback = [this, name]() {
-                            this->system_state->selected_profile = name;
-                            this->system_state->profile_state = ProfileState::loading;
+                            this->system_state->profile_info.selected_profile = name;
+                            this->system_state->profile_info.profile_state = ProfileState::loading;
                             this->send_profile_chosen(name);
 
                             this->system_state->waiting_message_args.type = MessageType::profile_selected;
                             std::shared_ptr<UISystemState> state = system_state;
-                            this->system_state->waiting_message_args.waiting_function = [state](){ return state->profile_state == ProfileState::loading; };
-                            this->system_state->waiting_message_args.success_function = [state](){ return state->profile_state == ProfileState::loaded; };
+                            this->system_state->waiting_message_args.waiting_function = [state](){ return state->profile_info.profile_state == ProfileState::loading; };
+                            this->system_state->waiting_message_args.success_function = [state](){ return state->profile_info.profile_state == ProfileState::loaded; };
                             this->next_scene = SceneEnum::waiting_message;
                             this->should_be_changed = true;
                         };
@@ -123,9 +123,9 @@ void SelectProfileScene::send_profile_chosen(std::string filename) {
 
 SelectProfileScene::SelectProfileScene(std::shared_ptr<UISystemState> system_state) : Scene(system_state)
 {
-    display_err = system_state->profile_state == ProfileState::running  ||
-                  system_state->profile_state == ProfileState::starting ||
-                  system_state->profile_state == ProfileState::stopping;
+    display_err = system_state->profile_info.profile_state == ProfileState::running  ||
+                  system_state->profile_info.profile_state == ProfileState::starting ||
+                  system_state->profile_info.profile_state == ProfileState::stopping;
 
     LCDController::clear_frame_buf();
 

@@ -56,6 +56,20 @@ void UIManager::process_ui_event(UIEvent *evt) {
             process_profile_response(payload->response);
             break;
         }
+        case UIEventType::NEW_PROFILE_INFO:
+        {
+            EventNewProfileInfo *payload = reinterpret_cast<EventNewProfileInfo*>(evt->payload);
+
+            process_new_profile_info(payload);
+            break;
+        }
+        case UIEventType::REGULATOR_UPDATE: 
+        {
+            EventRegulatorUpdate *payload = reinterpret_cast<EventRegulatorUpdate*>(evt->payload);
+            
+            process_regulator_update(payload->info);
+            break;
+        }
         case UIEventType::NONE:
         default:
             break;
@@ -82,24 +96,24 @@ void UIManager::poll_ui_events() {
 void UIManager::process_profile_response(profile_event_response response) {
     switch (response) {
         case PROFILE_LOAD_SUCCESS: {
-            state->profile_state = ProfileState::loaded;
+            state->profile_info.profile_state = ProfileState::loaded;
         }
         break;
 
         case PROFILE_LOAD_FAIL: {
-            state->profile_state = ProfileState::unloaded;
-            state->selected_profile = "";
+            state->profile_info.profile_state = ProfileState::unloaded;
+            state->profile_info.selected_profile = "";
         }
         break;
 
         case PROFILE_START_SUCCESS: {
-            state->profile_state = ProfileState::running;
+            state->profile_info.profile_state = ProfileState::running;
         }
         break;
 
         case PROFILE_START_FAIL:
         case PROFILE_END_SUCCESS: {
-            state->profile_state = ProfileState::loaded;
+            state->profile_info.profile_state = ProfileState::loaded;
         }
         break;
 
@@ -107,6 +121,15 @@ void UIManager::process_profile_response(profile_event_response response) {
         default:
         break;
     }
+}
+
+void UIManager::process_new_profile_info(EventNewProfileInfo *payload) {
+    state->profile_info.profile_duration = payload->info.duration;
+}
+
+void UIManager::process_regulator_update(RegulatorStatusUpdate &info) {
+    state->profile_info.profile_time = info.time;
+    state->profile_info.avg_temperature = info.avg_chamber_temperature;
 }
 
 void UIManager::send_evt(Event *evt) {

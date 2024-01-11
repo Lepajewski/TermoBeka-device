@@ -297,6 +297,10 @@ EventGroupHandle_t *Profile::get_profile_event_group() {
     return &this->profile_event_group;
 }
 
+profile_run_info *Profile::get_profile_run_info() {
+    return &this->info;
+}
+
 void Profile::print_raw_profile() {
     for (uint8_t i = 0; i < PROFILE_MAX_VERTICES; i++) {
         int16_t temperature = this->config.profile.points[i].temperature;

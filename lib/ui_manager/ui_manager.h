@@ -28,6 +28,8 @@ class UIManager {
    void poll_ui_events();
 
    void process_profile_response(profile_event_response response);
+   void process_new_profile_info(EventNewProfileInfo *payload);
+   void process_regulator_update(RegulatorStatusUpdate &info);
 
    void send_evt(Event *evt);
    void send_evt_button_press(pca9539_pin_num pin_num, PressType type);

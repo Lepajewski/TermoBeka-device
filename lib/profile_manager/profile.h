@@ -51,6 +51,7 @@ class Profile {
     bool is_running();
 
     EventGroupHandle_t *get_profile_event_group();
+    profile_run_info *get_profile_run_info();
 
     void print_raw_profile();
     void print_profile();

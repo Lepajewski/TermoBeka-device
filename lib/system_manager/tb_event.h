@@ -89,6 +89,7 @@ enum class EventType {
     PROFILE_END,
     PROFILE_RESPONSE,
     PROFILE_UPDATE,
+    NEW_PROFILE_INFO,
 
     REGULATOR_START,
     REGULATOR_STOP,
@@ -124,6 +125,13 @@ typedef union {
 } EventProfileResponse;
 
 typedef union {
+    struct {
+        uint32_t duration;
+    } info;
+    uint8_t buffer[EVENT_QUEUE_MAX_PAYLOAD];
+} EventNewProfileInfo;
+
+typedef union {
     RegulatorStatusUpdate info;
     uint8_t buffer[EVENT_QUEUE_MAX_PAYLOAD];
 } EventRegulatorUpdate;
@@ -136,6 +144,8 @@ enum class UIEventType {
     WIFI_STRENGTH,
     PROFILES_LOAD,
     PROFILE_RESPONSE,
+    REGULATOR_UPDATE,
+    NEW_PROFILE_INFO,
     NONE
 };
 

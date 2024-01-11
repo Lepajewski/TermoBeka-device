@@ -370,6 +370,12 @@ void SystemManager::poll_event() {
                 this->process_profile_response(payload);
                 break;
             }
+            case EventType::NEW_PROFILE_INFO:
+            {
+                EventNewProfileInfo *payload = reinterpret_cast<EventNewProfileInfo*>(evt.payload);
+                this->process_new_profile_info(payload);
+                break;
+            }
             case EventType::REGULATOR_UPDATE:
             {
                 this->process_regulator_update(reinterpret_cast<EventRegulatorUpdate*>(evt.payload));
@@ -502,15 +508,33 @@ void SystemManager::process_profile_response(EventProfileResponse *payload) {
     send_to_ui_queue(&evt);
 }
 
+void SystemManager::process_new_profile_info(EventNewProfileInfo *payload) {
+    UIEvent evt = {};
+    evt.type = UIEventType::NEW_PROFILE_INFO;
+    memcpy(evt.payload, payload->buffer, EVENT_QUEUE_MAX_PAYLOAD);
+    send_to_ui_queue(&evt);
+}
+
 void SystemManager::process_regulator_update(EventRegulatorUpdate *payload) {
     printf("Time: %" PRIu32 "\n", payload->info.time);
     printf("avg_chamber_temperature: %" PRIi32 "\n", payload->info.avg_chamber_temperature);
 
-    ServerEvent evt;
-    evt.type = ServerEventType::PUBLISH_REGULATOR_UPDATE;
-    memcpy(&evt.payload, payload->buffer, SERVER_QUEUE_MAX_PAYLOAD);
-    if (send_to_server_queue(&evt) != ESP_OK) {
-        TB_LOGE(TAG, "fail to send regulator update");
+    {
+        ServerEvent evt;
+        evt.type = ServerEventType::PUBLISH_REGULATOR_UPDATE;
+        memcpy(&evt.payload, payload->buffer, SERVER_QUEUE_MAX_PAYLOAD);
+        if (send_to_server_queue(&evt) != ESP_OK) {
+            TB_LOGE(TAG, "fail to send regulator update to server");
+        }
+    }
+
+    {
+        UIEvent evt;
+        evt.type = UIEventType::REGULATOR_UPDATE;
+        memcpy(evt.payload, payload->buffer, UI_QUEUE_MAX_PAYLOAD);
+        if (send_to_ui_queue(&evt) != ESP_OK) {
+            TB_LOGE(TAG, "fail to send regulator update to ui");
+        }
     }
 }
 

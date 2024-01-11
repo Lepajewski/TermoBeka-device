@@ -5,8 +5,8 @@
 #define ERROR_DISPLAY_DURATION 2
 
 StartProfileScene::StartProfileScene(std::shared_ptr<UISystemState> system_state) : Scene(system_state) {
-    display_err = system_state->profile_state == ProfileState::unloaded || system_state->profile_state == ProfileState::loading;
-    previous_profile_state = system_state->profile_state;
+    display_err = system_state->profile_info.profile_state == ProfileState::unloaded || system_state->profile_info.profile_state == ProfileState::loading;
+    previous_profile_state = system_state->profile_info.profile_state;
 
     if (display_err) {
         LCDController::clear_frame_buf();
@@ -22,7 +22,7 @@ StartProfileScene::StartProfileScene(std::shared_ptr<UISystemState> system_state
 }
 
 void StartProfileScene::construct_option_list() {
-    switch (system_state->profile_state) {
+    switch (system_state->profile_info.profile_state) {
         case ProfileState::loaded: {
             list = OptionList(list_rect, {
                 {"Start", [this](){ this->start_profile(); }},
@@ -43,7 +43,7 @@ void StartProfileScene::construct_option_list() {
 }
 
 void StartProfileScene::start_profile() {
-    this->system_state->profile_state = ProfileState::starting;
+    this->system_state->profile_info.profile_state = ProfileState::starting;
     
     Event evt = {};
     evt.type = EventType::UI_PROFILE_START;
@@ -51,14 +51,14 @@ void StartProfileScene::start_profile() {
 
     this->system_state->waiting_message_args.type = MessageType::profile_started;
     std::shared_ptr<UISystemState> state = system_state;
-    this->system_state->waiting_message_args.waiting_function = [state](){ return state->profile_state == ProfileState::starting; };
-    this->system_state->waiting_message_args.success_function = [state](){ return state->profile_state == ProfileState::running; };
+    this->system_state->waiting_message_args.waiting_function = [state](){ return state->profile_info.profile_state == ProfileState::starting; };
+    this->system_state->waiting_message_args.success_function = [state](){ return state->profile_info.profile_state == ProfileState::running; };
     this->next_scene = SceneEnum::waiting_message;
     this->should_be_changed = true;
 }
 
 void StartProfileScene::stop_profile() {
-    this->system_state->profile_state = ProfileState::stopping;
+    this->system_state->profile_info.profile_state = ProfileState::stopping;
 
     Event evt = {};
     evt.type = EventType::UI_PROFILE_STOP;
@@ -66,8 +66,8 @@ void StartProfileScene::stop_profile() {
 
     this->system_state->waiting_message_args.type = MessageType::profile_stopped;
     std::shared_ptr<UISystemState> state = system_state;
-    this->system_state->waiting_message_args.waiting_function = [state](){ return state->profile_state == ProfileState::stopping; };
-    this->system_state->waiting_message_args.success_function = [state](){ return state->profile_state == ProfileState::loaded; };
+    this->system_state->waiting_message_args.waiting_function = [state](){ return state->profile_info.profile_state == ProfileState::stopping; };
+    this->system_state->waiting_message_args.success_function = [state](){ return state->profile_info.profile_state == ProfileState::loaded; };
     this->next_scene = SceneEnum::waiting_message;
     this->should_be_changed = true;
 }
@@ -126,16 +126,16 @@ void StartProfileScene::update(float d_time) {
         return;
     }
 
-    if (previous_profile_state != system_state->profile_state) {
+    if (previous_profile_state != system_state->profile_info.profile_state) {
         construct_option_list();
     }
 
     LCDController::clear_frame_buf();
 
-    LCDController::draw_string(0, 0, system_state->selected_profile);
+    LCDController::draw_string(0, 0, system_state->profile_info.selected_profile);
     list.draw();
 
     LCDController::display_frame_buf();
 
-    previous_profile_state = system_state->profile_state;
+    previous_profile_state = system_state->profile_info.profile_state;
 }

@@ -67,7 +67,13 @@ void ProfileManager::process_profile_queue_event(ProfileEvent *evt) {
         case ProfileEventType::NEW_PROFILE:
         {
             ProfileEventNewProfile *payload = reinterpret_cast<ProfileEventNewProfile*>(evt->payload);
-            this->send_evt_response(this->process_new_profile(&payload->profile));
+            profile_event_response response = this->process_new_profile(&payload->profile);
+            this->send_evt_response(response);
+
+            if (response == profile_event_response::PROFILE_LOAD_SUCCESS) {
+                this->send_evt_new_profile_info();
+            }
+
             break;
         }
         case ProfileEventType::START:
@@ -192,5 +198,17 @@ void ProfileManager::send_evt_response(profile_event_response response) {
     EventProfileResponse payload = {};
     payload.response = response;
     memcpy(&evt.payload, &payload.buffer, sizeof(EventProfileResponse));
+    this->send_evt(&evt);
+}
+
+void ProfileManager::send_evt_new_profile_info() {
+    Event evt = {};
+    evt.type = EventType::NEW_PROFILE_INFO;
+    EventNewProfileInfo payload = {};
+    profile_run_info *info = profile->get_profile_run_info();
+    
+    payload.info.duration = info->total_duration;
+
+    memcpy(evt.payload, payload.buffer, EVENT_QUEUE_MAX_PAYLOAD);
     this->send_evt(&evt);
 }
