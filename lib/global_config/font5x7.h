@@ -5,6 +5,7 @@
 #define FONT5X7_WIDTH 5
 #define FONT5X7_HEIGHT 7
 #define FONT5X7_LINE_HEIGHT (FONT5X7_HEIGHT+1)
+#define FONT5X7_CHAR_WIDTH (FONT5X7_WIDTH+1)
 
 const unsigned char font5x7[96][5] = {
 	{ 0x00, 0x00, 0x00, 0x00, 0x00 },// (space)

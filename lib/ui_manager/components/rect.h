@@ -12,5 +12,7 @@ struct Rect {
     Rect(int x, int y, int width, int height);
 };
 
+void draw_rect(Rect &rect, bool filled = false);
+
 
 #endif

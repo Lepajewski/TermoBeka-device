@@ -144,6 +144,11 @@ profile_event_response ProfileManager::process_new_profile(profile_t *profile) {
     memcpy(&this->config.profile, profile, sizeof(profile_t));
     this->profile = new Profile(this->config);
     this->profile->print_raw_profile();
+    esp_err_t err = this->profile->prepare();
+    if (err != ESP_OK) {
+        TB_LOGE(TAG, "fail to prepare profile");
+        return PROFILE_LOAD_FAIL;
+    }
     return PROFILE_LOAD_SUCCESS;
 }
 

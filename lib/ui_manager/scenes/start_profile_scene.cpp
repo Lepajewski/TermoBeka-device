@@ -135,6 +135,13 @@ void StartProfileScene::update(float d_time) {
     LCDController::draw_string(0, 0, system_state->profile_info.selected_profile);
     list.draw();
 
+    if (system_state->profile_info.profile_state == ProfileState::running) {
+        profile_bar.set_remaining_time(system_state->profile_info.profile_time, system_state->profile_info.profile_duration);
+        profile_bar.set_temperature(system_state->profile_info.avg_temperature);
+
+        profile_bar.draw(d_time);
+    }
+
     LCDController::display_frame_buf();
 
     previous_profile_state = system_state->profile_info.profile_state;

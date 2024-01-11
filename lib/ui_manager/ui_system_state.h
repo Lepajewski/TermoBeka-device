@@ -23,10 +23,6 @@ struct ProfileInfo {
     uint32_t profile_duration = 0;
 
     int32_t avg_temperature = 0;
-
-    float get_profile_run_percentage() {
-        return (float) profile_time / (float) profile_duration;
-    }
 };
 
 struct UISystemState {

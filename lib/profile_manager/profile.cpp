@@ -86,6 +86,7 @@ esp_err_t Profile::prepare() {
 
     TB_LOGI(TAG, "vertices: %" PRIu8 ", total duration: %" PRIu32 "s", this->info.current_vertices, this->info.total_duration);
 
+    is_prepared = true;
     return err;
 }
 
@@ -210,9 +211,11 @@ esp_err_t Profile::start() {
         return ESP_FAIL;
     }
 
-    if ((err = this->prepare()) != ESP_OK) {
-        TB_LOGE(TAG, "fail to prepare profile");
-        return err;
+    if (!is_prepared) {
+        if ((err = this->prepare()) != ESP_OK) {
+            TB_LOGE(TAG, "fail to prepare profile");
+            return err;
+        }
     }
 
     this->info.absolute_start_time = get_time_since_startup_ms();

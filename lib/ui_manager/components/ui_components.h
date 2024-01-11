@@ -5,5 +5,6 @@
 #include "option_list.h"
 #include "status_bar.h"
 #include "scrolling_text.h"
+#include "profile_bar.h"
 
 #endif

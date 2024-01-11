@@ -56,9 +56,16 @@ void MenuScene::update(float d_time) {
     time = time.substr(time.find('T') + 1, 5);
     status.set_time(std::stoi(time.substr(0, 2)), std::stoi(time.substr(3, 2)));
 
-    this->status.set_wifi_strength(system_state->wifi_rssi);
+    status.set_wifi_strength(system_state->wifi_rssi);
+
+    if (system_state->profile_info.profile_state == ProfileState::running) {
+        profile_bar.set_remaining_time(system_state->profile_info.profile_time, system_state->profile_info.profile_duration);
+        profile_bar.set_temperature(system_state->profile_info.avg_temperature);
+
+        profile_bar.draw(d_time);
+    }
     
-    this->status.draw(d_time);
-    this->list.draw();
+    status.draw(d_time);
+    list.draw();
     LCDController::display_frame_buf();
 }

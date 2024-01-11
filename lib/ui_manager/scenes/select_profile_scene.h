@@ -14,7 +14,7 @@
 
 class SelectProfileScene : public Scene {
 private:
-    const Rect scrolling_text_rect = Rect(FONT5X7_WIDTH * 5, 0, LCD_WIDTH, FONT5X7_LINE_HEIGHT);
+    const Rect scrolling_text_rect = Rect(FONT5X7_CHAR_WIDTH * 4, 0, LCD_WIDTH, FONT5X7_LINE_HEIGHT);
     const Rect option_list_rect = Rect(0, FONT5X7_LINE_HEIGHT, LCD_WIDTH, LCD_HEIGHT - FONT5X7_LINE_HEIGHT);
 
     ScrollingText scrolling_text = ScrollingText(scrolling_text_rect, START_PROFILE_SCENE_SCROLL_SPEED);

@@ -6,7 +6,7 @@ ScrollingText::ScrollingText(Rect rect, float speed) {
     this->rect = rect;
     this->speed = speed;
 
-    this->length = rect.width / FONT5X7_WIDTH;
+    this->length = rect.width / FONT5X7_CHAR_WIDTH;
 }
 
 void ScrollingText::set_text(std::string &text) {

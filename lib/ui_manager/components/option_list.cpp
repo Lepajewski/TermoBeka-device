@@ -6,8 +6,8 @@
 OptionList::OptionList(Rect rect, std::vector<OptionEntry> options) {
     this->rect = rect;
     this->options = options;
-    this->visible_char_count = rect.width / FONT5X7_WIDTH;
-    this->visible_entries_count = rect.height / (FONT5X7_HEIGHT + 1);
+    this->visible_char_count = rect.width / FONT5X7_CHAR_WIDTH;
+    this->visible_entries_count = rect.height / FONT5X7_LINE_HEIGHT;
 }
 
 void OptionList::draw() {
@@ -15,7 +15,7 @@ void OptionList::draw() {
 
     for (int i = min_visible_index; i < min_visible_index + visible_entries_count && i < options.size(); i++) {
         std::string visible_string = options[i].option_name.substr(0, visible_char_count - 1);
-        visible_string = (i == current_index ? ">" : " ") + visible_string;
+        visible_string = (i == current_index ? "~" : " ") + visible_string; // ~ is -> in font5x7
         LCDController::draw_string(rect.x, y, visible_string);
         
         y += FONT5X7_HEIGHT + 1;

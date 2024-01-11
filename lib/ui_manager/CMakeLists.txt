@@ -12,6 +12,7 @@ idf_component_register(
         "components/rect.cpp"
         "components/status_bar.cpp"
         "components/scrolling_text.cpp"
+        "components/profile_bar.cpp"
     REQUIRES
         logger
         peripherals

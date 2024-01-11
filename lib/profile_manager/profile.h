@@ -25,11 +25,11 @@ class Profile {
     etl::list<profile_point, PROFILE_MAX_VERTICES + 1> profile;
     EventGroupHandle_t profile_event_group;
 
+    bool is_prepared = false;
 
     esp_err_t parse_raw_profile();
     esp_err_t calculate_vertices();
     esp_err_t calculate_duration();
-    esp_err_t prepare();
 
     esp_err_t process_next_step();
     esp_err_t process_stopped();
@@ -43,6 +43,7 @@ class Profile {
     Profile(profile_config_t config);
     ~Profile();
 
+    esp_err_t prepare();
     esp_err_t start();
     esp_err_t end();
 

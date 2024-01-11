@@ -3,12 +3,15 @@
 
 #include "scene.h"
 #include "button.h"
+#include "components/ui_components.h"
 
 #include <memory>
 
 class StartProfileScene : public Scene {
 private:
-    const Rect list_rect = Rect(0, 8, LCD_WIDTH, LCD_HEIGHT - 8);
+    const Rect list_rect = Rect(0, 8, LCD_WIDTH, LCD_HEIGHT - 16);
+
+    ProfileBar profile_bar;
 
     OptionList list = OptionList(list_rect, {{"", [](){}}});
 
