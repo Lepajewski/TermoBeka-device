@@ -191,7 +191,7 @@ esp_err_t mqtt_publish(const char *topic, const char *buf, uint16_t len, uint8_t
     return (msg_id == -1) ? ESP_FAIL : ESP_OK;
 }
 
-esp_err_t mqtt_subscribe(const char *topic, uint8_t qos) {
+esp_err_t mqtt_subscribe(char *topic, uint8_t qos) {
     int msg_id = esp_mqtt_client_subscribe(client, topic, qos);
     TB_LOGI(TAG, "%s: %d", __func__, msg_id);
     return (msg_id == -1) ? ESP_FAIL : ESP_OK;

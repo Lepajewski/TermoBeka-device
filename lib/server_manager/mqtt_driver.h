@@ -45,7 +45,7 @@ esp_err_t mqtt_begin(mqtt_driver_config_t *cfg);
 esp_err_t mqtt_end();
 
 esp_err_t mqtt_publish(const char *topic, const char *buf, uint16_t len, uint8_t qos);
-esp_err_t mqtt_subscribe(const char *topic, uint8_t qos);
+esp_err_t mqtt_subscribe(char *topic, uint8_t qos);
 
 
 #ifdef __cplusplus
