@@ -7,6 +7,9 @@
 
 #include <string>
 
+#define PROFILE_ENDED_BUZZER_DURATION_MS 5000
+#define BUTTON_BUZZER_DURATION_MS 50
+
 const char * const TAG = "UIMgr";
 
 
@@ -18,6 +21,7 @@ UIManager::UIManager() {
 void UIManager::button_callback(Button *button, PressType type) {
     this->current_scene->button_callback(button, type);
     send_evt_button_press(button->get_pin_num(), type);
+    expander->buzzer_beep(BUTTON_BUZZER_DURATION_MS);
 }
 
 void UIManager::setup() {
@@ -53,6 +57,7 @@ void UIManager::process_ui_event(UIEvent *evt) {
         }
         case UIEventType::PROFILE_ENDED:
         {
+            expander->buzzer_beep(PROFILE_ENDED_BUZZER_DURATION_MS);
             state->profile_info.profile_state = ProfileState::loaded;
 
             break;
