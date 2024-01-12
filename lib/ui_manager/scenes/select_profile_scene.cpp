@@ -47,7 +47,6 @@ void SelectProfileScene::setup_options_list(std::string &ls_response) {
                     std::string extension = ".csv";
                     if (entry.option_name.substr(length - extension.size()).compare(extension) == 0) {
                         entry.select_callback = [this, name]() {
-                            this->system_state->profile_info.selected_profile = name;
                             this->system_state->profile_info.profile_state = ProfileState::loading;
                             this->send_profile_chosen(name);
 

@@ -351,7 +351,7 @@ void SystemManager::poll_event() {
             }
             case EventType::SD_PROFILE_LOAD:
             {
-                this->process_sd_profile_load();
+                this->process_sd_profile_load(evt.payload);
                 break;
             }
             case EventType::UI_PROFILES_LOAD:
@@ -495,7 +495,7 @@ void SystemManager::process_sd_unmounted() {
     TB_LOGI(TAG, "SD unmounted");
 }
 
-void SystemManager::process_sd_profile_load() {
+void SystemManager::process_sd_profile_load(uint8_t *payload) {
     RingbufHandle_t *ring_buf = this->get_sd_ring_buf();
 
     size_t len;
@@ -506,6 +506,7 @@ void SystemManager::process_sd_profile_load() {
 
         ProfileEventNewProfile arg = {};
         arg.profile = string_to_profile(profile_str);
+        memcpy(arg.profile_name, payload, PROFILE_NAME_SIZE);
 
         ProfileEvent evt = {};
         evt.type = ProfileEventType::NEW_PROFILE;

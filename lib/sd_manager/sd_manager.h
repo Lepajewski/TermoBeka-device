@@ -35,7 +35,7 @@ class SDManager {
     void send_evt_sd_config_load();
     void send_evt_sd_load_ca_file();
     void send_evt_ui_profile_list();
-    void send_evt_sd_profile_load();
+    void send_evt_sd_profile_load(const char *path);
 
     esp_err_t process_load_ca_cert(const char *path);
     esp_err_t process_profile_list(const char *path);

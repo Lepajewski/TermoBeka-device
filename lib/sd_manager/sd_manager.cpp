@@ -154,7 +154,7 @@ void SDManager::process_sd_event(SDEvent *evt) {
             char *path = this->make_path(payload->path);
 
             if (this->process_profile_cat(path) == ESP_OK) {
-                this->send_evt_sd_profile_load();
+                this->send_evt_sd_profile_load(path);
             }
 
             delete [] path;
@@ -253,9 +253,16 @@ void SDManager::send_evt_ui_profile_list() {
     this->send_evt(&evt);
 }
 
-void SDManager::send_evt_sd_profile_load() {
+void SDManager::send_evt_sd_profile_load(const char *path) {
     Event evt = {};
     evt.type = EventType::SD_PROFILE_LOAD;
+
+    char *name = strrchr(path, '/') + 1;
+    size_t name_len = strlen(name);
+    size_t min_len = MIN(name_len, PROFILE_NAME_SIZE);
+
+    memcpy(evt.payload, name, min_len);
+
     this->send_evt(&evt);
 }
 

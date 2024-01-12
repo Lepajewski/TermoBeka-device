@@ -40,6 +40,7 @@
 #define MAX_PATH_LENGTH                 64
 #define MAX_RECORD_SIZE                 SD_QUEUE_MAX_PAYLOAD - MAX_PATH_LENGTH
 
+#define PROFILE_NAME_SIZE               32
 
 enum class EventOrigin {
     SYSTEM_MANAGER,
@@ -270,7 +271,7 @@ typedef struct {
 typedef union {
     struct {
         profile_t profile;
-        char profile_name[32];
+        char profile_name[PROFILE_NAME_SIZE];
     };
     uint8_t buffer[PROFILE_QUEUE_MAX_PAYLOAD];
 } ProfileEventNewProfile;
