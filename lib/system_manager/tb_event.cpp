@@ -26,6 +26,9 @@ const char *event_type_to_s(EventType type) {
 
         case EventType::SERVER_CONNECTED:                   return "server connected";
         case EventType::SERVER_DISCONNECTED:                return "server disconnected";
+        case EventType::SERVER_PROFILE_LOAD:                return "server profile load";
+        case EventType::SERVER_PROFILE_START:               return "server profile start";
+        case EventType::SERVER_PROFILE_STOP:                return "server profile stop";
 
         case EventType::ERROR_INIT_CONFIG:                  return "error init config";
         case EventType::ERROR_INIT_WIFI:                    return "error init wifi";

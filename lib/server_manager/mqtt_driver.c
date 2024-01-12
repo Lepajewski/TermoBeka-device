@@ -30,12 +30,13 @@ static bool ca_cert_is_set = false;
 
 static void process_data_received(char *data, int len) {
     pb_istream_t istream = pb_istream_from_buffer((uint8_t*) data, len);
-
     ToDeviceMessage decoded = ToDeviceMessage_init_zero;
-
     pb_decode(&istream, &ToDeviceMessage_msg, &decoded);
+    TB_LOGI(TAG, "Server Command: %d, user: %s, data: %d", (int) decoded.command, (char*) decoded.username, (int)decoded.data_count);
 
-    TB_LOGI(TAG, "Server Command: %d", (int) decoded.command);
+    if (xQueueSend(mqtt_queue, &decoded, portMAX_DELAY) != pdTRUE) {
+        TB_LOGE(TAG, "event send fail");
+    }
 }
 
 
@@ -191,7 +192,7 @@ esp_err_t mqtt_publish(const char *topic, const char *buf, uint16_t len, uint8_t
     return (msg_id == -1) ? ESP_FAIL : ESP_OK;
 }
 
-esp_err_t mqtt_subscribe(const char *topic, uint8_t qos) {
+esp_err_t mqtt_subscribe(char *topic, uint8_t qos) {
     int msg_id = esp_mqtt_client_subscribe(client, topic, qos);
     TB_LOGI(TAG, "%s: %d", __func__, msg_id);
     return (msg_id == -1) ? ESP_FAIL : ESP_OK;

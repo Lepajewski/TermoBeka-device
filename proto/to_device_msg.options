@@ -1,0 +1,3 @@
+ToDeviceMessage.username        max_size:32
+ToDeviceMessage.ProfileName     max_size:32
+ToDeviceMessage.data            max_count:40

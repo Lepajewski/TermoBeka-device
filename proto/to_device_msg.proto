@@ -8,6 +8,15 @@ enum Command {
 };
 
 
+message NewProfileData {
+    int32 temperature = 1;
+    uint32 time = 2;
+};
+
+
 message ToDeviceMessage {
     Command command = 1;
+    string username = 2;
+    string ProfileName = 3;
+    repeated NewProfileData data = 4;
 };

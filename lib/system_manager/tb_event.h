@@ -5,6 +5,7 @@
 
 #include <pb.h>
 #include "from_device_msg.pb.h"
+#include "to_device_msg.pb.h"
 
 #include "global_config.h"
 #include "nvs_config.h"
@@ -13,7 +14,7 @@
 
 #define QUEUE_DEFAULT_PAYLOAD           196  // bytes
 
-#define EVENT_QUEUE_MAX_PAYLOAD         196
+#define EVENT_QUEUE_MAX_PAYLOAD         256
 #define EVENT_QUEUE_SIZE                20
 
 #define UI_QUEUE_SIZE                   EVENT_QUEUE_SIZE
@@ -61,6 +62,9 @@ enum class EventType {
 
     SERVER_CONNECTED,
     SERVER_DISCONNECTED,
+    SERVER_PROFILE_LOAD,
+    SERVER_PROFILE_START,
+    SERVER_PROFILE_STOP,
 
     ERROR_INIT_CONFIG,
     ERROR_INIT_WIFI,
@@ -104,6 +108,11 @@ typedef struct {
     EventType type;
     uint8_t payload[EVENT_QUEUE_MAX_PAYLOAD];
 } Event;
+
+typedef union {
+    profile_t profile;
+    uint8_t buffer[EVENT_QUEUE_MAX_PAYLOAD];
+} EventServerProfileLoad;
 
 typedef union {
     struct {

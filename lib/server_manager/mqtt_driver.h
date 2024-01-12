@@ -9,6 +9,11 @@
 #include "global_config.h"
 
 
+
+#define MQTT_DRIVER_QUEUE_SIZE      10
+
+
+
 #define BIT_MQTT_RUNNING            BIT0
 #define BIT_MQTT_STOPPED            BIT1
 #define BIT_MQTT_DISCONNECTED       BIT2
@@ -45,7 +50,7 @@ esp_err_t mqtt_begin(mqtt_driver_config_t *cfg);
 esp_err_t mqtt_end();
 
 esp_err_t mqtt_publish(const char *topic, const char *buf, uint16_t len, uint8_t qos);
-esp_err_t mqtt_subscribe(const char *topic, uint8_t qos);
+esp_err_t mqtt_subscribe(char *topic, uint8_t qos);
 
 
 #ifdef __cplusplus
