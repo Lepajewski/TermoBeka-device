@@ -555,7 +555,7 @@ void SystemManager::process_profile_response(EventProfileResponse *payload) {
 void SystemManager::process_new_profile_info(EventNewProfileInfo *payload) {
     UIEvent evt = {};
     evt.type = UIEventType::NEW_PROFILE_INFO;
-    memcpy(evt.payload, payload->buffer, EVENT_QUEUE_MAX_PAYLOAD);
+    memcpy(evt.payload, payload->buffer, UI_QUEUE_MAX_PAYLOAD);
     send_to_ui_queue(&evt);
 }
 
