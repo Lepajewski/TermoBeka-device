@@ -7,10 +7,14 @@
 
 #include <memory>
 
+#define START_PROFILE_SCENE_SCROLL_SPEED 2.5f
+
 class StartProfileScene : public Scene {
 private:
+    const Rect scrolling_text_rect = Rect(0, 0, LCD_WIDTH, FONT5X7_LINE_HEIGHT);
     const Rect list_rect = Rect(0, 8, LCD_WIDTH, LCD_HEIGHT - 16);
 
+    ScrollingText text = ScrollingText(scrolling_text_rect, START_PROFILE_SCENE_SCROLL_SPEED, false);
     ProfileBar profile_bar;
 
     OptionList list = OptionList(list_rect, {{"", [](){}}});

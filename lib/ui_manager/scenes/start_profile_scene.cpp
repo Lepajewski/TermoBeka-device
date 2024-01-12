@@ -132,7 +132,8 @@ void StartProfileScene::update(float d_time) {
 
     LCDController::clear_frame_buf();
 
-    LCDController::draw_string(0, 0, system_state->profile_info.selected_profile);
+    text.set_text(system_state->profile_info.selected_profile);
+    text.draw(d_time);
     list.draw();
 
     if (system_state->profile_info.profile_state == ProfileState::running) {

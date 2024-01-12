@@ -10,6 +10,9 @@ class ScrollingText {
 private:
     const std::string sep = "   ";
 
+    bool always_scroll;
+    bool should_scroll = false;
+
     Rect rect;
     std::string text = "";
     float speed;
@@ -20,7 +23,7 @@ private:
 
     float counter;
 public:
-    ScrollingText(Rect rect, float speed);
+    ScrollingText(Rect rect, float speed, bool always_scroll);
 
     void set_text(std::string &text);
     void draw(float d_time);
