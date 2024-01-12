@@ -379,6 +379,11 @@ void SystemManager::poll_event() {
                 this->process_ui_profile_stop();
                 break;
             }
+            case EventType::PROFILE_END:
+            {
+                this->process_profile_end();
+                break;
+            }
             case EventType::PROFILE_RESPONSE:
             {
                 EventProfileResponse *payload = reinterpret_cast<EventProfileResponse*>(evt.payload);
@@ -540,6 +545,14 @@ void SystemManager::process_sd_load_ca_file() {
     
     if (this->send_connect_server() != ESP_OK) {
         TB_LOGE(TAG, "fail to send server connect");
+    }
+}
+
+void SystemManager::process_profile_end() {
+    UIEvent evt = {};
+    evt.type = UIEventType::PROFILE_ENDED;
+    if (send_to_ui_queue(&evt) != ESP_OK) {
+        TB_LOGE(TAG, "fail to send ui profile ended");
     }
 }
 

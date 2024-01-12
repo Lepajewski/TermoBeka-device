@@ -63,6 +63,7 @@ class SystemManager {
     void process_sd_profile_load();
     void process_sd_config_load(EventSDConfigLoad *payload);
     void process_sd_load_ca_file();
+    void process_profile_end();
     void process_profile_response(EventProfileResponse *payload);
     void process_new_profile_info(EventNewProfileInfo *payload);
     void process_regulator_update(EventRegulatorUpdate *payload);

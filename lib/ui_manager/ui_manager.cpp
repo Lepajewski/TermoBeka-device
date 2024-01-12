@@ -49,6 +49,12 @@ void UIManager::process_ui_event(UIEvent *evt) {
         {
             break;
         }
+        case UIEventType::PROFILE_ENDED:
+        {
+            state->profile_info.profile_state = ProfileState::loaded;
+
+            break;
+        }
         case UIEventType::PROFILE_RESPONSE:
         {
             EventProfileResponse *payload = reinterpret_cast<EventProfileResponse*>(evt->payload);

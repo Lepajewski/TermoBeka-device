@@ -268,6 +268,8 @@ esp_err_t Profile::end() {
 
     this->send_evt_regulator_stop();
 
+    is_prepared = false;
+
     xEventGroupSetBits(this->profile_event_group, BIT_PROFILE_END);
     return ESP_OK;
 }
