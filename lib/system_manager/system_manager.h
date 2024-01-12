@@ -53,7 +53,7 @@ class SystemManager {
     void process_wifi_got_time();
     void process_server_connected();
     void process_server_disconnected();
-    void process_server_profile_load(EventServerProfileLoad *payload);
+    void process_server_profile_load(ProfileEventNewProfile *payload);
     void process_server_profile_start();
     void process_server_profile_stop();
     void process_ui_button_press(uint8_t num);

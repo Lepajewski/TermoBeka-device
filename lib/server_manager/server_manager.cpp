@@ -307,7 +307,7 @@ void ServerManager::send_evt_disconnected() {
 void ServerManager::send_evt_profile_load(ToDeviceMessage *msg) {
     Event evt = {};
     evt.type = EventType::SERVER_PROFILE_LOAD;
-    EventServerProfileLoad payload = {};
+    ProfileEventNewProfile payload = {};
 
     for (uint8_t i = 0; i < msg->data_count; i++) {
         payload.profile.points[i] = {
@@ -315,8 +315,10 @@ void ServerManager::send_evt_profile_load(ToDeviceMessage *msg) {
             .time_ms = msg->data[i].time
         };
     }
+
+    strncpy(payload.profile_name, msg->ProfileName, 32);
     
-    memcpy(&evt.payload, &payload.buffer, sizeof(EventServerProfileLoad));
+    memcpy(&evt.payload, &payload.buffer, sizeof(ProfileEventNewProfile));
     this->send_evt(&evt);
 }
 

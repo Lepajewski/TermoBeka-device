@@ -298,7 +298,7 @@ void SystemManager::poll_event() {
             }
             case EventType::SERVER_PROFILE_LOAD:
             {
-                this->process_server_profile_load(reinterpret_cast<EventServerProfileLoad*>(evt.payload));
+                this->process_server_profile_load(reinterpret_cast<ProfileEventNewProfile*>(evt.payload));
                 break;
             }
             case EventType::SERVER_PROFILE_START:
@@ -438,7 +438,7 @@ void SystemManager::process_server_connected() {
     TB_LOGI(TAG, "server connected");
 }
 
-void SystemManager::process_server_profile_load(EventServerProfileLoad *payload) {
+void SystemManager::process_server_profile_load(ProfileEventNewProfile *payload) {
     ProfileEvent evt = {};
     evt.type = ProfileEventType::NEW_PROFILE;
     memcpy(evt.payload, payload->buffer, PROFILE_QUEUE_MAX_PAYLOAD);

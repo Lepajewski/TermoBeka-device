@@ -71,7 +71,7 @@ void ProfileManager::process_profile_queue_event(ProfileEvent *evt) {
             this->send_evt_response(response);
 
             if (response == profile_event_response::PROFILE_LOAD_SUCCESS) {
-                this->send_evt_new_profile_info();
+                this->send_evt_new_profile_info(payload->profile_name);
             }
 
             break;
@@ -206,13 +206,15 @@ void ProfileManager::send_evt_response(profile_event_response response) {
     this->send_evt(&evt);
 }
 
-void ProfileManager::send_evt_new_profile_info() {
+void ProfileManager::send_evt_new_profile_info(char *profile_name) {
     Event evt = {};
     evt.type = EventType::NEW_PROFILE_INFO;
     EventNewProfileInfo payload = {};
     profile_run_info *info = profile->get_profile_run_info();
     
     payload.info.duration = info->total_duration;
+
+    strncpy(payload.info.name, profile_name, strlen(profile_name));
 
     memcpy(evt.payload, payload.buffer, EVENT_QUEUE_MAX_PAYLOAD);
     this->send_evt(&evt);

@@ -5,6 +5,8 @@
 #include "ui_manager.h"
 #include "lcd_controller.h"
 
+#include <string>
+
 const char * const TAG = "UIMgr";
 
 
@@ -131,6 +133,7 @@ void UIManager::process_profile_response(profile_event_response response) {
 
 void UIManager::process_new_profile_info(EventNewProfileInfo *payload) {
     state->profile_info.profile_duration = payload->info.duration;
+    state->profile_info.selected_profile = std::string(payload->info.name);
 }
 
 void UIManager::process_regulator_update(RegulatorStatusUpdate &info) {

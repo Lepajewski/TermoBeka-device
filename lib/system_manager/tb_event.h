@@ -12,16 +12,16 @@
 #include "profile_type.h"
 
 
-#define QUEUE_DEFAULT_PAYLOAD           196  // bytes
+#define QUEUE_DEFAULT_PAYLOAD           320  // bytes
 
-#define EVENT_QUEUE_MAX_PAYLOAD         256
+#define EVENT_QUEUE_MAX_PAYLOAD         QUEUE_DEFAULT_PAYLOAD
 #define EVENT_QUEUE_SIZE                20
 
 #define UI_QUEUE_SIZE                   EVENT_QUEUE_SIZE
 #define UI_QUEUE_MAX_PAYLOAD            QUEUE_DEFAULT_PAYLOAD
 
 #define SD_QUEUE_SIZE                   EVENT_QUEUE_SIZE
-#define SD_QUEUE_MAX_PAYLOAD            196
+#define SD_QUEUE_MAX_PAYLOAD            QUEUE_DEFAULT_PAYLOAD
 
 #define WIFI_QUEUE_SIZE                 EVENT_QUEUE_SIZE
 #define WIFI_QUEUE_MAX_PAYLOAD          QUEUE_DEFAULT_PAYLOAD
@@ -30,7 +30,7 @@
 #define SERVER_QUEUE_MAX_PAYLOAD        QUEUE_DEFAULT_PAYLOAD
 
 #define PROFILE_QUEUE_SIZE              EVENT_QUEUE_SIZE
-#define PROFILE_QUEUE_MAX_PAYLOAD       256
+#define PROFILE_QUEUE_MAX_PAYLOAD       QUEUE_DEFAULT_PAYLOAD
 
 
 #define REGULATOR_QUEUE_SIZE            EVENT_QUEUE_SIZE
@@ -111,11 +111,6 @@ typedef struct {
 } Event;
 
 typedef union {
-    profile_t profile;
-    uint8_t buffer[EVENT_QUEUE_MAX_PAYLOAD];
-} EventServerProfileLoad;
-
-typedef union {
     struct {
         uint8_t num;
         uint8_t type;
@@ -136,6 +131,7 @@ typedef union {
 typedef union {
     struct {
         uint32_t duration;
+        char name[32];
     } info;
     uint8_t buffer[EVENT_QUEUE_MAX_PAYLOAD];
 } EventNewProfileInfo;
@@ -272,7 +268,10 @@ typedef struct {
 } ProfileEvent;
 
 typedef union {
-    profile_t profile;
+    struct {
+        profile_t profile;
+        char profile_name[32];
+    };
     uint8_t buffer[PROFILE_QUEUE_MAX_PAYLOAD];
 } ProfileEventNewProfile;
 
