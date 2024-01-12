@@ -22,6 +22,7 @@ class ServerManager {
     SystemManager *sysMgr;
     QueueHandle_t *event_queue_handle;
     QueueHandle_t *server_queue_handle;
+    QueueHandle_t driver_queue_handle;
     RingbufHandle_t *sd_ring_buf_handle;
 
     bool ca_file_loaded;
@@ -35,6 +36,7 @@ class ServerManager {
     mqtt_topic topic_to_device;
 
     void setup();
+    void init_driver_queue();
     void create_topic(mqtt_topic *topic, const char* prefix, const char* postfix);
     void init_topics();
     void subscribe_topic();
@@ -44,10 +46,15 @@ class ServerManager {
     void publish_from_device(RegulatorStatusUpdate *msg);
     void process_read_ca_file();
     void poll_server_events();
+    void process_recv_mqtt_message(ToDeviceMessage *msg);
+    void poll_driver_messages();
 
     void send_evt(Event *evt);
     void send_evt_connected();
     void send_evt_disconnected();
+    void send_evt_profile_load(ToDeviceMessage *msg);
+    void send_evt_profile_start();
+    void send_evt_profile_stop();
 
  public:
     ServerManager();

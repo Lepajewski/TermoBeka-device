@@ -291,6 +291,26 @@ void SystemManager::poll_event() {
                 this->process_server_connected();
                 break;
             }
+            case EventType::SERVER_DISCONNECTED:
+            {
+                this->process_server_disconnected();
+                break;
+            }
+            case EventType::SERVER_PROFILE_LOAD:
+            {
+                this->process_server_profile_load(reinterpret_cast<EventServerProfileLoad*>(evt.payload));
+                break;
+            }
+            case EventType::SERVER_PROFILE_START:
+            {
+                this->process_server_profile_start();
+                break;
+            }
+            case EventType::SERVER_PROFILE_STOP:
+            {
+                this->process_server_profile_stop();
+                break;
+            }
             case EventType::WIFI_STRENGTH:
             {
                 int rssi;
@@ -302,11 +322,6 @@ void SystemManager::poll_event() {
 
                 send_to_ui_queue(&event);
 
-                break;
-            }
-            case EventType::SERVER_DISCONNECTED:
-            {
-                this->process_server_disconnected();
                 break;
             }
             case EventType::UI_BUTTON_PRESS:
@@ -418,6 +433,35 @@ void SystemManager::process_server_connected() {
     TB_LOGI(TAG, "server connected");
 }
 
+void SystemManager::process_server_profile_load(EventServerProfileLoad *payload) {
+    ProfileEvent evt = {};
+    evt.type = ProfileEventType::NEW_PROFILE;
+    memcpy(evt.payload, payload->buffer, PROFILE_QUEUE_MAX_PAYLOAD);
+
+    if (send_to_profile_queue(&evt) != ESP_OK) {
+        TB_LOGE(TAG, "fail to send new profile evt");
+    }
+}
+
+void SystemManager::process_server_profile_start() {
+    ProfileEvent evt = {};
+    evt.type = ProfileEventType::START;
+
+    if (send_to_profile_queue(&evt) != ESP_OK) {
+        TB_LOGE(TAG, "fail to send start profile evt");
+    }
+}
+
+void SystemManager::process_server_profile_stop() {
+    ProfileEvent evt = {};
+    evt.type = ProfileEventType::END;
+
+    if (send_to_profile_queue(&evt) != ESP_OK) {
+        TB_LOGE(TAG, "fail to send end profile evt");
+    }
+}
+
+
 void SystemManager::process_server_disconnected() {
     TB_LOGI(TAG, "server disconnected");
 }
@@ -504,7 +548,7 @@ void SystemManager::process_profile_response(EventProfileResponse *payload) {
 
     UIEvent evt = {};
     evt.type = UIEventType::PROFILE_RESPONSE;
-    memcpy(evt.payload, payload->buffer, EVENT_QUEUE_MAX_PAYLOAD);
+    memcpy(evt.payload, payload->buffer, UI_QUEUE_MAX_PAYLOAD);
     send_to_ui_queue(&evt);
 }
 

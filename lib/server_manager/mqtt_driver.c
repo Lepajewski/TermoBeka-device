@@ -30,12 +30,13 @@ static bool ca_cert_is_set = false;
 
 static void process_data_received(char *data, int len) {
     pb_istream_t istream = pb_istream_from_buffer((uint8_t*) data, len);
-
     ToDeviceMessage decoded = ToDeviceMessage_init_zero;
-
     pb_decode(&istream, &ToDeviceMessage_msg, &decoded);
+    TB_LOGI(TAG, "Server Command: %d, user: %s, data: %d", (int) decoded.command, (char*) decoded.username, (int)decoded.data_count);
 
-    TB_LOGI(TAG, "Server Command: %d", (int) decoded.command);
+    if (xQueueSend(mqtt_queue, &decoded, portMAX_DELAY) != pdTRUE) {
+        TB_LOGE(TAG, "event send fail");
+    }
 }
 
 

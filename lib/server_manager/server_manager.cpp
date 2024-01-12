@@ -5,6 +5,7 @@
 #include "mqtt_driver.h"
 
 #include "from_device_msg.pb.h"
+#include "to_device_msg.pb.h"
 #include "pb_encode.h"
 
 #include "global_config.h"
@@ -32,6 +33,7 @@ void ServerManager::setup() {
     this->init_topics();
     this->config = {};
     this->server_event_group = xEventGroupCreate();
+    this->init_driver_queue();
     mqtt_set_event_group(&this->server_event_group);
     mqtt_setup_timer();
 
@@ -40,7 +42,18 @@ void ServerManager::setup() {
     this->server_queue_handle = this->sysMgr->get_server_queue();
     this->sd_ring_buf_handle = this->sysMgr->get_sd_ring_buf();
 
-    mqtt_set_queue(this->server_queue_handle);
+    mqtt_set_queue(&this->driver_queue_handle);
+}
+
+void ServerManager::init_driver_queue() {
+    this->driver_queue_handle = xQueueCreate(MQTT_DRIVER_QUEUE_SIZE, sizeof(ToDeviceMessage));
+
+    if (this->driver_queue_handle == NULL) {
+        TB_LOGE(TAG, "mqtt driver queue init fail");
+        vTaskDelay(pdMS_TO_TICKS(2000));
+        fflush(stdout);
+        esp_restart();
+    }
 }
 
 void ServerManager::create_topic(mqtt_topic *topic, const char* prefix, const char* postfix) {
@@ -232,9 +245,44 @@ void ServerManager::poll_server_events() {
     }
 }
 
+void ServerManager::process_recv_mqtt_message(ToDeviceMessage *msg) {
+    switch (msg->command) {
+        case Command_NEW_PROFILE:
+        {
+            this->send_evt_profile_load(msg);
+            break;
+        }
+        case Command_START_PROFILE:
+        {
+            this->send_evt_profile_start();
+            break;
+        }
+        case Command_END_PROFILE:
+        {
+            this->send_evt_profile_stop();
+            break;
+        }
+        case Command_NONE:
+        default:
+            break;
+    }
+}
+
+void ServerManager::poll_driver_messages() {
+    ToDeviceMessage msg = ToDeviceMessage_init_default;
+
+    while (uxQueueMessagesWaiting(this->driver_queue_handle)) {
+        if (xQueueReceive(this->driver_queue_handle, &msg, pdMS_TO_TICKS(10)) == pdPASS) {
+            TB_LOGI(TAG, "new server message, command: %d", msg.command);
+            this->process_recv_mqtt_message(&msg);
+        }
+    }
+}
+
 void ServerManager::process_events() {
     this->process_mqtt_driver_events();
     this->poll_server_events();
+    this->poll_driver_messages();
 }
 
 void ServerManager::send_evt(Event *evt) {
@@ -255,4 +303,33 @@ void ServerManager::send_evt_disconnected() {
     evt.type = EventType::SERVER_DISCONNECTED;
     this->send_evt(&evt);
 }
+
+void ServerManager::send_evt_profile_load(ToDeviceMessage *msg) {
+    Event evt = {};
+    evt.type = EventType::SERVER_PROFILE_LOAD;
+    EventServerProfileLoad payload = {};
+
+    for (uint8_t i = 0; i < msg->data_count; i++) {
+        payload.profile.points[i] = {
+            .temperature = static_cast<int16_t>(msg->data[i].temperature),
+            .time_ms = msg->data[i].time
+        };
+    }
+    
+    memcpy(&evt.payload, &payload.buffer, sizeof(EventServerProfileLoad));
+    this->send_evt(&evt);
+}
+
+void ServerManager::send_evt_profile_start() {
+    Event evt = {};
+    evt.type = EventType::SERVER_PROFILE_START;
+    this->send_evt(&evt);
+}
+
+void ServerManager::send_evt_profile_stop() {
+    Event evt = {};
+    evt.type = EventType::SERVER_PROFILE_STOP;
+    this->send_evt(&evt);
+}
+
 

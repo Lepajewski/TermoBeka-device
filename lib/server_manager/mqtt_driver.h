@@ -9,6 +9,11 @@
 #include "global_config.h"
 
 
+
+#define MQTT_DRIVER_QUEUE_SIZE      10
+
+
+
 #define BIT_MQTT_RUNNING            BIT0
 #define BIT_MQTT_STOPPED            BIT1
 #define BIT_MQTT_DISCONNECTED       BIT2
