@@ -50,8 +50,13 @@ void SelectProfileScene::setup_options_list(std::string &ls_response) {
                             this->system_state->profile_info.profile_state = ProfileState::loading;
                             this->send_profile_chosen(name);
 
-                            this->system_state->waiting_message_args.type = MessageType::profile_selected;
                             std::shared_ptr<UISystemState> state = system_state;
+                            this->system_state->waiting_message_args.waiting_strs[0] = "Loading:";
+                            this->system_state->waiting_message_args.waiting_strs[1] = name;
+                            this->system_state->waiting_message_args.success_strs[0] = "Load success";
+                            this->system_state->waiting_message_args.success_strs[1] = name;
+                            this->system_state->waiting_message_args.fail_strs[0] = "Load fail";
+                            this->system_state->waiting_message_args.fail_strs[1] = name;
                             this->system_state->waiting_message_args.waiting_function = [state](){ return state->profile_info.profile_state == ProfileState::loading; };
                             this->system_state->waiting_message_args.success_function = [state](){ return state->profile_info.profile_state == ProfileState::loaded; };
                             this->next_scene = SceneEnum::waiting_message;

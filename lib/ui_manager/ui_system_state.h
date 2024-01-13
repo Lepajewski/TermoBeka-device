@@ -7,12 +7,12 @@
 
 enum class ProfileState { unloaded, loaded, loading, starting, running, stopping };
 
-enum class MessageType { profile_selected, profile_started, profile_stopped, none };
-
 struct WaitingMessageArgs {
-    MessageType type = MessageType::none;
     std::function<bool(void)> waiting_function;
     std::function<bool(void)> success_function;
+    std::string waiting_strs[2];
+    std::string success_strs[2];
+    std::string fail_strs[2];
 };
 
 struct ProfileInfo {

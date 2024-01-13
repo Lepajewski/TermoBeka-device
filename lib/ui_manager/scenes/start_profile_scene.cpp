@@ -49,8 +49,13 @@ void StartProfileScene::start_profile() {
     evt.type = EventType::UI_PROFILE_START;
     this->send_evt(&evt);
 
-    this->system_state->waiting_message_args.type = MessageType::profile_started;
     std::shared_ptr<UISystemState> state = system_state;
+    this->system_state->waiting_message_args.waiting_strs[0] = "Starting:";
+    this->system_state->waiting_message_args.waiting_strs[1] = this->system_state->profile_info.selected_profile;
+    this->system_state->waiting_message_args.success_strs[0] = "Start success";
+    this->system_state->waiting_message_args.success_strs[1] = this->system_state->profile_info.selected_profile;
+    this->system_state->waiting_message_args.fail_strs[0] = "Start fail";
+    this->system_state->waiting_message_args.fail_strs[1] = this->system_state->profile_info.selected_profile;
     this->system_state->waiting_message_args.waiting_function = [state](){ return state->profile_info.profile_state == ProfileState::starting; };
     this->system_state->waiting_message_args.success_function = [state](){ return state->profile_info.profile_state == ProfileState::running; };
     this->next_scene = SceneEnum::waiting_message;
@@ -64,8 +69,13 @@ void StartProfileScene::stop_profile() {
     evt.type = EventType::UI_PROFILE_STOP;
     this->send_evt(&evt);
 
-    this->system_state->waiting_message_args.type = MessageType::profile_stopped;
     std::shared_ptr<UISystemState> state = system_state;
+    this->system_state->waiting_message_args.waiting_strs[0] = "Stoping:";
+    this->system_state->waiting_message_args.waiting_strs[1] = this->system_state->profile_info.selected_profile;
+    this->system_state->waiting_message_args.success_strs[0] = "Stop success";
+    this->system_state->waiting_message_args.success_strs[1] = this->system_state->profile_info.selected_profile;
+    this->system_state->waiting_message_args.fail_strs[0] = "Stop fail";
+    this->system_state->waiting_message_args.fail_strs[1] = this->system_state->profile_info.selected_profile;
     this->system_state->waiting_message_args.waiting_function = [state](){ return state->profile_info.profile_state == ProfileState::stopping; };
     this->system_state->waiting_message_args.success_function = [state](){ return state->profile_info.profile_state == ProfileState::loaded; };
     this->next_scene = SceneEnum::waiting_message;

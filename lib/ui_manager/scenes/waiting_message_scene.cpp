@@ -6,47 +6,14 @@
 #define SCENE_DURATION 2
 
 WaitingMessageScene::WaitingMessageScene(std::shared_ptr<UISystemState> system_state) : Scene(system_state) {
-    switch (system_state->waiting_message_args.type) {
-        case MessageType::profile_selected: {
-            waiting_str[0] = "Loading:";
-            waiting_str[1] = system_state->profile_info.selected_profile;
-            success_str[0] = "Load success";
-            success_str[1] = system_state->profile_info.selected_profile;
-            fail_str[0] = "Load failed";
-            fail_str[1] = system_state->profile_info.selected_profile;
-            waiting_function = system_state->waiting_message_args.waiting_function;
-            success_function = system_state->waiting_message_args.success_function;
-        }
-        break;
-
-        case MessageType::profile_started: {
-            waiting_str[0] = "Starting:";
-            waiting_str[1] = system_state->profile_info.selected_profile;
-            success_str[0] = "Start success";
-            success_str[1] = system_state->profile_info.selected_profile;
-            fail_str[0] = "Start failed";
-            fail_str[1] = system_state->profile_info.selected_profile;
-            waiting_function = system_state->waiting_message_args.waiting_function;
-            success_function = system_state->waiting_message_args.success_function;
-        }
-        break;
-
-        case MessageType::profile_stopped: {
-            waiting_str[0] = "Stopping:";
-            waiting_str[1] = system_state->profile_info.selected_profile;
-            success_str[0] = "Stop success";
-            success_str[1] = system_state->profile_info.selected_profile;
-            fail_str[0] = "Stop failed";
-            fail_str[1] = system_state->profile_info.selected_profile;
-            waiting_function = system_state->waiting_message_args.waiting_function;
-            success_function = system_state->waiting_message_args.success_function;
-        }
-        break;
-    
-        default:
-        break;
-    }
-    system_state->waiting_message_args.type = MessageType::none;
+    waiting_str[0] = system_state->waiting_message_args.waiting_strs[0];
+    waiting_str[1] = system_state->waiting_message_args.waiting_strs[1];
+    success_str[0] = system_state->waiting_message_args.success_strs[0];
+    success_str[1] = system_state->waiting_message_args.success_strs[1];
+    fail_str[0] = system_state->waiting_message_args.fail_strs[0];
+    fail_str[1] = system_state->waiting_message_args.fail_strs[1];
+    waiting_function = system_state->waiting_message_args.waiting_function;
+    success_function = system_state->waiting_message_args.success_function;
 
     LCDController::clear_frame_buf();
 
