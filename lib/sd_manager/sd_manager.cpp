@@ -142,7 +142,11 @@ void SDManager::process_sd_event(SDEvent *evt) {
             char *path = this->make_path(payload->path);
 
             if (this->process_profile_list(path) == ESP_OK) {
+                this->send_evt_sd_response(SDResponse::UI_PROFILE_LIST_SUCCESS);
                 this->send_evt_ui_profile_list();
+            }
+            else {
+                this->send_evt_sd_response(SDResponse::UI_PROFILE_LIST_FAIL);
             }
 
             delete [] path;
@@ -154,7 +158,11 @@ void SDManager::process_sd_event(SDEvent *evt) {
             char *path = this->make_path(payload->path);
 
             if (this->process_profile_cat(path) == ESP_OK) {
+                this->send_evt_sd_response(SDResponse::CAT_PROFILE_SUCCESS);
                 this->send_evt_sd_profile_load(path);
+            }
+            else {
+                this->send_evt_sd_response(SDResponse::CAT_PROFILE_FAIL);
             }
 
             delete [] path;
@@ -263,6 +271,15 @@ void SDManager::send_evt_sd_profile_load(const char *path) {
 
     memcpy(evt.payload, name, min_len);
 
+    this->send_evt(&evt);
+}
+
+void SDManager::send_evt_sd_response(SDResponse resp) {
+    Event evt = {};
+    evt.type = EventType::SD_RESPONSE;
+    EventSDResponse response;
+    response.response = resp;
+    memcpy(evt.payload, response.buffer, EVENT_QUEUE_MAX_PAYLOAD);
     this->send_evt(&evt);
 }
 

@@ -354,6 +354,11 @@ void SystemManager::poll_event() {
                 this->process_sd_profile_load(evt.payload);
                 break;
             }
+            case EventType::SD_RESPONSE:
+            {
+                this->process_sd_response(evt.payload);
+                break;
+            }
             case EventType::UI_PROFILES_LOAD:
             {
                 if (evt.origin == EventOrigin::UI) {
@@ -546,6 +551,15 @@ void SystemManager::process_sd_load_ca_file() {
     
     if (this->send_connect_server() != ESP_OK) {
         TB_LOGE(TAG, "fail to send server connect");
+    }
+}
+
+void SystemManager::process_sd_response(uint8_t *payload) {
+    UIEvent evt = {};
+    evt.type = UIEventType::SD_RESPONSE;
+    memcpy(evt.payload, payload, SD_QUEUE_MAX_PAYLOAD);
+    if (send_to_ui_queue(&evt) != ESP_OK) {
+        TB_LOGE(TAG, "fail to send sd response to ui");
     }
 }
 

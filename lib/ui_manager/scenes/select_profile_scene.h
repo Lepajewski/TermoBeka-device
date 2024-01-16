@@ -30,7 +30,9 @@ private:
 
     bool profiles_loaded = false;
 
-    bool display_err = false;
+    bool err_profile_running = false;
+    bool err_sd_fail = false;
+    bool sd_fail_first_frame = true;
     float counter = 0;
     
 public:

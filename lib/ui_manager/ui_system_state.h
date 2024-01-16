@@ -25,11 +25,18 @@ struct ProfileInfo {
     int32_t avg_temperature = 0;
 };
 
+enum class SDStatus { loading_profile, loading_dir, failed, none };
+
+struct SDInfo {
+    SDStatus status;
+};
+
 struct UISystemState {
     int wifi_rssi = 0;
     
     WaitingMessageArgs waiting_message_args;
     ProfileInfo profile_info;
+    SDInfo sd_info;
 
 };
 

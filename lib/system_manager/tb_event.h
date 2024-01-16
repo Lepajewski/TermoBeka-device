@@ -89,6 +89,7 @@ enum class EventType {
     SD_PROFILE_LOAD,
     SD_PROFILE_DELETE,
     SD_LOG,
+    SD_RESPONSE,
 
     PROFILE_START,
     PROFILE_END,
@@ -142,6 +143,15 @@ typedef union {
     uint8_t buffer[EVENT_QUEUE_MAX_PAYLOAD];
 } EventRegulatorUpdate;
 
+enum class SDResponse {
+    UI_PROFILE_LIST_FAIL, UI_PROFILE_LIST_SUCCESS,
+    CAT_PROFILE_FAIL, CAT_PROFILE_SUCCESS
+};
+
+typedef union {
+    SDResponse response;
+    uint8_t buffer[EVENT_QUEUE_MAX_PAYLOAD];
+} EventSDResponse;
 
 
 enum class UIEventType {
@@ -153,6 +163,7 @@ enum class UIEventType {
     PROFILE_RESPONSE,
     REGULATOR_UPDATE,
     NEW_PROFILE_INFO,
+    SD_RESPONSE,
     NONE
 };
 

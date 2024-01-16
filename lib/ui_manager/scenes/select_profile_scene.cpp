@@ -57,8 +57,17 @@ void SelectProfileScene::setup_options_list(std::string &ls_response) {
                             this->system_state->waiting_message_args.success_strs[1] = name;
                             this->system_state->waiting_message_args.fail_strs[0] = "Load fail";
                             this->system_state->waiting_message_args.fail_strs[1] = name;
-                            this->system_state->waiting_message_args.waiting_function = [state](){ return state->profile_info.profile_state == ProfileState::loading; };
-                            this->system_state->waiting_message_args.success_function = [state](){ return state->profile_info.profile_state == ProfileState::loaded; };
+                            this->system_state->waiting_message_args.waiting_function = [state](){ 
+                                    bool is_loading_profile = state->profile_info.profile_state == ProfileState::loading;
+                                    bool is_reading_sd = state->sd_info.status == SDStatus::loading_profile;
+                                    bool read_sd_correctly = state->sd_info.status != SDStatus::failed;
+                                    return is_reading_sd || (read_sd_correctly && is_loading_profile);
+                                };
+                            this->system_state->waiting_message_args.success_function = [state](){ 
+                                    bool read_sd_correctly = state->sd_info.status != SDStatus::failed;
+                                    bool loaded_profile_correctly = state->profile_info.profile_state == ProfileState::loaded;
+                                    return read_sd_correctly && loaded_profile_correctly; 
+                                };
                             this->next_scene = SceneEnum::waiting_message;
                             this->should_be_changed = true;
                         };
@@ -127,13 +136,13 @@ void SelectProfileScene::send_profile_chosen(std::string filename) {
 
 SelectProfileScene::SelectProfileScene(std::shared_ptr<UISystemState> system_state) : Scene(system_state)
 {
-    display_err = system_state->profile_info.profile_state == ProfileState::running  ||
-                  system_state->profile_info.profile_state == ProfileState::starting ||
-                  system_state->profile_info.profile_state == ProfileState::stopping;
+    err_profile_running = system_state->profile_info.profile_state == ProfileState::running  ||
+                          system_state->profile_info.profile_state == ProfileState::starting ||
+                          system_state->profile_info.profile_state == ProfileState::stopping;
 
     LCDController::clear_frame_buf();
 
-    if (display_err) {
+    if (err_profile_running) {
         LCDController::draw_string(0, (LCD_HEIGHT / 2) - FONT5X7_LINE_HEIGHT, "Cant select");
         LCDController::draw_string(0, LCD_HEIGHT / 2                        , "when profile");
         LCDController::draw_string(0, (LCD_HEIGHT / 2) + FONT5X7_LINE_HEIGHT, "is running");
@@ -191,7 +200,18 @@ void SelectProfileScene::button_callback(Button *button, PressType type) {
 }
 
 void SelectProfileScene::update(float d_time) {
-    if (display_err) {
+    if (err_sd_fail && sd_fail_first_frame) {
+        sd_fail_first_frame = false;
+        counter = 0;
+        
+        LCDController::clear_frame_buf();
+
+        LCDController::draw_string(0, LCD_HEIGHT / 2, "Error with SD");
+
+        LCDController::display_frame_buf();
+    }
+
+    if (err_profile_running || err_sd_fail) {
         counter += d_time;
         if (counter >= ERROR_DISPLAY_DURATION) {
             this->next_scene = SceneEnum::menu;
@@ -213,20 +233,28 @@ void SelectProfileScene::update(float d_time) {
     }
 
     LCDController::display_frame_buf();
+
+    err_sd_fail = system_state->sd_info.status == SDStatus::failed;
 }
 
 void SelectProfileScene::process_ui_event(UIEvent *evt) {
-    if (evt->type == UIEventType::PROFILES_LOAD) {
-        RingbufHandle_t *ring_buf = sys_manager->get_sd_ring_buf();
+    switch (evt->type) {
+        case UIEventType::PROFILES_LOAD: {
+            RingbufHandle_t *ring_buf = sys_manager->get_sd_ring_buf();
 
-        size_t len;
-        char *ls_profiles = (char*) xRingbufferReceive(*ring_buf, &len, pdMS_TO_TICKS(10));
-        if (ls_profiles != NULL) {
-            std::string ls_resp = std::string(ls_profiles, len);
-            vRingbufferReturnItem(*ring_buf, (void*) ls_profiles);
+            size_t len;
+            char *ls_profiles = (char*) xRingbufferReceive(*ring_buf, &len, pdMS_TO_TICKS(10));
+            if (ls_profiles != NULL) {
+                std::string ls_resp = std::string(ls_profiles, len);
+                vRingbufferReturnItem(*ring_buf, (void*) ls_profiles);
 
-            setup_options_list(ls_resp);
+                setup_options_list(ls_resp);
+            }
+            profiles_loaded = true;
         }
-        profiles_loaded = true;
+        break;
+
+        default:
+        break;
     }
 }

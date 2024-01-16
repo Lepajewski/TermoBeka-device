@@ -83,6 +83,13 @@ void UIManager::process_ui_event(UIEvent *evt) {
             process_regulator_update(payload->info);
             break;
         }
+        case UIEventType::SD_RESPONSE:
+        {
+            EventSDResponse *payload = reinterpret_cast<EventSDResponse*>(evt->payload);
+
+            process_sd_response(payload->response);
+            break;
+        }
         case UIEventType::NONE:
         default:
             break;
@@ -144,6 +151,25 @@ void UIManager::process_new_profile_info(EventNewProfileInfo *payload) {
 void UIManager::process_regulator_update(RegulatorStatusUpdate &info) {
     state->profile_info.profile_time = info.time;
     state->profile_info.avg_temperature = info.avg_chamber_temperature;
+}
+
+void UIManager::process_sd_response(SDResponse response) {
+    switch (response) {
+        case SDResponse::CAT_PROFILE_SUCCESS:
+        case SDResponse::UI_PROFILE_LIST_SUCCESS: {
+            state->sd_info.status = SDStatus::none;
+        }
+        break;
+
+        case SDResponse::CAT_PROFILE_FAIL:
+        case SDResponse::UI_PROFILE_LIST_FAIL: {
+            state->sd_info.status = SDStatus::failed;
+        }
+        break;
+    
+        default:
+        break;
+    }
 }
 
 void UIManager::send_evt(Event *evt) {
