@@ -156,13 +156,16 @@ void UIManager::process_regulator_update(RegulatorStatusUpdate &info) {
 void UIManager::process_sd_response(SDResponse response) {
     switch (response) {
         case SDResponse::CAT_PROFILE_SUCCESS:
-        case SDResponse::UI_PROFILE_LIST_SUCCESS: {
+        case SDResponse::UI_PROFILE_LIST_SUCCESS:
+        case SDResponse::MOUNT_SUCCESS: {
             state->sd_info.status = SDStatus::none;
         }
         break;
 
         case SDResponse::CAT_PROFILE_FAIL:
-        case SDResponse::UI_PROFILE_LIST_FAIL: {
+        case SDResponse::UI_PROFILE_LIST_FAIL:
+        case SDResponse::MOUNT_FAIL:
+        case SDResponse::UNMOUNTED: {
             state->sd_info.status = SDStatus::failed;
         }
         break;

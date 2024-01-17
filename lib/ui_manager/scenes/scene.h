@@ -9,7 +9,7 @@
 #include "system_manager.h"
 #include "ui_system_state.h"
 
-enum class SceneEnum { startup, menu, waiting_message, select_profile, start_profile, none };
+enum class SceneEnum { startup, menu, waiting_message, select_profile, start_profile, settings, none };
 
 class Scene {
 protected:
@@ -41,5 +41,6 @@ public:
 #include "select_profile_scene.h"
 #include "waiting_message_scene.h"
 #include "start_profile_scene.h"
+#include "settings_scene.h"
 
 #endif

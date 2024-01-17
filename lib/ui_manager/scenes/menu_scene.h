@@ -13,6 +13,7 @@ private:
     OptionList list = OptionList(Rect(0, 8, LCD_WIDTH, LCD_HEIGHT - 16), {
         {"Select profile", [this](){this->next_scene = SceneEnum::select_profile; this->should_be_changed = true;}},
         {"Control profile", [this](){this->next_scene = SceneEnum::start_profile; this->should_be_changed = true;}},
+        {"Settings", [this](){this->next_scene = SceneEnum::settings; this->should_be_changed = true;}},
     });
 
 public:

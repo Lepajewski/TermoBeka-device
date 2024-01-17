@@ -81,6 +81,8 @@ enum class EventType {
     UI_PROFILE_START,
     UI_PROFILE_STOP,
 
+    MOUNT_SD,
+    UNMOUNT_SD,
     SD_MOUNTED,
     SD_UNMOUNTED,
     SD_CONFIG_LOAD,
@@ -145,7 +147,9 @@ typedef union {
 
 enum class SDResponse {
     UI_PROFILE_LIST_FAIL, UI_PROFILE_LIST_SUCCESS,
-    CAT_PROFILE_FAIL, CAT_PROFILE_SUCCESS
+    CAT_PROFILE_FAIL, CAT_PROFILE_SUCCESS,
+    MOUNT_FAIL, MOUNT_SUCCESS,
+    UNMOUNTED
 };
 
 typedef union {

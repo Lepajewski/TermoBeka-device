@@ -329,6 +329,16 @@ void SystemManager::poll_event() {
                 this->process_ui_button_press(evt.payload[0]);
                 break;
             }
+            case EventType::MOUNT_SD:
+            {
+                this->process_mount_sd();
+                break;
+            }
+            case EventType::UNMOUNT_SD:
+            {
+                this->process_unmount_sd();
+                break;
+            }
             case EventType::SD_MOUNTED:
             {
                 this->process_sd_mounted();
@@ -356,7 +366,7 @@ void SystemManager::poll_event() {
             }
             case EventType::SD_RESPONSE:
             {
-                this->process_sd_response(evt.payload);
+                this->process_sd_response(reinterpret_cast<EventSDResponse*>(evt.payload));
                 break;
             }
             case EventType::UI_PROFILES_LOAD:
@@ -489,6 +499,22 @@ void SystemManager::process_ui_profile_chosen(uint8_t *payload) {
     }
 }
 
+void SystemManager::process_mount_sd() {
+    SDEvent evt = {};
+    evt.type = SDEventType::MOUNT_CARD;
+    if (send_to_sd_queue(&evt) != ESP_OK) {
+        TB_LOGE(TAG, "fail to send mount card");
+    }
+}
+
+void SystemManager::process_unmount_sd() {
+    SDEvent evt = {};
+    evt.type = SDEventType::UNMOUNT_CARD;
+    if (send_to_sd_queue(&evt) != ESP_OK) {
+        TB_LOGE(TAG, "fail to send unmount card");
+    }
+}
+
 void SystemManager::process_sd_mounted() {
     TB_LOGI(TAG, "SD mounted");
     if (this->send_load_ca_cert() != ESP_OK) {
@@ -554,10 +580,10 @@ void SystemManager::process_sd_load_ca_file() {
     }
 }
 
-void SystemManager::process_sd_response(uint8_t *payload) {
+void SystemManager::process_sd_response(EventSDResponse *payload) {
     UIEvent evt = {};
     evt.type = UIEventType::SD_RESPONSE;
-    memcpy(evt.payload, payload, SD_QUEUE_MAX_PAYLOAD);
+    memcpy(evt.payload, payload->buffer, SD_QUEUE_MAX_PAYLOAD);
     if (send_to_ui_queue(&evt) != ESP_OK) {
         TB_LOGE(TAG, "fail to send sd response to ui");
     }

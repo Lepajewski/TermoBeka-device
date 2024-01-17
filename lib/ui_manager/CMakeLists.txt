@@ -8,6 +8,7 @@ idf_component_register(
         "scenes/select_profile_scene.cpp"
         "scenes/waiting_message_scene.cpp"
         "scenes/start_profile_scene.cpp"
+        "scenes/settings_scene.cpp"
         "components/option_list.cpp"
         "components/rect.cpp"
         "components/status_bar.cpp"

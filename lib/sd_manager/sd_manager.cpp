@@ -176,9 +176,14 @@ void SDManager::process_sd_event(SDEvent *evt) {
 
 void SDManager::process_mount_card() {
     TB_LOGI(TAG, "mount card");
-    if (this->card.begin() == ESP_OK) {
+    esp_err_t err = this->card.begin();
+    if (err == ESP_OK) {
+        this->send_evt_sd_response(SDResponse::MOUNT_SUCCESS);
         this->send_evt_sd_mounted();
         this->load_and_send_config_ini();
+    }
+    else {
+        this->send_evt_sd_response(SDResponse::MOUNT_FAIL);
     }
 }
 
@@ -187,6 +192,7 @@ void SDManager::process_unmount_card() {
     if (this->card.end() == ESP_OK) {
         this->send_evt_sd_unmounted();
     }
+    send_evt_sd_response(SDResponse::UNMOUNTED);
 }
 
 void SDManager::poll_sd_events() {

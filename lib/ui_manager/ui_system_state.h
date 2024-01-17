@@ -25,7 +25,7 @@ struct ProfileInfo {
     int32_t avg_temperature = 0;
 };
 
-enum class SDStatus { loading_profile, loading_dir, failed, none };
+enum class SDStatus { loading_profile, loading_dir, failed, mounting, unmounting, none };
 
 struct SDInfo {
     SDStatus status;
