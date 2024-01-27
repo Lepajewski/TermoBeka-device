@@ -9,6 +9,8 @@ typedef struct {
     int16_t max_temp;
     uint32_t sampling_rate;
     uint32_t update_interval;
+    float hysteresis_up;
+    float hysteresis_down;
 } regulator_config_t;
 
 

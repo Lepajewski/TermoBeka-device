@@ -17,6 +17,8 @@ RegulatorManager::RegulatorManager()
     config.max_temp = PROFILE_MAX_TEMPERATURE;
     config.sampling_rate = REGULATOR_SAMPLING_RATE_MS;
     config.update_interval = REGULATOR_UPDATE_TIMER_INTERVAL_MS;
+    config.hysteresis_up = REGULATOR_HYSTERESIS_UP_C;
+    config.hysteresis_down = REGULATOR_HYSTERESIS_DOWN_C;
 
     this->regulator = new Regulator(config);
     this->setup();
@@ -71,7 +73,7 @@ void RegulatorManager::poll_regulator_events() {
     RegulatorEvent evt = {};
 
     while (uxQueueMessagesWaiting(*this->regulator_queue_handle)) {
-        if (xQueueReceive(*this->regulator_queue_handle, &evt, pdMS_TO_TICKS(10)) == pdPASS) {
+        if (xQueueReceive(*this->regulator_queue_handle, &evt, pdMS_TO_TICKS(1)) == pdPASS) {
             TB_LOGI(TAG, "new event, type: %d", evt.type);
             this->process_regulator_event(&evt);
         }

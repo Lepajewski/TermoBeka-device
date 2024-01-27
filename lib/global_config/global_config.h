@@ -96,8 +96,12 @@
 #define INTERNAL_TEMP_SENS_MIN_RANGE_C          -10
 #define INTERNAL_TEMP_SENS_MAX_RANGE_C          80
 
-#define REGULATOR_SAMPLING_RATE_MS              10000
-#define REGULATOR_UPDATE_TIMER_INTERVAL_MS      10000
+#define REGULATOR_SAMPLING_RATE_MS              1000
+#define REGULATOR_UPDATE_TIMER_INTERVAL_MS      1000
+#define REGULATOR_HYSTERESIS_UP_C               0.2f
+#define REGULATOR_HYSTERESIS_DOWN_C             0.2f
+
+
 
 #define NUMBER_OF_EXTERNAL_TEMP_SENSORS         3
 #define NUMBER_OF_RTDS                          5

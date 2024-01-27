@@ -59,6 +59,8 @@ void Regulator::setup() {
         TB_LOGI(TAG, "onewire init");
     }
 
+    this->get_external_temperature();
+
     this->heaters_off();
     this->fans_off();
     this->expander.relay_off(RelayType::RELAY_4);
@@ -73,20 +75,41 @@ esp_err_t Regulator::process_next_sample() {
     esp_err_t err = ESP_OK;
 
     this->get_avg_chamber_temperature();
-    TB_LOGI(TAG, "avg chamber temperature: %" PRIi32, this->info.avg_chamber_temperature);
+    // TB_LOGI(TAG, "avg chamber temperature: %" PRIi32, this->info.avg_chamber_temperature);
 
-    uint32_t preemption_error = (uint32_t)(get_time_since_startup_ms() - this->last_sample_time);
-    this->last_sample_time = get_time_since_startup_ms();
-    if (preemption_error > this->config.sampling_rate) {
-        preemption_error -= this->config.sampling_rate;
-    } else if (preemption_error == this->config.sampling_rate) {
-        preemption_error = 0;
+
+    float current_temperature = static_cast<float>(this->info.avg_chamber_temperature) / 100.0f;
+    printf("\t\t\t\t\t\t\t\t\t%f, %f, %f, %f\n", current_temperature, this->set_temperature, this->config.hysteresis_down, this->config.hysteresis_up);
+    if (current_temperature < (this->set_temperature - this->config.hysteresis_down)) {
+        printf("\t\t\t\t\t\t\t\t\tHEATERS ON\n");
+        this->heaters_on();
+    } else if (current_temperature > (this->set_temperature + this->config.hysteresis_up)) {
+        printf("\t\t\t\t\t\t\t\t\tHEATERS OFF\n");
+        this->heaters_off();
     }
 
+    int32_t preemption_error = (uint32_t)(get_time_since_startup_ms() - this->last_sample_time);
+    this->last_sample_time = get_time_since_startup_ms();
+    printf("\t\t\t\t\t\t\t\t\tPREEMPTION ERROR: %" PRIi32 "\n", preemption_error);
 
-    uint32_t next_sample_time = this->config.sampling_rate - preemption_error;
+    int32_t delta_time = static_cast<int32_t>(this->config.sampling_rate) - preemption_error;
+    printf("\t\t\t\t\t\t\t\t\tDELTA             %" PRIi32 "\n", delta_time);
 
-    TB_LOGI(TAG, "setting timer to T+%" PRIu32 "ms %" PRIu32, next_sample_time, preemption_error);
+    uint32_t next_sample_time = this->config.sampling_rate;
+    if (delta_time < 0) {
+        preemption_error -= this->config.sampling_rate;
+        next_sample_time = this->config.sampling_rate - preemption_error;
+    } else if (delta_time <= 0.1 * this->config.sampling_rate) {
+        preemption_error = this->config.sampling_rate + delta_time;
+        next_sample_time = preemption_error;
+    } else if (delta_time > this->config.sampling_rate) {
+
+    } else if (delta_time > 0.1 * this->config.sampling_rate) {
+        preemption_error = this->config.sampling_rate - preemption_error;
+        next_sample_time = preemption_error;
+    }
+
+    TB_LOGE(TAG, "setting timer to T+%" PRIu32 "ms %" PRIi32, next_sample_time, preemption_error);
     regulator_timer_run(next_sample_time);
     return err;
 }
@@ -107,6 +130,7 @@ void Regulator::get_external_temperature() {
     }
 
     this->ambient_temperature = temperature.temperature[0];
+    TB_LOGI(TAG, "Ambient temperature: %.2f", this->ambient_temperature);
 }
 
 void Regulator::get_avg_chamber_temperature() {
@@ -146,7 +170,7 @@ esp_err_t Regulator::start() {
     }
 
     this->get_avg_chamber_temperature();
-    this->update_temperature(0);
+    this->update_temperature(static_cast<int16_t>(this->set_temperature * 100));
     this->info.time = 0;
 
     this->last_sample_time = get_time_since_startup_ms();
@@ -172,6 +196,8 @@ esp_err_t Regulator::stop() {
     regulator_timer_stop();
 
     this->fans_off();
+    this->heaters_off();
+    this->set_temperature = 0;
 
     this->running = false;
     return ESP_OK;
@@ -217,7 +243,7 @@ int16_t Regulator::get_max_temperature() {
 
 
 void Regulator::update_temperature(int16_t temperature) {
-    this->get_external_temperature();
+    TB_LOGI(TAG, "temperature to be set: %" PRIi16, temperature);
 
     if (temperature < this->ambient_temperature) {
         TB_LOGW(TAG, "set T is lower than ambient T, setting to ambient T");
@@ -226,16 +252,15 @@ void Regulator::update_temperature(int16_t temperature) {
 
     if (temperature < this->config.min_temp) {
         TB_LOGW(TAG, "set T is lower than min T, setting to min T"); 
-        this->set_temperature = this->config.min_temp;
+        this->set_temperature = this->config.min_temp / 100.0f;
     } else if (temperature > this->config.max_temp) {
-        TB_LOGW(TAG, "set T is highet than max T, setting to max T");
-        this->set_temperature = (float)this->config.max_temp;
-        this->set_temperature = this->config.max_temp;
+        TB_LOGW(TAG, "set T is higher than max T, setting to max T");
+        this->set_temperature = (float)this->config.max_temp / 100.0f;
     } else {
-        this->set_temperature = (float)temperature;
-    }    
+        this->set_temperature = static_cast<float>(temperature) / 100.0f;
+    }
 
-    TB_LOGI(TAG, "set temperature to %f*C", this->set_temperature / 100.0f);
+    TB_LOGI(TAG, "set temperature to %.2f*C", this->set_temperature);
 }
 
 EventGroupHandle_t *Regulator::get_regulator_event_group() {
