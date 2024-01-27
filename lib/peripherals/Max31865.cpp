@@ -143,6 +143,11 @@ esp_err_t Max31865::setVbias(bool vbias) {
       chipConfig[i] &= ~(1U << MAX31865_CONFIG_VBIAS_BIT);
     }
 
+    chipConfig[i] |= 1U << MAX31865_CONFIG_FAULTSTATUS_BIT;
+    chipConfig[i] |= 0U << MAX31865_CONFIG_FAULTDETECTION_BIT_0;
+    chipConfig[i] |= 0U << MAX31865_CONFIG_FAULTDETECTION_BIT_1;
+    chipConfig[i] |= 0U << MAX31865_CONFIG_1SHOT_BIT;
+
     err = writeSPI(MAX31865_CONFIG_REG, &chipConfig[i], i, 1);
     if (err != ESP_OK) {
       return err;
@@ -176,7 +181,8 @@ esp_err_t Max31865::setConfig() {
 
     cfg |= 0U << MAX31865_CONFIG_CONVERSIONMODE_BIT;
     cfg |= (uint32_t)(Max31865NWires::Four) << MAX31865_CONFIG_NWIRES_BIT;
-    cfg |= 0U << MAX31865_CONFIG_FAULTDETECTION_BIT;
+    cfg |= 0U << MAX31865_CONFIG_FAULTDETECTION_BIT_0;
+    cfg |= 0U << MAX31865_CONFIG_FAULTDETECTION_BIT_1;
     cfg |= (uint32_t)(Max31865Filter::Hz60) << MAX31865_CONFIG_MAINSFILTER_BIT;
     cfg |= 0U << MAX31865_CONFIG_VBIAS_BIT;
 
